@@ -1,0 +1,785 @@
+[
+  {
+    "id": "beb_4000128",
+    "codigo": "4000128",
+    "nome": "REFRI COCA COLA ZERO PET 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.23",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000129",
+    "codigo": "4000129",
+    "nome": "REFRI FANTA UVA PET 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.85",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000131",
+    "codigo": "4000131",
+    "nome": "REFRI FANTA LARANJA PET 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.85",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000132",
+    "codigo": "4000132",
+    "nome": "REFRI COCA COLA PET 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.24",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000156",
+    "codigo": "4000156",
+    "nome": "REFRI SPRITE 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.85",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000185",
+    "codigo": "4000185",
+    "nome": "ENERGETICO MONSTER EMERGY 473ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.33",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000187",
+    "codigo": "4000187",
+    "nome": "ENERGETICO MONSTER JUICE 473ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.37",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000189",
+    "codigo": "4000189",
+    "nome": "BEBIDA MISTA TAMPICO FRTS CITRICAS 330ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.21",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000203",
+    "codigo": "4000203",
+    "nome": "ENERGETICO MONSTER DREAMS 473ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.37",
+    "ativo": true
+  },
+  {
+    "id": "beb_4000730",
+    "codigo": "4000730",
+    "nome": "CHAMYTO MOR SACHE 100G",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.33",
+    "ativo": true
+  },
+  {
+    "id": "beb_4001770",
+    "codigo": "4001770",
+    "nome": "REFRI GUARANA ANTARTICA ZERO LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.14",
+    "ativo": true
+  },
+  {
+    "id": "beb_4001771",
+    "codigo": "4001771",
+    "nome": "REFRI GUARANA ANTARTICA LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.06",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002061",
+    "codigo": "4002061",
+    "nome": "REFRI COCA COLA LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.22",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002065",
+    "codigo": "4002065",
+    "nome": "REFRI COCA COLA UN 600ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.95",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002069",
+    "codigo": "4002069",
+    "nome": "REFRI COCA COLA LS UN 1LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.03",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002072",
+    "codigo": "4002072",
+    "nome": "REFRI COCA COLA C/CAFE ESPRE UN 220ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.44",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002073",
+    "codigo": "4002073",
+    "nome": "REFRI COCA COLA UN 2LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "9.39",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002074",
+    "codigo": "4002074",
+    "nome": "REFRI COCA COLA UN 1LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.37",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002075",
+    "codigo": "4002075",
+    "nome": "REFRI FANTA LARANJA LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.64",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002078",
+    "codigo": "4002078",
+    "nome": "REFRI FANTA LARANJA UN 2LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "7.75",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002084",
+    "codigo": "4002084",
+    "nome": "REFRI FANTA UVA LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.64",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002085",
+    "codigo": "4002085",
+    "nome": "REFRI FANTA UVA UN 2LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "7.75",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002088",
+    "codigo": "4002088",
+    "nome": "REFRI SPRITE ZERO LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.47",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002098",
+    "codigo": "4002098",
+    "nome": "REFRI COCA COLA SCHWEPPES CITRUS 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.15",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002105",
+    "codigo": "4002105",
+    "nome": "POWER ADE ISOTONICO 500ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.31",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002106",
+    "codigo": "4002106",
+    "nome": "AGUA MINERAL CRYSTAL SEM GAS UN 500ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.51",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002107",
+    "codigo": "4002107",
+    "nome": "AGUA MINERAL CRYSTAL SEM GAS UN 1,5LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.86",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002111",
+    "codigo": "4002111",
+    "nome": "AGUA MINERAL CRYSTAL COM GAS UN 500ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.71",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002112",
+    "codigo": "4002112",
+    "nome": "DEL VALLE UVA UN 450ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.77",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002113",
+    "codigo": "4002113",
+    "nome": "DEL VALLE UVA 1,5 L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "5.42",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002117",
+    "codigo": "4002117",
+    "nome": "DEL VALLE FRUT LARANJA UN 450ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.91",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002118",
+    "codigo": "4002118",
+    "nome": "DEL VALLE FRUT LARANJA 1,5LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "5.94",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002124",
+    "codigo": "4002124",
+    "nome": "KAPO DEL VALLE UVA UN 200ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.89",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002127",
+    "codigo": "4002127",
+    "nome": "DEL VALLE 100% UVA 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "12.05",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002131",
+    "codigo": "4002131",
+    "nome": "REFRI SPRITE LEMON FRESH 510ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.64",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002132",
+    "codigo": "4002132",
+    "nome": "REFRI SPRITE LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.64",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002134",
+    "codigo": "4002134",
+    "nome": "REFRI COCA COLA ZERO LATA UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.22",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002135",
+    "codigo": "4002135",
+    "nome": "REFRI COCA COLA ZERO UN 2LT",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "9.06",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002136",
+    "codigo": "4002136",
+    "nome": "REFRI COCA COLA ZERO UN 600ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.96",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002139",
+    "codigo": "4002139",
+    "nome": "REFRI GUARANA KUAT UN 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.64",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002360",
+    "codigo": "4002360",
+    "nome": "NECTAR DAFRUTA CAJU UN 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.53",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002376",
+    "codigo": "4002376",
+    "nome": "NECTAR DAFRUTA LARANJA UN 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.53",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002377",
+    "codigo": "4002377",
+    "nome": "NECTAR DAFRUTA UVA UN 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.53",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002378",
+    "codigo": "4002378",
+    "nome": "NECTAR DAFRUTA LARANJA UN 200ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.28",
+    "ativo": true
+  },
+  {
+    "id": "beb_4002379",
+    "codigo": "4002379",
+    "nome": "NECTAR DAFRUTA UVA UN 200ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.28",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003469",
+    "codigo": "4003469",
+    "nome": "AGUA DE COCO KERO COCO UN 200ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.44",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003470",
+    "codigo": "4003470",
+    "nome": "AGUA DE COCO KERO COCO UN 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "17.84",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003495",
+    "codigo": "4003495",
+    "nome": "SUCO DE UVA CAMPO LARGO 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.86",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003499",
+    "codigo": "4003499",
+    "nome": "AGUA DE COCO INTEGRAL CAMPO LARGO 900ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "11.04",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003500",
+    "codigo": "4003500",
+    "nome": "AGUA DE COCO INTEGRAL CAMPO LARGO 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "4.57",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003677",
+    "codigo": "4003677",
+    "nome": "REFRI SAO GERALDO CAJUINA 2L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "9.65",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003678",
+    "codigo": "4003678",
+    "nome": "REFRI SAO GERALDO CAJUINA 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.67",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003981",
+    "codigo": "4003981",
+    "nome": "BEB MISTA ISIS FRUTAS CITRICAS 350 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "beb_4003982",
+    "codigo": "4003982",
+    "nome": "BEB MISTA ISIS FRUTAS CITRICAS 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.87",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004037",
+    "codigo": "4004037",
+    "nome": "BEB LACTEA BETANIA YOBEM PROT DE CHOCOLATE 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "7.01",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004290",
+    "codigo": "4004290",
+    "nome": "REFRI DELRIO GUARANA 2L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "5.97",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004291",
+    "codigo": "4004291",
+    "nome": "REFRI DELRIO GUARANA 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.72",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004293",
+    "codigo": "4004293",
+    "nome": "REFRI DELRICCO CITRUS 2L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "7.33",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004294",
+    "codigo": "4004294",
+    "nome": "REFRI DELRICCO CITRUS 330ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.75",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004301",
+    "codigo": "4004301",
+    "nome": "REFRI DELRIO GUARANA ZERO 250 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.49",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004302",
+    "codigo": "4004302",
+    "nome": "REFRI DELRIO CAJU 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.49",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004303",
+    "codigo": "4004303",
+    "nome": "REFRI DELRIO GUARANA 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.49",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004304",
+    "codigo": "4004304",
+    "nome": "REFRI DELRIO GUARANA 500ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.23",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004305",
+    "codigo": "4004305",
+    "nome": "ENERGETICO RED WAVER 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.25",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004310",
+    "codigo": "4004310",
+    "nome": "REFRI GRAPETTE UVA 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.56",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004619",
+    "codigo": "4004619",
+    "nome": "AGUA MINERAL SERRA GRANDE 520ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.25",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004620",
+    "codigo": "4004620",
+    "nome": "AGUA MINERAL SERRA GRANDE UN 1,5L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.67",
+    "ativo": true
+  },
+  {
+    "id": "beb_4004621",
+    "codigo": "4004621",
+    "nome": "AGUA MINERAL SERRA GRANDE C GAS 520ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.73",
+    "ativo": true
+  },
+  {
+    "id": "beb_4005703",
+    "codigo": "4005703",
+    "nome": "SUCO DE UVA CAMPO LARGO TINTO 900ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "11.44",
+    "ativo": true
+  },
+  {
+    "id": "beb_4005846",
+    "codigo": "4005846",
+    "nome": "BEB LACTEA BETANIA YOBEM PROT CAFE EXPRESSO 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "7.04",
+    "ativo": true
+  },
+  {
+    "id": "beb_4005858",
+    "codigo": "4005858",
+    "nome": "ENERGETICO RED WAVE ZERO 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.25",
+    "ativo": true
+  },
+  {
+    "id": "beb_4005877",
+    "codigo": "4005877",
+    "nome": "REFRI SAO GERALDO CAJUINA 200 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.17",
+    "ativo": true
+  },
+  {
+    "id": "beb_4005899",
+    "codigo": "4005899",
+    "nome": "REFRI SAO GERALDO CAJUINA 350 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.27",
+    "ativo": true
+  },
+  {
+    "id": "beb_4006912",
+    "codigo": "4006912",
+    "nome": "REFRI COCA COLA ZERO 1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.15",
+    "ativo": true
+  },
+  {
+    "id": "beb_4006996",
+    "codigo": "4006996",
+    "nome": "REFRI SAO GERALDO LARANJA 350 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.08",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007214",
+    "codigo": "4007214",
+    "nome": "REFRI SAO GERALDO CAJUINA ZERO 350 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.29",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007219",
+    "codigo": "4007219",
+    "nome": "SUPLEMENTO NESCAFE CAPP CALSSIC 270ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.12",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007269",
+    "codigo": "4007269",
+    "nome": "SUPLEMENTO NESCAFE PROENERGY CANELA 270ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.12",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007383",
+    "codigo": "4007383",
+    "nome": "REFRI GUARANA JESUS 350ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.24",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007468",
+    "codigo": "4007468",
+    "nome": "ICE TEA LEAO PESSEGO 300ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "2.78",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007614",
+    "codigo": "4007614",
+    "nome": "REFRI SAO GERALDO CAJUINA ZERO1L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.50",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007723",
+    "codigo": "4007723",
+    "nome": "ENERGETICO VULCANO ZERO 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.50",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007724",
+    "codigo": "4007724",
+    "nome": "ENERGETICO VULCANO ENERGY DRINK 473ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "8.01",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007734",
+    "codigo": "4007734",
+    "nome": "ENERGETICO RED WAVER MELANCIA 250ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "3.25",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007735",
+    "codigo": "4007735",
+    "nome": "REFRI DELRIO COLA ZERO 250 ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.49",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007799",
+    "codigo": "4007799",
+    "nome": "REFRI SAO GERALDO LARANJA 200ML",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "1.75",
+    "ativo": true
+  },
+  {
+    "id": "beb_4007869",
+    "codigo": "4007869",
+    "nome": "BEBIDA MISTA TAMPICO UVA 1,5L",
+    "unidade": "un",
+    "secao": "Bebidas",
+    "custo": "6.66",
+    "ativo": true
+  }
+]

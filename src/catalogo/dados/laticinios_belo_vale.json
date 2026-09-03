@@ -1,0 +1,242 @@
+[
+  {
+    "id": "lat_bv_2586",
+    "codigo": "2586",
+    "nome": "QUEIJO COALHO ISIS (KG)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "39.00",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_2678",
+    "codigo": "2678",
+    "nome": "QUEIJO MINAS PADRAO ISIS (KG)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "61.89",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003909",
+    "codigo": "4003909",
+    "nome": "IOGURTE ISIS MORANGO UN 480G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.61",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003910",
+    "codigo": "4003910",
+    "nome": "IOGURTE ISIS MORANGO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.91",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003912",
+    "codigo": "4003912",
+    "nome": "IOGURTE ISIS BANANA COM MACA UN 480G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.61",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003914",
+    "codigo": "4003914",
+    "nome": "IOGURTE ISIS AMEIXA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.91",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003916",
+    "codigo": "4003916",
+    "nome": "IOGURTE ISIS SALADA DE FRUTAS UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.91",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003917",
+    "codigo": "4003917",
+    "nome": "BEB LACTEA FERM ISIS MORANGO SACHE 900G UN",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.44",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003921",
+    "codigo": "4003921",
+    "nome": "IOGURTE ISIS SALADA FRUTAS UN 480G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.61",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003924",
+    "codigo": "4003924",
+    "nome": "IOGURTE ISIS BANANA COM MACA UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "9.93",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003925",
+    "codigo": "4003925",
+    "nome": "COALHADA ISIS DESNATADA UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.98",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003926",
+    "codigo": "4003926",
+    "nome": "COALHADA ISIS INTEGRAL UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.98",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003927",
+    "codigo": "4003927",
+    "nome": "FRUTISIS ISIS MORANGO UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.75",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003930",
+    "codigo": "4003930",
+    "nome": "BEB LACTEA FERM ISIS SALADA DE FRUTAS BJ 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.93",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003938",
+    "codigo": "4003938",
+    "nome": "BEB LACTEA FERM ISIS BAN C/ MACA SACHE 900G UN",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.48",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003946",
+    "codigo": "4003946",
+    "nome": "IOGURTE ISIS FRUTAS VERMELHAS UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "9.93",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003947",
+    "codigo": "4003947",
+    "nome": "IOGURTE ISIS MORANGO UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "9.93",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003952",
+    "codigo": "4003952",
+    "nome": "CREME DE RICOTA ISIS UN 250G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.89",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003953",
+    "codigo": "4003953",
+    "nome": "BEB LACTEA FERM ISIS MORANGO BJ 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.94",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003955",
+    "codigo": "4003955",
+    "nome": "IOGURTE ISIS AMEIXA UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "9.93",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003958",
+    "codigo": "4003958",
+    "nome": "MANTEIGA ISIS 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.31",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003960",
+    "codigo": "4003960",
+    "nome": "IOGURTE ISIS LAR CEN MEL 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003961",
+    "codigo": "4003961",
+    "nome": "IOGURTE ISIS NATURAL 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  },
+  {
+    "id": "lat_bv_4003972",
+    "codigo": "4003972",
+    "nome": "NATA ISIS C SAL 250G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "8.72",
+    "fornecedor": "Laticínio Belo Vale",
+    "ativo": true
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "functions": {
+    "api/nuvem.ts": {
+      "maxDuration": 30
+    },
+    "api/foto.ts": {
+      "maxDuration": 15
+    }
+  }
+}

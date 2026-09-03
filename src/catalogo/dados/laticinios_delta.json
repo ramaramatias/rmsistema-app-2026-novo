@@ -1,0 +1,552 @@
+[
+  {
+    "id": "lat_delta_4000138",
+    "codigo": "4000138",
+    "nome": "CHAMYTO NESTLE LEITE FERM DESNATADO 75G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "1.42",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000143",
+    "codigo": "4000143",
+    "nome": "IOGURTE NESTLE GREGO TORTA TRADICIONAL UN 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000144",
+    "codigo": "4000144",
+    "nome": "CHANDELLE NESTLE CHOCOLATE 180G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.00",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000501",
+    "codigo": "4000501",
+    "nome": "CHAMYTO NESTLE LEITE FERM DESNATADO 120G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.14",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000543",
+    "codigo": "4000543",
+    "nome": "IOGURTE NESTLE NATURAL INTEGRAL UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.20",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000544",
+    "codigo": "4000544",
+    "nome": "IOGURTE NESTLE INTEGRAL COM MEL UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.20",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000545",
+    "codigo": "4000545",
+    "nome": "IOGURTE NESTLE INTEGRAL CEN LAR MEL UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.20",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000546",
+    "codigo": "4000546",
+    "nome": "IOGURTE NESTLE DESNATADO UN 160G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.20",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000573",
+    "codigo": "4000573",
+    "nome": "REQUEIJAO NESTLE CREMOSO 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.15",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000574",
+    "codigo": "4000574",
+    "nome": "REQUEIJAO NESTLE CREMOSO LIGHT 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.15",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000596",
+    "codigo": "4000596",
+    "nome": "IOGURTE NESTLE GREGO LIGHT TRAD MOR MARA 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "14.85",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000621",
+    "codigo": "4000621",
+    "nome": "IOGURTE NESTLE NINHO MACA E BANANA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.90",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000622",
+    "codigo": "4000622",
+    "nome": "IOGURTE NINHO MORANGO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.90",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000628",
+    "codigo": "4000628",
+    "nome": "IOGURTE NESTLE GREGO LIGHT MARACUJA 360G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "12.40",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000688",
+    "codigo": "4000688",
+    "nome": "IOGURTE NESTLE VIT DE FRUTAS 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000690",
+    "codigo": "4000690",
+    "nome": "IOGURTE NESTLE GREGO MOR LIGHT 360G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.37",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000704",
+    "codigo": "4000704",
+    "nome": "IOGURTE NESTLE MORANGO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000705",
+    "codigo": "4000705",
+    "nome": "IOGURTE NESTLE MORANGO 900G (UN)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "13.05",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000731",
+    "codigo": "4000731",
+    "nome": "CHAMYTO VITAMINA DE FRUTAS SACHE 100G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.33",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000746",
+    "codigo": "4000746",
+    "nome": "CHAMYTO NESTLE MORANGO CER CHOC UN 130G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.34",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000751",
+    "codigo": "4000751",
+    "nome": "IOGURTE NESTON COM PREPARO DE FRUTAS E CEREIAS (BA",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.59",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000752",
+    "codigo": "4000752",
+    "nome": "IOGURTE NESTLE NESTON 3 CEREAIS 850G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "14.32",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000753",
+    "codigo": "4000753",
+    "nome": "IOGURTE NINHO MAC E BAN 850G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "14.99",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000754",
+    "codigo": "4000754",
+    "nome": "IOGURTE NINHO POLPA 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "1.58",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000755",
+    "codigo": "4000755",
+    "nome": "CHAMYTO NESTLE MORANGO CER COLOR UN 130G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.34",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000756",
+    "codigo": "4000756",
+    "nome": "IOGURTE NINHO MACA E BANANA SACHE 100G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.62",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000788",
+    "codigo": "4000788",
+    "nome": "IOGURTE NESTLE MOLICO MOR TRIPLO ZERO 850G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "13.87",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000789",
+    "codigo": "4000789",
+    "nome": "IOGURTE NESTLE MOLICO MOR ZERO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.44",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000809",
+    "codigo": "4000809",
+    "nome": "IOGURTE NESTLE MOLICO BAUNILHA TRIPLO ZERO 850G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "13.87",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000811",
+    "codigo": "4000811",
+    "nome": "IOGURTE NESTLE MOLICO BAUNILHA ZERO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.44",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000820",
+    "codigo": "4000820",
+    "nome": "IOGURTE NESTLE BICAMADA MORANGO UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.67",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000837",
+    "codigo": "4000837",
+    "nome": "IOGURTE NESTON POLPA 2 SABORES 510G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "8.66",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000838",
+    "codigo": "4000838",
+    "nome": "IOGURTE NESTLE GREGO MOR E TRAD 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "14.49",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000841",
+    "codigo": "4000841",
+    "nome": "CHAMBINHO NESTLE MORANGO SACHE 100G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.15",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000856",
+    "codigo": "4000856",
+    "nome": "IOGURTE NESTLE NATUAL INTEGRAL BJ 340G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "8.13",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4000860",
+    "codigo": "4000860",
+    "nome": "IOGURTE NESTLE GREGO CALDA DE MORANGO 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4001581",
+    "codigo": "4001581",
+    "nome": "QUEIJO CREMOSO CHEESE POLENGHI UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.80",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4001582",
+    "codigo": "4001582",
+    "nome": "QUEIJO CREMOSO CHEESE LIGHT POLENGUINHO UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.80",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4005730",
+    "codigo": "4005730",
+    "nome": "IOGURTE NESTLE BICAMADA FRUTAS VERMELHAS 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.67",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4006042",
+    "codigo": "4006042",
+    "nome": "CHAMBINHO NESTLE IOGURTE MORANGO 510G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "8.55",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4006071",
+    "codigo": "4006071",
+    "nome": "CHANDELLE NESTLE DUO 180G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.00",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4006518",
+    "codigo": "4006518",
+    "nome": "CHAMBINHO NESTLE MORANGO GF 165G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.66",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007099",
+    "codigo": "4007099",
+    "nome": "IOGURTE NESTLE GREGO CALDA FRT VERMELHAS 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007100",
+    "codigo": "4007100",
+    "nome": "IOGURTE NESTLE GREGO CALDA RASPA DE LIMAO 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007366",
+    "codigo": "4007366",
+    "nome": "CHANDELLE NESTLE FLAN BAUNILHA 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.49",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007471",
+    "codigo": "4007471",
+    "nome": "IOGURTE NESTLE MOLICO AMEIXA ZERO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.44",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007599",
+    "codigo": "4007599",
+    "nome": "IOGURTE NESTLE ZERO UN 1150ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.66",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007600",
+    "codigo": "4007600",
+    "nome": "IOGURTE NESTLE MORANGO ZERO UN 1150ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.66",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007602",
+    "codigo": "4007602",
+    "nome": "IOGURTE NESTLE MORANGO ZERO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007603",
+    "codigo": "4007603",
+    "nome": "IOGURTE NESTLE BATIDO ZERO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007707",
+    "codigo": "4007707",
+    "nome": "IOGURTE CHAMBINHO MORANGO 850G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "14.54",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007722",
+    "codigo": "4007722",
+    "nome": "CHANDELLE NESTLE CHANTILLY BRIGADEIRO 90G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.49",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007744",
+    "codigo": "4007744",
+    "nome": "IOGURTE NESTLE MORANGO 1150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "16.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007797",
+    "codigo": "4007797",
+    "nome": "IOGURTE NESTLE AMEIXA ZERO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.19",
+    "fornecedor": "DELTA",
+    "ativo": true
+  },
+  {
+    "id": "lat_delta_4007890",
+    "codigo": "4007890",
+    "nome": "IOGURTE NESTLE VIT FRUTAS 1150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "15.75",
+    "fornecedor": "DELTA",
+    "ativo": true
+  }
+]

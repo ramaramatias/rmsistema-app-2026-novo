@@ -1,0 +1,232 @@
+[
+  {
+    "id": "lat_lassa_3352",
+    "codigo": "3352",
+    "nome": "QUEIJO COALHO LASSA (KG)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "36.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4478",
+    "codigo": "4478",
+    "nome": "QUEIJO COALHO LASSA LIGTH KG",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "38.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_6188",
+    "codigo": "6188",
+    "nome": "QUEIJO MINAS FRESCAL LASSA (KG)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "38.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_100000",
+    "codigo": "100000",
+    "nome": "DOCE DE LEITE LASSA 400G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.90",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003735",
+    "codigo": "4003735",
+    "nome": "MANTEIGA 500 G LASSA",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "20.50",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003736",
+    "codigo": "4003736",
+    "nome": "MANTEIGA 200 G LASSA",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "9.79",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003738",
+    "codigo": "4003738",
+    "nome": "BEB LACTEA LASSA MORANGO SACHE 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.40",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003739",
+    "codigo": "4003739",
+    "nome": "BEB LACTEA LASSA AMEIXA SACHE 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.40",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003742",
+    "codigo": "4003742",
+    "nome": "BEB LACTEA LASSA SALADA DE FRUTAS 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.40",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003743",
+    "codigo": "4003743",
+    "nome": "BEB LACTEA LASSA GRAVIOLA 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "4.40",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003744",
+    "codigo": "4003744",
+    "nome": "BEB LACTEA LASSA MOR BD 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.87",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003745",
+    "codigo": "4003745",
+    "nome": "IOG PARC DESN LASSA MOR 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.57",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003748",
+    "codigo": "4003748",
+    "nome": "IOG PARC DESN LASSA AMEIXA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.55",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003750",
+    "codigo": "4003750",
+    "nome": "IOG PARC DESN LASSA BAN MAC MAM E CER 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.55",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003753",
+    "codigo": "4003753",
+    "nome": "REQUEIJAO LASSA CREMOSO 180G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.50",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4003754",
+    "codigo": "4003754",
+    "nome": "REQUEIJAO LASSA LIGHT 180G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.50",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4006838",
+    "codigo": "4006838",
+    "nome": "IOGURTE PROTEIN TRIPLO ZERO LASSA MORANGO LAFIT 250G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4006839",
+    "codigo": "4006839",
+    "nome": "IOGURTE PROTEIN TRIPLO ZERO LASSA BAUNILHA LAFIT 250G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4006840",
+    "codigo": "4006840",
+    "nome": "IOGURTE PROTEIN TRIPLO ZERO LASSA BANANA LAFIT 250G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.00",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4007654",
+    "codigo": "4007654",
+    "nome": "REQUEIJAO LASSA LIGHT 400G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.25",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4007763",
+    "codigo": "4007763",
+    "nome": "REQUEIJAO LASSA 400G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.25",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4007892",
+    "codigo": "4007892",
+    "nome": "IOG DESNATADO LASSA TRIPLO ZERO AMEIXA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.90",
+    "fornecedor": "LASSA",
+    "ativo": true
+  },
+  {
+    "id": "lat_lassa_4007893",
+    "codigo": "4007893",
+    "nome": "IOG DESNATADO LASSA TRIPLO ZERO MORANGO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.90",
+    "fornecedor": "LASSA",
+    "ativo": true
+  }
+]

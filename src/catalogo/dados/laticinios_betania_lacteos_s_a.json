@@ -1,0 +1,382 @@
+[
+  {
+    "id": "lat_4004036",
+    "codigo": "4004036",
+    "nome": "BEB LACTEA BETANIA YOBEM PROT DE BANANA UN 250ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.02",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004638",
+    "codigo": "4004638",
+    "nome": "BEB LACTEA UHT BETANIA CHOCOLATE UN 1000ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.26",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004639",
+    "codigo": "4004639",
+    "nome": "MANTEIGA BETANIA UN 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.07",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004640",
+    "codigo": "4004640",
+    "nome": "MANTEIGA BETANIA UN 500G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "20.93",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004643",
+    "codigo": "4004643",
+    "nome": "REQUEIJAO CREMOSO BETANIA UN 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.45",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004645",
+    "codigo": "4004645",
+    "nome": "COALHADA BETANIA INTEGRAL UN 140G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.20",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004646",
+    "codigo": "4004646",
+    "nome": "COALHADA BETANIA DESNATADA UN 140G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.20",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004647",
+    "codigo": "4004647",
+    "nome": "REQUEIJAO CREMOSO BETANIA LIGHT UN 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.94",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004650",
+    "codigo": "4004650",
+    "nome": "BEB LACTEA FERM BETANIA MORANGO SACHE 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.74",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004651",
+    "codigo": "4004651",
+    "nome": "BEB LACTEA UHT BETAKIDS CHOCOLATE UN 200ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "1.68",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004652",
+    "codigo": "4004652",
+    "nome": "BEB LACTEA FERM BETANIA MORANGO BD 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.25",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004656",
+    "codigo": "4004656",
+    "nome": "IOGURTE BET PARC DESN AMEIXA 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.94",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004657",
+    "codigo": "4004657",
+    "nome": "IOGURTE BETANIA PARC DESN AMEIXA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.90",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004658",
+    "codigo": "4004658",
+    "nome": "IOGURTE BETANIA PARC DESN MOR 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.95",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004659",
+    "codigo": "4004659",
+    "nome": "IOGURTE BETANIA PARC DESN MOR 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.89",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004660",
+    "codigo": "4004660",
+    "nome": "IOGURTE BETANIA NATURAL DESNATADO UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004661",
+    "codigo": "4004661",
+    "nome": "IOGURTE BETANIA NATURAL INTEGRAL UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.25",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004663",
+    "codigo": "4004663",
+    "nome": "IOGURTE BETANIA INTEGRAL LAR CEN ME UN 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.21",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004668",
+    "codigo": "4004668",
+    "nome": "IOGURTE BETANIA PARC DESN FRTS VERM 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.90",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004669",
+    "codigo": "4004669",
+    "nome": "IOGURTE BETANIA PARC DESN FRTS VERM 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "2.89",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004672",
+    "codigo": "4004672",
+    "nome": "BEB LACTEA FERM BETANIA AMEIXA UN 900G(SACHE)",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.75",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004677",
+    "codigo": "4004677",
+    "nome": "IOGURTE BETANIA YOBEM MOR ZERO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.36",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004678",
+    "codigo": "4004678",
+    "nome": "LEITE FERM BETANIA BELLE LIGHT MORANGO UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "11.34",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004680",
+    "codigo": "4004680",
+    "nome": "IOGURTE BETANIA YOBEM AMEIXA ZERO 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.36",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004681",
+    "codigo": "4004681",
+    "nome": "LEITE FERM BETANIA BELLE LIGHT AMEIXA UN 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "10.97",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004683",
+    "codigo": "4004683",
+    "nome": "BEB LACTEA FERM BETANIA SAL FRUTAS SACHET 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.75",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004688",
+    "codigo": "4004688",
+    "nome": "IOGURTE BETANIA BICAMADA MORANGO UN 150G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.37",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004698",
+    "codigo": "4004698",
+    "nome": "LEITE UHT BETANIA SEMIDESNATADO ZERO LACTOSE 1L",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.68",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004700",
+    "codigo": "4004700",
+    "nome": "REQUEIJAO BETANIA LACTOLIVRE LIGHT 200G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "8.61",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004702",
+    "codigo": "4004702",
+    "nome": "IOGURTE BETANIA YOBEM TRIPLO ZERO PAPAIA 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.36",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004709",
+    "codigo": "4004709",
+    "nome": "LEITE BETANIA SEMIDESNATADO UN 1LT",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.84",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004718",
+    "codigo": "4004718",
+    "nome": "IOGURTE BET KIDS MOR BAN MAC 540G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "6.24",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4004724",
+    "codigo": "4004724",
+    "nome": "IOGURTE BETANIA KIDS INT MEREND DE MORANGO 100G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.00",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4006567",
+    "codigo": "4006567",
+    "nome": "IOGURTE PAR DESN BETANIA MORANGO ZERO LAC YOBEM 160G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.14",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4007537",
+    "codigo": "4007537",
+    "nome": "BEB LACTEA BETANIA YOBEM PROT DE COCO TAPIOCA 250ML",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.04",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4007658",
+    "codigo": "4007658",
+    "nome": "BEB LACTEA FERM BETANIA BAN E MACA SACHET 900G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "5.85",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4007699",
+    "codigo": "4007699",
+    "nome": "IOGURTE BETANIA KIDS UVINHA 100G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "3.03",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  },
+  {
+    "id": "lat_4007870",
+    "codigo": "4007870",
+    "nome": "IOGURTE BETANIA PARC DESN YOBEM 16WHEY 170G",
+    "unidade": "un",
+    "secao": "Laticínios",
+    "custo": "7.05",
+    "fornecedor": "BETANIA LACTEOS S/A",
+    "ativo": true
+  }
+]

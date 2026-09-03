@@ -1,0 +1,12 @@
+node_modules
+.git
+*.log
+Devin
+cursor
+Trae
+PearAI
+dist
+backup_completo.json
+public/backup_completo.json
+backup_conferencia.json
+public/backup_conferencia.json

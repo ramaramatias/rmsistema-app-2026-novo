@@ -1,0 +1,1632 @@
+[
+  {
+    "id": "emb_geral_209",
+    "codigo": "209",
+    "nome": "G330 BANDEJA REFEICAO 3 DIVISORIAS 1150ML (C/100)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "210.77",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5467",
+    "codigo": "5467",
+    "nome": "F650 EMBALAGEM POTE QUAD C/TAMPA 200ML CX/200 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "70.92",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5502",
+    "codigo": "5502",
+    "nome": "BANDEJA ISOPOR COPOBRAS B2 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "14.53",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5504",
+    "codigo": "5504",
+    "nome": "BANDEJA LAMINADA N 6 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.42",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5529",
+    "codigo": "5529",
+    "nome": "EMBALAGEM REDONDA N 80 CX C/30 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "187.33",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5549",
+    "codigo": "5549",
+    "nome": "PAPEL MANTEIGA PCT C/400 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "133.27",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5553",
+    "codigo": "5553",
+    "nome": "BANDEJA LAMINADA N 5 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.77",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5556",
+    "codigo": "5556",
+    "nome": "EMBALAGEM BOLO N 32 CX C/ 100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "71.30",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5561",
+    "codigo": "5561",
+    "nome": "PRATO LAMINADO REDONDO N 6 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.01",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5575",
+    "codigo": "5575",
+    "nome": "SACOLA 30X45 (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "65.80",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5588",
+    "codigo": "5588",
+    "nome": "SACO DE PAPEL PERSONALIZADO PAO DA VIDA P (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "164.03",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5589",
+    "codigo": "5589",
+    "nome": "SACO DE PAPEL PERSONALIZADO PAO DA VIDA G (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "206.94",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5591",
+    "codigo": "5591",
+    "nome": "BANDEJA LAMINADA N 7 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.87",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5599",
+    "codigo": "5599",
+    "nome": "SACO 40X60 BOBINA (ROLO) (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.33",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5618",
+    "codigo": "5618",
+    "nome": "BANDEJA LAMINADA N 4 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.34",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5667",
+    "codigo": "5667",
+    "nome": "LACO PARA CESTA (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.90",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5671",
+    "codigo": "5671",
+    "nome": "EMBALAGEM PARA BOLO N 60 PCT C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "220.91",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5700",
+    "codigo": "5700",
+    "nome": "EMBALAGEM N 63 CX C/100UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "146.30",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5701",
+    "codigo": "5701",
+    "nome": "PRATO LAMINADO REDONDO N 4 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "0.80",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5740",
+    "codigo": "5740",
+    "nome": "G 630 FATIA TORTA CX C/300 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "285.45",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_5899",
+    "codigo": "5899",
+    "nome": "SACO 30X40 BOBINA (ROLO) (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.83",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6479",
+    "codigo": "6479",
+    "nome": "G650 POTE QUADRADO COM TAMPA 200ML C/300",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "108.66",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6520",
+    "codigo": "6520",
+    "nome": "SACO DE PAPEL PARA SALGADOS PCT C/500 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "108.10",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6545",
+    "codigo": "6545",
+    "nome": "SACO 20X60 BOBINA (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "22.68",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6752",
+    "codigo": "6752",
+    "nome": "EMBALAGEM PARA BOLO N 65 CX C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "205.93",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6953",
+    "codigo": "6953",
+    "nome": "SACO TRANSPARENTE 22X40 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "28.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_6957",
+    "codigo": "6957",
+    "nome": "CESTA CIPO GRANDE (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "20.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7045",
+    "codigo": "7045",
+    "nome": "PRATO LAMINADO REDONDO N 5 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "0.95",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7191",
+    "codigo": "7191",
+    "nome": "SACO P/ CESTA (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.51",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7243",
+    "codigo": "7243",
+    "nome": "SACO TRANSPARENTE 17X35 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "29.88",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7260",
+    "codigo": "7260",
+    "nome": "SACO TRANSPARENTE 25X35 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "43.90",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7402",
+    "codigo": "7402",
+    "nome": "SACO HOT DOG PERSONALIZADO PV (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "29.20",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7713",
+    "codigo": "7713",
+    "nome": "SACO TRANSPARENTE 15X30 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "33.30",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7731",
+    "codigo": "7731",
+    "nome": "CAIXA P/ 100 SALGADOS PERSONALIZADA PV TAM 33X27X5 UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.25",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7734",
+    "codigo": "7734",
+    "nome": "PRATO P/ TORTA 32CM PERSONALIZADA PV",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.95",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7814",
+    "codigo": "7814",
+    "nome": "SACO 35X50 BOBINA (ROLO) (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7829",
+    "codigo": "7829",
+    "nome": "SACO DE PAPEL PERSON PV 17X40 P/ SALGADOS (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "112.29",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7830",
+    "codigo": "7830",
+    "nome": "SACO P/ TALHER PAPEL PERSON PV (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "81.33",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7840",
+    "codigo": "7840",
+    "nome": "FECHO P SACO (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.74",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7852",
+    "codigo": "7852",
+    "nome": "SACO PP 25X35 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "26.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7888",
+    "codigo": "7888",
+    "nome": "SACO TRANSPARENTE 20X35 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "28.92",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7914",
+    "codigo": "7914",
+    "nome": "SACO TRANSPARENTE 40X60 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "26.59",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_7959",
+    "codigo": "7959",
+    "nome": "SACOLA 29X44 (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "33.23",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_8194",
+    "codigo": "8194",
+    "nome": "SACO TRANSPARENTE 16X32 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "29.24",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_8205",
+    "codigo": "8205",
+    "nome": "EMBALAGEM N 690 CUPCAKE CX C/300 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "284.20",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_8282",
+    "codigo": "8282",
+    "nome": "CANUDO BIO FLEXIVEL STRAWPLAST PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.17",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_8406",
+    "codigo": "8406",
+    "nome": "SACO TRANSPARENTE 60X90 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "29.87",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_8446",
+    "codigo": "8446",
+    "nome": "SACO DE LIXO 200L REFORCADO (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "11.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4000279",
+    "codigo": "4000279",
+    "nome": "GARRAFA PLASTICA TRANSPARENTE C/TAMPA 300ML",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.17",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4002524",
+    "codigo": "4002524",
+    "nome": "EMB MARMITEX TAMPA 100/102/104 COPOBRAS PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "27.64",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4002525",
+    "codigo": "4002525",
+    "nome": "EMB POTE MARMITEX 750ML COPOBRAS PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "26.87",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4002532",
+    "codigo": "4002532",
+    "nome": "BANDEJA ISOPOR COPOBRAS B1 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "10.62",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4002817",
+    "codigo": "4002817",
+    "nome": "PALITO DE DENTE PARANA SACHES C/1000UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "12.90",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003208",
+    "codigo": "4003208",
+    "nome": "COLHER SOBREMESA PRAFESTA CRISTAL PCT C/50UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.49",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003720",
+    "codigo": "4003720",
+    "nome": "COPO DESCART 180ML FC TRANSPARENTE PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.79",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003721",
+    "codigo": "4003721",
+    "nome": "COPO DESCART 50ML FC PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.85",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003722",
+    "codigo": "4003722",
+    "nome": "COPO DESCART 300ML FC TRANSPARENTE PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.49",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003801",
+    "codigo": "4003801",
+    "nome": "POTES E TAMPAS GALVANOTEK PP G315 1000ML (PCT C20)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "24.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003803",
+    "codigo": "4003803",
+    "nome": "G730 POTE C/LACRE 250ML 100UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "98.89",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003804",
+    "codigo": "4003804",
+    "nome": "EMBALAGEM P/ COPO BOLHA CRISTAL G 677 250ML CX/400",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "353.68",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003805",
+    "codigo": "4003805",
+    "nome": "EMB G 750 POTE REDONDO C/ TAMPA CX C/200UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "107.39",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003813",
+    "codigo": "4003813",
+    "nome": "EMBALAGEM N 691 C/TAMPA COPO MONO PORCAO CX C/300",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "174.65",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003815",
+    "codigo": "4003815",
+    "nome": "POTES E TAMPAS GALVANOTEK G712 500ML UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "21.03",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4003887",
+    "codigo": "4003887",
+    "nome": "SACO DE LIXO 100LT BRASILEIRINHO C/ 5UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.49",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004166",
+    "codigo": "4004166",
+    "nome": "EMBALAGEM TERMICA K12 T090 240ML CX C/200",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "73.22",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004274",
+    "codigo": "4004274",
+    "nome": "CANUDO SACHE TRAD STRAWPLAST PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.93",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004275",
+    "codigo": "4004275",
+    "nome": "CANUDO SACHE FLEXIVEL STRAWPLAST PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.90",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004279",
+    "codigo": "4004279",
+    "nome": "COLHER REFEICAO STRANPLAST BRANCA C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.26",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004280",
+    "codigo": "4004280",
+    "nome": "COLHER REFEICAO STRANPLAST CRISTAL C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.64",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004281",
+    "codigo": "4004281",
+    "nome": "COLHER SOBREMESA STRAWPLAST BRANCA PCT C/50UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.53",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004282",
+    "codigo": "4004282",
+    "nome": "COLHER SOBREMESA STRAWPLAST CRISTAL PCT C/50UN (UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.26",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004377",
+    "codigo": "4004377",
+    "nome": "SACO DE LIXO VALOR 30L PRETO PCT C/10 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.67",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004378",
+    "codigo": "4004378",
+    "nome": "SACO DE LIXO VALOR 50L PRETO PCT C/10 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.86",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004379",
+    "codigo": "4004379",
+    "nome": "SACO DE LIXO VALOR 100L PRETO PCT C/5 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.05",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004484",
+    "codigo": "4004484",
+    "nome": "FILME PVC LUSAFILM 380X1000 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "121.72",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004487",
+    "codigo": "4004487",
+    "nome": "COPO DESCART 180ML MARATA PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004489",
+    "codigo": "4004489",
+    "nome": "COPO DESCART 400ML MARATA BRANCO PCT C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "7.18",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004513",
+    "codigo": "4004513",
+    "nome": "EMB TAMPA MARMITEX 750ML ULTRATHERM PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "20.29",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004517",
+    "codigo": "4004517",
+    "nome": "BANDEJA ISOPOR ULTRATHERM A15 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "10.62",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004548",
+    "codigo": "4004548",
+    "nome": "COPO PP ULTRADESCARTAVEIS ULTRACOPOS 400ML C/50",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "9.32",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004834",
+    "codigo": "4004834",
+    "nome": "TOUCA SANFONADA DESCARTAVEL VABENE C/ 100UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004860",
+    "codigo": "4004860",
+    "nome": "SACO 20X30 BOBINA (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.65",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004861",
+    "codigo": "4004861",
+    "nome": "SACO 25X35 BOBINA (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "24.34",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004917",
+    "codigo": "4004917",
+    "nome": "GUARDANAPO SACHE 30X14 CX/500",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "49.05",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4004926",
+    "codigo": "4004926",
+    "nome": "G 56 EMBALAGEM PARA BOLO CX C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "174.87",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005239",
+    "codigo": "4005239",
+    "nome": "COPO DESCART 300ML CRISTALCOPO BRANCO C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.22",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005240",
+    "codigo": "4005240",
+    "nome": "COPO DESCART 400ML CRISTALCOPO PCT C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.42",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005241",
+    "codigo": "4005241",
+    "nome": "LUVAS DESCARTAVEIS TALGE C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.60",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005242",
+    "codigo": "4005242",
+    "nome": "TOUCA SANFONADA DESCARTAVEL TALGE PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "18.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005298",
+    "codigo": "4005298",
+    "nome": "EMBALAGEM BOLO N 50 CX C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "126.50",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005300",
+    "codigo": "4005300",
+    "nome": "G 35MA EMBALAGEM P BOLO ALTA BRANCA CX C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "74.92",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005321",
+    "codigo": "4005321",
+    "nome": "EMB TAMPA MARMITEX 750ML ISOBRAS PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "45.57",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005323",
+    "codigo": "4005323",
+    "nome": "TOUCA SANFONADA DESCARTAVEL INOVEN C/ 100UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "7.49",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005576",
+    "codigo": "4005576",
+    "nome": "SACOLA 40X50 PERSONALIZADA PV (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "84.82",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005649",
+    "codigo": "4005649",
+    "nome": "SACO DE LIXO TA LIMPO 60L C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "13.24",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005691",
+    "codigo": "4005691",
+    "nome": "SACO DE LIXO TA LIMPO 40L C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "9.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005707",
+    "codigo": "4005707",
+    "nome": "DISCO DE ISOPOR 18 C/200 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "38.28",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005772",
+    "codigo": "4005772",
+    "nome": "COPO DIAMANTE PLASTILANIA C/10 UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "11.56",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005819",
+    "codigo": "4005819",
+    "nome": "LUVAS DESCARTAVEIS VABENE C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.99",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4005967",
+    "codigo": "4005967",
+    "nome": "SACO DE LIXO 100L REFORCADO (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "16.08",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006091",
+    "codigo": "4006091",
+    "nome": "SACO DE LIXO 60L REFORCADO (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "11.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006158",
+    "codigo": "4006158",
+    "nome": "BANDEJA ISOPOR ULTRATHERM B15 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "14.70",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006305",
+    "codigo": "4006305",
+    "nome": "EMBALAGEM TERMICA BOLO INGLES T19 CX C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "60.76",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006306",
+    "codigo": "4006306",
+    "nome": "HAMBURGUEIRA ULTRATHERM H02 C/100 UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "31.21",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006347",
+    "codigo": "4006347",
+    "nome": "COLHER SOBREMESA ELOHIM BRANCA C/50UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.11",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006516",
+    "codigo": "4006516",
+    "nome": "POTES E TAMPAS GALVANOTEK SIMPLIFIC G310/350 350ML",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "13.50",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006584",
+    "codigo": "4006584",
+    "nome": "BANDEJA LAMINADA ROCAMBOLE 18X32 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.02",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006657",
+    "codigo": "4006657",
+    "nome": "GUARDANAPO GRAMPEL 20X21 CX/1000",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "65.75",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006681",
+    "codigo": "4006681",
+    "nome": "GUARDANAPO NOBRE SACHE C/ 02 FOLHAS CX/2000 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "187.20",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006717",
+    "codigo": "4006717",
+    "nome": "BANDEJA ISOPOR SPUMAPAC B1 PCT C/400 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "41.63",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006718",
+    "codigo": "4006718",
+    "nome": "BANDEJA ISOPOR SPUMAPAC B2 PCT C/400 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "44.80",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006719",
+    "codigo": "4006719",
+    "nome": "POTES E TAMPAS PLASZOM 750ML PCT C/25UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.90",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006777",
+    "codigo": "4006777",
+    "nome": "BANDEJA ISOPOR BOM APETITE B1 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "12.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006778",
+    "codigo": "4006778",
+    "nome": "BANDEJA ISOPOR BOM APETITE B2 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "15.50",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006779",
+    "codigo": "4006779",
+    "nome": "PALITO DE DENTE INOVEN SACHES C/1000UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.39",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006796",
+    "codigo": "4006796",
+    "nome": "FORMINHA Nº 5 REGINA BRANCO PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.55",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006833",
+    "codigo": "4006833",
+    "nome": "EMBALAGEM D08 1500ML WYDA C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "150.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006841",
+    "codigo": "4006841",
+    "nome": "EMBALAGEM TORTA N70 CX C/20 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "152.31",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006842",
+    "codigo": "4006842",
+    "nome": "MARMITEX BASE HF 100/03 DIV 1100ML FIBRAFORM CX C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "83.59",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006843",
+    "codigo": "4006843",
+    "nome": "TAMPA MARMITEX 3 DIV FIBRAFORM CX C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "88.60",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006854",
+    "codigo": "4006854",
+    "nome": "EMB G 720 POTE RETANGULAR C/ TAMPA 450 ML CRISTAL CX C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "112.87",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006859",
+    "codigo": "4006859",
+    "nome": "SACOLA 28X44 (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "40.76",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006872",
+    "codigo": "4006872",
+    "nome": "PRATO P/ TORTA 25CM PERSONALIZADA PV",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.65",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006902",
+    "codigo": "4006902",
+    "nome": "LUVAS DESCARTAVEIS INOVEN C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.04",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006931",
+    "codigo": "4006931",
+    "nome": "SACO LEITOSO POLIETILENO 25X17 KROMASA (MIL)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "27.10",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006980",
+    "codigo": "4006980",
+    "nome": "EMB SP 750 D TRANSPARAENTE POTE 350ML CX C/200",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "105.60",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006981",
+    "codigo": "4006981",
+    "nome": "POTES E TAMPAS PLASZOM 350ML PCT C/25UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "19.80",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4006984",
+    "codigo": "4006984",
+    "nome": "GUARDANAPO SAPS SCALA 50 UNI 22X20CM (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.62",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007053",
+    "codigo": "4007053",
+    "nome": "F 730 POTE QUADRADO 250ML C/ LACRE C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "79.20",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007056",
+    "codigo": "4007056",
+    "nome": "G 34 EMBALAGEM COLOMBA CRISTAL 2000ML CX/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "273.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007076",
+    "codigo": "4007076",
+    "nome": "POTES E TAMPAS DANUBIO 1000ML PCT C/24 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "27.74",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007117",
+    "codigo": "4007117",
+    "nome": "G 768 POTE C/ LACRE 710ML C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "151.06",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007147",
+    "codigo": "4007147",
+    "nome": "GARRAFA PLASTICA TRANSPARENTE C/TAMPA 1LT",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.78",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007148",
+    "codigo": "4007148",
+    "nome": "TAMPAS ULTRA PP 180ML PCT C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.30",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007149",
+    "codigo": "4007149",
+    "nome": "POTES ULTRA PP 180ML PCT C/25UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.23",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007237",
+    "codigo": "4007237",
+    "nome": "COLHER SOBREMESA ULTRATALHER CRISTAL PCT C/50UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.68",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007241",
+    "codigo": "4007241",
+    "nome": "EMB POTE MARMITEX 750ML ULTRATHERM PCT C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "21.08",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007249",
+    "codigo": "4007249",
+    "nome": "G60MA TORTA ALTA 2,5KG CX/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "226.86",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007315",
+    "codigo": "4007315",
+    "nome": "COLHER REFEICAO ULTRATALHER CRISTAL C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.94",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007349",
+    "codigo": "4007349",
+    "nome": "SACO BAIXA 17X35 0,5 (KG)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "20.82",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007374",
+    "codigo": "4007374",
+    "nome": "SACO DE LIXO ESFRELUX 30L C/10 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.97",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007391",
+    "codigo": "4007391",
+    "nome": "FILME PVC ULTRAPLAST 380X9X1000 COD 15 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "122.81",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007395",
+    "codigo": "4007395",
+    "nome": "FORMINHA Nº 0 CONFESTA BRANCA C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.49",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007399",
+    "codigo": "4007399",
+    "nome": "F 730 POTE QUADRADO 250ML C/ LACRE C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "61.50",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007500",
+    "codigo": "4007500",
+    "nome": "PALITO DE DENTE VABENE SACHES C/2000UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "19.60",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007516",
+    "codigo": "4007516",
+    "nome": "FACA REFEICAO STRANPLAST BRANCA C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.09",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007517",
+    "codigo": "4007517",
+    "nome": "SACO HOT DOG NEWPLAST 25X11 PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.91",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007576",
+    "codigo": "4007576",
+    "nome": "SACO DE LIXO VALOR 15L PCT C/10 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "13.30",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007592",
+    "codigo": "4007592",
+    "nome": "EMB POTE MARMITEX QUADRADA 750ML ULTRATHERM PCT C/100",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "21.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007618",
+    "codigo": "4007618",
+    "nome": "SACO DE LIXO SACOPOP 50L PCT C/10 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.17",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007687",
+    "codigo": "4007687",
+    "nome": "GARFO REFEICAO STRAWPLAST BRANCA C/50UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.58",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007730",
+    "codigo": "4007730",
+    "nome": "COPO DESCART 400ML CRISTALCOPO BRANCO PCT C/50 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.42",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007731",
+    "codigo": "4007731",
+    "nome": "POTES E TAMPAS CRISTALCOPO 1000ML PCT C/25UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "47.65",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007745",
+    "codigo": "4007745",
+    "nome": "SACO DE LIXO ESFRELUX 100L C/5 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.97",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007752",
+    "codigo": "4007752",
+    "nome": "HAMBURGUEIRA BOM APETITE HB02 C/400 UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "142.40",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007805",
+    "codigo": "4007805",
+    "nome": "EMBALAGEM B10 BOLO INGLES C/100 BOREDA",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "45.00",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007843",
+    "codigo": "4007843",
+    "nome": "COPO DESCART 180ML CRISTALCOPO TRANSPARENTE PCT C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "7.10",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007844",
+    "codigo": "4007844",
+    "nome": "COPO DESCART 300ML CRISTALCOPO TRANSPARENTE C/100 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "10.70",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007871",
+    "codigo": "4007871",
+    "nome": "CAKE BOARD 3MM MDF 30CM UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "5.28",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4007899",
+    "codigo": "4007899",
+    "nome": "SACO DE LIXO 100LT TORRES C/ 100UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "75.02",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4009003",
+    "codigo": "4009003",
+    "nome": "ROLO DE ALUMINIO VABENE 30X100CM (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "49.20",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4009014",
+    "codigo": "4009014",
+    "nome": "SACO DE LIXO CANELINHA 200L 0,12 KG",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "17.43",
+    "fornecedor": "Geral",
+    "ativo": true
+  },
+  {
+    "id": "emb_geral_4009019",
+    "codigo": "4009019",
+    "nome": "POTES E TAMPAS TOTALPLAST 1000ML PCT C/24 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "32.54",
+    "fornecedor": "Geral",
+    "ativo": true
+  }
+]
