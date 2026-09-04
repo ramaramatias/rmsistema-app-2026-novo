@@ -1,10 +1,8 @@
 import { get, put } from '@vercel/blob';
 
 const ARQUIVO = 'sistema-nuvem.json';
-const STORE_ID = process.env.BLOB_STORE_ID || 'store_Fb0NOR7qKm62OYmY';
 const OPCOES = {
   access: 'private' as const,
-  storeId: STORE_ID,
   addRandomSuffix: false,
   allowOverwrite: true,
   contentType: 'application/json',
@@ -18,17 +16,26 @@ const envelopar = (dados: unknown) => {
   return { record: dados && typeof dados === 'object' ? dados : {} };
 };
 
-export async function lerNuvemBlob() {
-  const resultado = await get(ARQUIVO, { access: 'private', useCache: false, storeId: STORE_ID });
-  if (!resultado || resultado.statusCode !== 200 || !resultado.stream) {
-    return envelopar({});
+export async function lerNuvemBlob(etagConhecida?: string) {
+  const resultado = await get(ARQUIVO, {
+    access: 'private',
+    useCache: false,
+    ...(etagConhecida ? { ifNoneMatch: etagConhecida } : {})
+  });
+
+  if (resultado?.statusCode === 304) {
+    return { naoMudou: true as const, etag: etagConhecida };
   }
+  if (!resultado || resultado.statusCode !== 200 || !resultado.stream) {
+    return { naoMudou: false as const, corpo: envelopar({}), etag: undefined };
+  }
+
   const texto = await new Response(resultado.stream).text();
-  if (!texto.trim()) return envelopar({});
-  return envelopar(JSON.parse(texto));
+  const corpo = texto.trim() ? envelopar(JSON.parse(texto)) : envelopar({});
+  return { naoMudou: false as const, corpo, etag: (resultado as { etag?: string }).etag };
 }
 
 export async function gravarNuvemBlob(corpo: unknown) {
-  await put(ARQUIVO, JSON.stringify(corpo ?? {}), OPCOES);
-  return envelopar(corpo);
+  const resultado = await put(ARQUIVO, JSON.stringify(corpo ?? {}), OPCOES);
+  return { corpo: envelopar(corpo), etag: resultado.etag };
 }

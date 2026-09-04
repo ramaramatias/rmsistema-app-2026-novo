@@ -8,57 +8,37 @@ import { AbaCadastroFornecedores } from './abas/cadastro-fornecedores/AbaCadastr
 import { AbaCompras } from './abas/compras/AbaCompras';
 import { montarItensLaticinios, PRODUTOS_POR_SECAO } from './catalogo/secoesDados';
 import { config } from '../config';
+import type {
+  ArquivoConferencia,
+  DadosConferenciaFornecedor,
+  FornecedorCotacao,
+  ItemCotacao,
+  ItemPagamento,
+  LinhaPdfPagamento,
+  LinhaPedidoPdf,
+  LotePagamentoHistorico,
+  OrdemManutencao,
+  PagamentosState,
+  PedidoCompra,
+  ProdutoElieuda,
+  QuantidadeDia,
+  QuantidadesElieuda,
+  RegistroConferencia,
+  RelatorioPedidoCotacao,
+  SenhasUsuarios,
+  Setor,
+  StatusOrdemManutencao,
+  StatusTarefa,
+  Tarefa,
+  TarefaDeletada,
+  TipoUsuario,
+  Usuario
+} from './tipos';
 
 // ==========================================
 // 🔑 CONFIGURAÇÕES & CREDENCIAIS
 // ==========================================
 const SENHA_MEU_SISTEMA = config.system.password;
-
-export type StatusTarefa = 'aberta' | 'concluida';
-export type TipoUsuario = 'admin' | 'gabriela' | 'assuncao' | 'luzia' | 'leandro' | 'idenaldo' | 'manutencao' | 'usuario';
-export interface Tarefa { id: string; texto: string; status: StatusTarefa; concluida?: boolean; criadaEm: string; concluidaEm?: string; criador: string; dataCriacao: string; responsavel?: string; prioridade?: 'baixa' | 'media' | 'alta' | 'urgente'; foto?: string; }
-export interface TarefaDeletada { id: string; texto: string; status: StatusTarefa; criadaEm: string; criador: string; deletadaEm: string; deletadaPor: string; setorId: string; foto?: string; }
-export interface Setor { id: string; nome: string; cor: string; tarefas: Tarefa[]; }
-export interface ItemPagamento { id: string; descricao: string; valor: number; data?: string; }
-export interface PagamentosState { caixa: ItemPagamento[]; cheque: ItemPagamento[]; caben: ItemPagamento[]; }
-export interface LotePagamentoHistorico { id: string; dataFechamento: string; totalGeral: number; totalCaixa: number; totalCheque: number; totalCaben: number; dados: PagamentosState; }
-export interface QuantidadeDia { terca?: string; quinta?: string; sabado?: string; }
-export interface QuantidadesElieuda { [produto: string]: QuantidadeDia; }
-export interface ProdutoElieuda { produto: string; unit: string; }
-export interface ItemCotacao { id: string; produto: string; unit: string; estoqueAtual: string; qtdSugerida?: string; qtdPedir: string; menorCusto?: number; ultimoPrecoCompra?: number; precos: { [fornecedorId: string]: string }; atualizadoEm?: string; secao?: string; fornecedorId?: string; }
-export interface FornecedorCotacao { id: string; nome: string; razaoSocial?: string; nomeFantasia?: string; cnpj?: string; diasEntrega?: string; }
-export interface RegistroConferencia { id: string; data: string; nomeConferente: string; valorRecebido: number; observacoes: string; houveDivergencia: boolean; tipoDivergencia?: 'valor' | 'kg' | 'quantidade' | ''; pedidoId?: string; fornecedor?: string; valorEsperado?: number; itensConferidos?: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; conferentePor?: string; dataPreenchimento?: string; }
-export interface ArquivoConferencia { id: string; nome: string; dataUpload: string; uploadPor: string; conteudo: string; }
-export interface DadosConferenciaFornecedor { fornecedorId: string; fornecedorNome: string; valorNota: number; valorRecebido: number; divergencia: boolean; conferentePor: string; dataPreenchimento: string; }
-export interface PedidoCompra { id: string; data: string; fornecedorId: string; fornecedorNome: string; itens: { produtoId: string; produto: string; quantidade: number; precoUnitario: number; total: number }[]; totalGeral: number; status: 'pendente' | 'enviado' | 'recebido'; }
-export interface RelatorioPedidoCotacao { id: string; data: string; itens: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; totalGeral: number; enviadoConferencia?: boolean; pdfFornecedor?: { nome: string; conteudo: string; anexadoEm: string; valor?: number; observacao?: string }; }
-export type StatusOrdemManutencao = 'pendente' | 'andamento' | 'pausada' | 'concluida' | 'nao_realizada' | 'aberta';
-export interface OrdemManutencao {
-  id: string;
-  local: string;
-  tipo: string;
-  descricao: string;
-  status: StatusOrdemManutencao;
-  prioridade: 'baixa' | 'media' | 'alta' | 'urgente';
-  criadoPor: string;
-  criadoEm: string;
-  atualizadoEm: string;
-  concluidaEm?: string;
-  responsavel?: string;
-  motivoPausa?: string;
-  foto?: string;
-  observacaoConclusao?: string;
-  assinadoPor?: string;
-  assinatura?: string;
-  equipamento?: string;
-  solicitadoPor?: string;
-  compradoPor?: string;
-  valorEquipamento?: number;
-  dataCompra?: string;
-  autorizadoPor?: string;
-  assinaturaAutorizacao?: string;
-}
-export interface Usuario { id: string; nome: string; tipo: TipoUsuario; permissoes: { pendencias: boolean; conferencias: boolean; cotacao: boolean; pagamentos: boolean; relatorios: boolean; elieuda: boolean; manutencao: boolean; dados: boolean; }; }
 
 const FORNECEDORES_OFICIAIS: FornecedorCotacao[] = [
   { id: 'f_jfrios', nome: 'JFRIOS' }, { id: 'f_laredo', nome: 'LAREDO' }, { id: 'f_facanha', nome: 'FAÇANHA' },
@@ -902,8 +882,6 @@ const unirPagamentosAbertos = (a: PagamentosState | undefined, b: PagamentosStat
   };
 };
 
-type SenhasUsuarios = { [usuarioId: string]: string };
-
 const lerSenhasLocais = (): SenhasUsuarios => {
   try {
     const salvo = localStorage.getItem('rm_senhas_usuarios');
@@ -1222,8 +1200,6 @@ const LogoRm = ({ size, compact = false }: { size: number; compact?: boolean }) 
   />
 );
 
-type LinhaPedidoPdf = { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number };
-
 const textoPdf = (valor: string) =>
   valor
     .normalize('NFD')
@@ -1305,8 +1281,6 @@ const montarArquivoPdf = (streams: string[], largura = 595, altura = 842) => {
   pdf += `trailer << /Size ${objetos.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
   return new Blob([pdf], { type: 'application/pdf' });
 };
-
-type LinhaPdfPagamento = { tipo: 'secao' | 'item'; rotulo: string; valor?: string };
 
 const gerarPdfRelatorioPagamentos = (dados: PagamentosState, valorTotal: number, dataRotulo?: string) => {
   const largura = 595;
@@ -1667,6 +1641,7 @@ function App() {
   tarefasDeletadasRef.current = tarefasDeletadas;
   const sincronizacaoEmCursoRef = useRef(false);
   const gravandoNuvemRef = useRef(false);
+  const versaoNuvemRef = useRef<string>('');
   const fotosPendenciasRef = useRef<{ [id: string]: string }>({});
   const puxarFotosDaNuvem = async (ids: string[]) => {
     const unicos = Array.from(new Set((ids || []).filter(Boolean))).filter(id => {
@@ -2170,12 +2145,25 @@ function App() {
     const tempoLimite = window.setTimeout(() => controlador.abort(), 25000);
     try {
       setStatusNuvem('⏳ Sincronizando...');
-      const resposta = await fetch('/api/nuvem', {
-        method: 'GET',
-        cache: 'no-store',
-        signal: controlador.signal
-      });
+      const versaoConhecida = versaoNuvemRef.current;
+      const resposta = await fetch(
+        versaoConhecida ? `/api/nuvem?desde=${encodeURIComponent(versaoConhecida)}` : '/api/nuvem',
+        { method: 'GET', cache: 'no-store', signal: controlador.signal }
+      );
+
+      if (resposta.status === 503) {
+        setStatusNuvem('⚠️ Nuvem fora do ar — só neste aparelho');
+        return;
+      }
+
       const dadosBrutos = await resposta.json();
+      if (dadosBrutos?.versao) versaoNuvemRef.current = dadosBrutos.versao;
+
+      // A nuvem avisou que nada mudou, então não há o que baixar nem remontar.
+      if (dadosBrutos?.semMudanca) {
+        setStatusNuvem('🟢 Nuvem');
+        return;
+      }
       const dados = { record: recordDoJsonBin(dadosBrutos) };
       if (resposta.ok && dados.record && typeof dados.record === 'object') {
         const deletadasNuvem = Array.isArray(dados.record.tarefasDeletadas) ? dados.record.tarefasDeletadas : [];
@@ -2305,7 +2293,10 @@ function App() {
   useEffect(() => {
     if (!autenticado) return;
     void carregarTudo();
-    const intervalo = window.setInterval(() => { void carregarTudo(); }, 40000);
+    const intervalo = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      void carregarTudo();
+    }, 60000);
     const sincronizarSeVisivel = () => {
       if (document.visibilityState === 'visible') void carregarTudo();
     };
@@ -2769,8 +2760,14 @@ function App() {
       const registroNuvem = { setores: setoresSemFotos(setoresParaNuvem), pagamentos: pagamentosParaNuvem, historicoPagamentos: historicoParaNuvem, tarefasDeletadas: deletadasParaSalvar, fornecedoresCotacao: dadosFornCotacao, itensCotacao: dadosItensCotacao, quantidadesElieuda: dadosElieuda, conferencias: conferenciasParaNuvem, pedidosConferidos: conferidosParaNuvem, conferenciasDeletadas: conferenciasDeletadasParaNuvem, pedidosCotacaoDeletados: pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosCotacao: pedidosParaNuvem, senhasUsuarios: senhasParaNuvem, usuariosExtra: usuariosParaNuvem, permissoesUsuarios: permissoesParaNuvem, ordensManutencao: ordensSemFotos(ordensParaNuvem), fotosPendencias: fotosPendenciasParaNuvem, fotosPendenciaIds: Object.keys(fotosPendenciasParaNuvem), ultimaAtualizacao: agora };
       const respostaGravar = await enviarRegistroNuvem(registroNuvem);
       if (!respostaGravar.ok) {
-        setStatusNuvem('⚠️ Não gravou na nuvem');
+        setStatusNuvem(respostaGravar.status === 503 ? '⚠️ Nuvem fora do ar — só neste aparelho' : '⚠️ Não gravou na nuvem');
         return false;
+      }
+      try {
+        const gravado = await respostaGravar.json();
+        if (gravado?.versao) versaoNuvemRef.current = gravado.versao;
+      } catch {
+        versaoNuvemRef.current = '';
       }
       setSetores(atuais => aplicarFotosNasTarefas(atuais, fotosPendenciasParaNuvem));
       setOrdensManutencao(atuais => aplicarFotosNasOrdens(atuais, fotosPendenciasParaNuvem));

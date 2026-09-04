@@ -1,8 +1,32 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { get, put } from '@vercel/blob';
 
-const STORE_ID = process.env.BLOB_STORE_ID || 'store_Fb0NOR7qKm62OYmY';
-const caminhoFoto = (id: string) => `pendencia-foto/${String(id).replace(/[^a-zA-Z0-9._-]/g, '_')}.txt`;
+// Fotos das pendências no Upstash Redis, o mesmo lugar da nuvem do sistema.
+
+const chaveFoto = (id: string) => `sistema:foto:${String(id).replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+const credenciais = () => {
+  const url = process.env.KV_REST_API_URL || '';
+  const token = process.env.KV_REST_API_TOKEN || '';
+  if (!url || !token) {
+    throw new Error('Nuvem sem configuração (KV_REST_API_URL / KV_REST_API_TOKEN).');
+  }
+  return { url: url.replace(/\/$/, ''), token };
+};
+
+const chamar = async (caminho: string, corpo?: string) => {
+  const { url, token } = credenciais();
+  const resposta = await fetch(`${url}/${caminho}`, {
+    method: corpo === undefined ? 'GET' : 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(corpo === undefined ? {} : { 'Content-Type': 'text/plain' })
+    },
+    ...(corpo === undefined ? {} : { body: corpo }),
+    cache: 'no-store'
+  });
+  if (!resposta.ok) throw new Error(`Nuvem respondeu ${resposta.status}.`);
+  return (await resposta.json()) as { result?: unknown };
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store');
@@ -12,12 +36,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
-      const resultado = await get(caminhoFoto(id), { access: 'private', useCache: false, storeId: STORE_ID });
-      if (!resultado || resultado.statusCode !== 200 || !resultado.stream) {
-        return res.status(404).json({ foto: '' });
-      }
-      const foto = (await new Response(resultado.stream).text()).trim();
-      return res.status(200).json({ foto });
+      const { result } = await chamar(`get/${chaveFoto(id)}`);
+      const foto = typeof result === 'string' ? result.trim() : '';
+      return res.status(foto ? 200 : 404).json({ foto });
     }
 
     if (req.method === 'PUT') {
@@ -28,14 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (foto.length > 450000) {
         return res.status(413).json({ erro: 'Foto grande demais.' });
       }
-      await put(caminhoFoto(id), foto, {
-        access: 'private',
-        addRandomSuffix: false,
-        allowOverwrite: true,
-        contentType: 'text/plain',
-        cacheControlMaxAge: 0,
-        storeId: STORE_ID
-      });
+      await chamar(`set/${chaveFoto(id)}`, foto);
       return res.status(200).json({ ok: true });
     }
 

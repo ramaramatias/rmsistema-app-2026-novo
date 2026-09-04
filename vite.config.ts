@@ -3,16 +3,20 @@ import { resolve } from 'path'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { gravarNuvemBlob, lerNuvemBlob } from './lib/nuvemBlob'
+import { gravarNuvemKv, lerNuvemKv } from './lib/nuvemKv'
 import { gravarFotoBlob, lerFotoBlob } from './lib/nuvemFoto'
 
+const VARIAVEIS_NUVEM = ['KV_REST_API_URL', 'KV_REST_API_TOKEN', 'BLOB_READ_WRITE_TOKEN']
+
 const carregarTokenBlob = () => {
-  if (process.env.BLOB_READ_WRITE_TOKEN) return
   const caminho = resolve(process.cwd(), '.env.local')
   if (!existsSync(caminho)) return
-  const linha = readFileSync(caminho, 'utf8').match(/^BLOB_READ_WRITE_TOKEN=(.*)$/m)
-  if (!linha) return
-  process.env.BLOB_READ_WRITE_TOKEN = linha[1].trim().replace(/^["']|["']$/g, '')
+  const conteudo = readFileSync(caminho, 'utf8')
+  for (const nome of VARIAVEIS_NUVEM) {
+    if (process.env[nome]) continue
+    const linha = conteudo.match(new RegExp(`^${nome}=(.*)$`, 'm'))
+    if (linha) process.env[nome] = linha[1].trim().replace(/^["']|["']$/g, '')
+  }
 }
 
 const nuvemLocal = (): Plugin => ({
@@ -27,7 +31,8 @@ const nuvemLocal = (): Plugin => ({
       carregarTokenBlob()
       try {
         if (req.method === 'GET') {
-          return enviar(200, await lerNuvemBlob())
+          const desde = new URL(req.url || '', 'http://localhost').searchParams.get('desde') || ''
+          return enviar(200, await lerNuvemKv(desde))
         }
         if (req.method === 'PUT') {
           const pedacos: Buffer[] = []
@@ -37,7 +42,7 @@ const nuvemLocal = (): Plugin => ({
             req.on('error', reject)
           })
           const texto = Buffer.concat(pedacos).toString('utf8') || '{}'
-          return enviar(200, await gravarNuvemBlob(JSON.parse(texto)))
+          return enviar(200, await gravarNuvemKv(JSON.parse(texto)))
         }
         return enviar(405, { erro: 'Método não permitido.' })
       } catch (erro) {
