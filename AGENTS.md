@@ -109,8 +109,22 @@ Verifica problemas de código com ESLint.
 ```
 meu-sistema-gestao/
 ├── src/
-│   ├── App.tsx              # Componente principal (muito grande - precisa refatoração)
+│   ├── App.tsx              # Componente principal (estado e telas)
 │   ├── main.tsx             # Entry point da aplicação
+│   ├── tipos.ts             # Interfaces e tipos compartilhados
+│   ├── dados/               # Dados fixos do sistema
+│   │   └── padroes.ts       # Catálogo, setores, usuários e permissões
+│   ├── util/                # Funções auxiliares separadas por assunto
+│   │   ├── armazenamento.ts # localStorage e limites de tamanho
+│   │   ├── cotacao.ts       # Regras dos itens de cotação
+│   │   ├── fotos.ts         # Compressão, IndexedDB e fotos na nuvem
+│   │   ├── manutencao.ts    # Status das ordens de manutenção
+│   │   ├── mesclar.ts       # União dos dados locais com os da nuvem
+│   │   ├── nuvem.ts         # Envio e leitura do registro na nuvem
+│   │   ├── pdf.ts           # Geração de PDF de pedidos e pagamentos
+│   │   └── usuarios.ts      # Permissões e senhas
+│   ├── componentes/         # Componentes reutilizáveis
+│   ├── abas/                # Uma pasta por aba do sistema
 │   ├── api/                 # Endpoints da Vercel Functions
 │   │   ├── atualizarPreco.ts
 │   │   └── statusPDV.ts
@@ -134,7 +148,7 @@ meu-sistema-gestao/
 ## 🚨 Próximos Passos Recomendados
 
 ### Alta Prioridade
-1. **Refatoração do App.tsx**: O arquivo está muito grande e deve ser dividido em componentes menores
+1. **Refatoração do App.tsx**: Tipos, dados fixos e funções auxiliares já foram movidos para `src/tipos.ts`, `src/dados/` e `src/util/`. Falta dividir o próprio componente `App()`, que ainda concentra todo o estado e todas as telas
 2. **Implementar Testes**: Criar testes unitários para as funcionalidades principais
 3. **Melhorar Autenticação**: Implementar sistema de autenticação mais robusto
 

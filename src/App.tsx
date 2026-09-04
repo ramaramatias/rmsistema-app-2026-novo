@@ -13,15 +13,11 @@ import type {
   DadosConferenciaFornecedor,
   FornecedorCotacao,
   ItemCotacao,
-  ItemPagamento,
-  LinhaPdfPagamento,
-  LinhaPedidoPdf,
   LotePagamentoHistorico,
   OrdemManutencao,
   PagamentosState,
   PedidoCompra,
   ProdutoElieuda,
-  QuantidadeDia,
   QuantidadesElieuda,
   RegistroConferencia,
   RelatorioPedidoCotacao,
@@ -31,1363 +27,176 @@ import type {
   StatusTarefa,
   Tarefa,
   TarefaDeletada,
-  TipoUsuario,
   Usuario
 } from './tipos';
+import {
+  FORNECEDORES_OFICIAIS,
+  ITENS_COTACAO_OFICIAIS,
+  LOCAIS_MANUTENCAO,
+  MOTIVOS_COMPRA_PAUSA,
+  MOTIVOS_PAUSA_MANUTENCAO,
+  PAGAMENTOS_PADRAO,
+  PERMISSOES_OPCOES,
+  SETORES_PADRAO,
+  TIPOS_MANUTENCAO,
+  USUARIOS_SISTEMA,
+  listaProdutosElieudaPadrao
+} from './dados/padroes';
+import {
+  gravarJsonLocal,
+  lerJsonLocal,
+  limparChavesLocaisPesadas,
+  pedidosSemPdfPesado,
+  resgatarBackupGeral,
+  setoresSemFotos
+} from './util/armazenamento';
+import {
+  classeStatusOrdem,
+  rotuloStatusOrdem,
+  statusOrdemNormalizado
+} from './util/manutencao';
+import {
+  aplicarFotosNasOrdens,
+  aplicarFotosNasTarefas,
+  buscarFotoNuvem,
+  carregarFotosPendencias,
+  coletarFotosOrdens,
+  coletarFotosSetores,
+  comprimirFotoPendencia,
+  enviarFotoNuvem,
+  enxugarFotosNuvem,
+  extrairFotosOrdens,
+  extrairFotosSetores,
+  filtrarFotosUsadas,
+  guardarFotosLocal,
+  ordensSemFotos,
+  salvarFotoPendencia,
+  unirFotosPendencias
+} from './util/fotos';
+import {
+  filtrarPedidosNaoDeletados,
+  idsDeTarefasDeletadas,
+  mesclarSetores,
+  nomeSetorSemEmoji,
+  normalizarSetores,
+  parseDataConclusao,
+  statusDaTarefa,
+  unirConferencias,
+  unirIds,
+  unirLotesPagamento,
+  unirOrdensManutencao,
+  unirPagamentosAbertos,
+  unirPedidosCotacao,
+  unirTarefasDeletadas
+} from './util/mesclar';
+import {
+  aplicarPermissoesSalvas,
+  hashSenha,
+  lerSenhasLocais,
+  permissoesPadraoNovoUsuario,
+  rotuloPermissoes,
+  unirPermissoesUsuarios,
+  unirUsuariosCadastrados
+} from './util/usuarios';
+import {
+  gerarPdfPedidoFornecedor,
+  gerarPdfRelatorioPagamentos
+} from './util/pdf';
+import {
+  marcarItensCotacaoAgora,
+  mesclarItensCotacao,
+  normalizarItensCotacao,
+  qtdPedirNumero
+} from './util/cotacao';
+import {
+  enviarRegistroNuvem,
+  recordDoJsonBin
+} from './util/nuvem';
+import { LogoRm } from './componentes/LogoRm';
 
 // ==========================================
 // 🔑 CONFIGURAÇÕES & CREDENCIAIS
 // ==========================================
 const SENHA_MEU_SISTEMA = config.system.password;
 
-const FORNECEDORES_OFICIAIS: FornecedorCotacao[] = [
-  { id: 'f_jfrios', nome: 'JFRIOS' }, { id: 'f_laredo', nome: 'LAREDO' }, { id: 'f_facanha', nome: 'FAÇANHA' },
-  { id: 'f_minerva', nome: 'MINERVA' }, { id: 'f_fortale', nome: 'FORTALE' }, { id: 'f_zeni', nome: 'ZENI' },
-  { id: 'f_rocha', nome: 'ROCHA' }, { id: 'f_dsl', nome: 'DSL' }, { id: 'f_ja', nome: 'JA' },
-  { id: 'f_solmar', nome: 'SOLMAR' }, { id: 'f_fernando', nome: 'FERNANDO FRIOS' }
-];
 
-const ITENS_COTACAO_OFICIAIS: ItemCotacao[] = [
-  { id: 'c1', produto: 'Músculo de carne moída', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c2', produto: 'Carne do sol jfrios', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c3', produto: 'Ossobuco resfriado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c4', produto: 'Molho para carnes', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c5', produto: 'Legumes a vapor (alarcate)', unit: 'Kg/Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c6', produto: 'Filemigon resfriado (alarcate) FRIGORIFICO', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c7', produto: 'Galinha caipira sitio', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c8', produto: 'Pato sitio', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c9', produto: 'Porco sitio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c10', produto: 'Puruca (sitio)', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c11', produto: 'Costela suina', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c12', produto: 'Carre suino', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c13', produto: 'Lombo suino', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c14', produto: 'Pernil suino', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c15', produto: 'Paleta bovino (carne caseira) FRIGORIFICO', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c16', produto: 'Coxao mole', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c17', produto: 'Largato', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c18', produto: 'Maminha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c19', produto: 'Patinho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c20', produto: 'Costela bovina', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c21', produto: 'Cupim', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c22', produto: 'Fígado bovino', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c23', produto: 'Tripa', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c24', produto: 'Bucho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c25', produto: 'Mocotó', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c26', produto: 'Carne de bode sítio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c27', produto: 'Bacon', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c28', produto: 'Carne de hambúrguer Texas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c29', produto: 'Salsicha Seara', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c30', produto: 'Batata palito Laredo 7mm', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c31', produto: 'Calabresa Seara', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c32', produto: 'Linguiça Dália', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c33', produto: 'Filé de frango', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c34', produto: 'Coxa e sobrecoxa', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c35', produto: 'Filé de merluza', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c36', produto: 'Filé de panga', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c37', produto: 'Filé de tilápia', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c38', produto: 'Bacalhau lombo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c39', produto: 'Camarão', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c40', produto: 'Salmão', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c41', produto: 'Cumurupim', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c42', produto: 'Peixe cara', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c43', produto: 'Filé de atum', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c44', produto: 'Pé de galinha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c45', produto: 'Macaxeira palito', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c46', produto: 'Seleta de legumes', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c47', produto: 'Massa de macaxeira pronta', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c48', produto: 'Linguiça caseira', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c49', produto: 'Goma fresca', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c50', produto: 'Puba fresca', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c51', produto: 'Coco ralado congelado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c52', produto: 'Feijão verde', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c53', produto: 'Gelo', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c54', produto: 'Polpa de morango', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c55', produto: 'Polpa de manga', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c56', produto: 'Polpa de maracujá', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c57', produto: 'Polpa de acerola', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c58', produto: 'Polpa de goiaba', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c59', produto: 'Polpa de abacaxi', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c60', produto: 'Polpa de açaí', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c61', produto: 'Polpa de caju', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c62', produto: 'Polpa de tamarindo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c63', produto: 'Polpa de tangerina', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c64', produto: 'Polpa de siriguela', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c65', produto: 'Polpa de sapoti', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c66', produto: 'Polpa de cupuaçu', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c67', produto: 'Polpa de ameixa', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c68', produto: 'Polpa de cajá', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c69', produto: 'Polpa de graviola', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c70', produto: 'Polpa de uva', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c71', produto: 'Massa de pastel', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c72', produto: 'Damasco', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c73', produto: 'Nata pura', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c74', produto: 'Margarina folheada', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c75', produto: 'Geleia de pimenta caseira', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c76', produto: 'Requeijão para pizza', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c77', produto: 'Requeijão Betânia', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c78', produto: 'Queijo cheddar', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c79', produto: 'Cream cheese', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c80', produto: 'Queijo mussarela', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c81', produto: 'Queijo coalho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c82', produto: 'Presunto sem capa de gordura', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c83', produto: 'Presunto de peru', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c84', produto: 'Peito de peru defumado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c85', produto: 'Cheester lanche', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c86', produto: 'Apresuntado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c87', produto: 'Mortadela defumada gourmet', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c88', produto: 'Leite composto', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c89', produto: 'Farinha panko', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c90', produto: 'Milho', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c91', produto: 'Ervilha', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c92', produto: 'Coco seco', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c93', produto: 'Leite de coco', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c94', produto: 'Creme de leite', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c95', produto: 'Leite condensado', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c96', produto: 'Maizena', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c97', produto: 'Cremogema de chocolate', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c98', produto: 'Açúcar demerara', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c99', produto: 'Açúcar refinado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c100', produto: 'Açúcar mascavo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c101', produto: 'Caldo de galinha', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c102', produto: 'Sazon de legumes', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c103', produto: 'Maionese', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c104', produto: 'Molho de tomate', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c105', produto: 'Molho de pizza', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c106', produto: 'Ketchup', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c107', produto: 'Molho barbecue', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c108', produto: 'Mostarda', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c109', produto: 'Vinagre balsâmico', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c110', produto: 'Molho shoyu', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c111', produto: 'Molho inglês', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c112', produto: 'Azeite', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c113', produto: 'Doce de goiaba', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c114', produto: 'Frutas cristalizadas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c115', produto: 'Uva passa', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c116', produto: 'Ameixa sem caroço', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c117', produto: 'Arroz arbóreo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c118', produto: 'Café', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c119', produto: 'Colorau', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c120', produto: 'Açafrão', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c121', produto: 'Granola', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c122', produto: 'Flocão de arroz', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c123', produto: 'Fubá de milho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c124', produto: 'Castanha xerém', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c125', produto: 'Castanha inteira', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c126', produto: 'Castanha do Pará', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c127', produto: 'Amendoim xerém', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c128', produto: 'Amendoim debulhado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c129', produto: 'Creme de cebola', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c130', produto: 'Leite integral', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c131', produto: 'Leite desnatado', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c132', produto: 'Leite zero lactose', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c133', produto: 'Leite semidesnatado', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c134', produto: 'Leite em pó', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c135', produto: 'Manteiga', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c136', produto: 'Margarina Qualy', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c137', produto: 'Margarina Primor', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c138', produto: 'Margarina 1kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c139', produto: 'Tapioca média', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c140', produto: 'Farinha integral', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c141', produto: 'Farinha integral 25kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c142', produto: 'Feijão carioca', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c143', produto: 'Feijão preto', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c144', produto: 'Feijão de corda', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c145', produto: 'Espaguete', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c146', produto: 'Macarrão búzio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c147', produto: 'Macarrão parafuso', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c148', produto: 'Macarrão penne', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c149', produto: 'Macarrão lasanha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c150', produto: 'Macarrão ninho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c151', produto: 'Arroz branco', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c152', produto: 'Arroz parboilizado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c153', produto: 'Arroz integral', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c154', produto: 'Aveia em flocos', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c155', produto: 'Açúcar 1kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c156', produto: 'Açúcar 50kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c157', produto: 'Amido de milho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c158', produto: 'Óleo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c159', produto: 'Margarina 15kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c160', produto: 'Gordura vegetal', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c161', produto: 'Farinha de sítio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c162', produto: 'Ácido sórbico', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c163', produto: 'Sorbato de potássio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c164', produto: 'Farinha de pastel', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c165', produto: 'Farinha com fermento', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c166', produto: 'Farinha para pizza', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c167', produto: 'Farinha sem fermento', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c168', produto: 'Cogumelo seco funghi', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c169', produto: 'Palmito em rodelas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c170', produto: 'Azeitona preta sem caroço', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c171', produto: 'Azeitona verde sem caroço', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c172', produto: 'Pimenta biquinho', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c173', produto: 'Cebolinha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c174', produto: 'Tomate seco', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c175', produto: 'Red velvet', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c176', produto: 'Champignon inteiro', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c177', produto: 'Alcaparras', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c178', produto: 'Champignon em pedaços', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c179', produto: 'Palmito picado', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c180', produto: 'Queijo parmesão', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c181', produto: 'Gelatina sem sabor', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c182', produto: 'Vinho branco', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c183', produto: 'Vinho tinto', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c184', produto: 'Vinho suave', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c185', produto: 'Cachaça', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c186', produto: 'Azeite de dendê', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c187', produto: 'Nescau', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c188', produto: 'Bolacha maizena', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c189', produto: 'Suco de uva 300ml', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c190', produto: 'Suco de uva 1 litro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c191', produto: 'Vinagre', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c192', produto: 'Sal sachê', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c193', produto: 'Adoçante sachê', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c194', produto: 'Mel de abelha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c195', produto: 'Óleo de coco', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c196', produto: 'Azeite de coco', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c197', produto: 'Barra de cereal', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c198', produto: 'Bombom', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c199', produto: 'Chocolate', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c200', produto: 'Pirulito', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c201', produto: 'Paçoquinha', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c202', produto: 'Ovo surpresa', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c203', produto: 'Nutella', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c204', produto: 'Kinder', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c205', produto: 'Batata palha', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c206', produto: 'Chocolate em pó 50%', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c207', produto: 'Adoçante líquido', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c208', produto: 'Chocolate em gotas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c209', produto: 'Barra de chocolate branco', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c210', produto: 'Barra de chocolate meio amargo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c211', produto: 'Barra de chocolate ao leite', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c212', produto: 'Figo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c213', produto: 'Pêssego', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c214', produto: 'Coco ralado médio', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c215', produto: 'Granulado crocante', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c216', produto: 'Granulado colorido', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c217', produto: 'Creme de avelã', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c218', produto: 'Pasta de dente', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c219', produto: 'Copos 50ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c220', produto: 'Copos 180ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c221', produto: 'Copos 300ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c222', produto: 'Copos 400ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c223', produto: 'Desengordurante', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c224', produto: 'Sabão em barra', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c225', produto: 'Sabão em pó', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c226', produto: 'Vassoura', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c227', produto: 'Rodo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c228', produto: 'Multiuso', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c229', produto: 'Sabonete', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c230', produto: 'Folha A4', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c231', produto: 'Velas de aniversário', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c232', produto: 'Papel toalha', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c233', produto: 'Esponja para grelha', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c234', produto: 'Esponja dupla face', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c235', produto: 'Bombril', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c236', produto: 'Álcool 70%', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c237', produto: 'Água sanitária', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c238', produto: 'Detergente', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c239', produto: 'Desinfetante', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c240', produto: 'Flanela', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c241', produto: 'Lustra móveis', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c242', produto: 'Lâmpada de forno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c243', produto: 'Aerosol', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c244', produto: 'Shampoo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c245', produto: 'Guardanapos', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c246', produto: 'Papel higiênico', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c247', produto: 'Absorvente', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c248', produto: 'Quentinha de isopor', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c249', produto: 'Bom ar', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c250', produto: 'Bandeja', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c251', produto: 'Bloco de delivery', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c252', produto: 'Bloco de pedido', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c253', produto: 'Bloco de almoxarifado', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c254', produto: 'Bloco de recibo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c255', produto: 'Papel seda', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c256', produto: 'Cesta de cipó', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c257', produto: 'Laço 50mm', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c258', produto: 'Óleo de coco extra virgem', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c259', produto: 'Azeite de coco babaçu', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c260', produto: 'Barra de cereal Trio', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c261', produto: 'Bombom mole', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c262', produto: 'Caixa de chocolate Garoto', unit: 'Cx', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c263', produto: 'Bombom duro', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c264', produto: 'Ovo surpresa slime', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c265', produto: 'Ovo surpresa dinossauro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c266', produto: 'Ovo surpresa pulseira', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c267', produto: 'Ovo surpresa carro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c268', produto: 'Nutella 140g', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c269', produto: 'Nutella 350g', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c270', produto: 'Kinder menino', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c271', produto: 'Kinder menina', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c272', produto: 'Kinder Bueno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c273', produto: 'Nutella B-Ready', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c274', produto: 'Chocolate 50% em pó', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c275', produto: 'Chocolate gota branco', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c276', produto: 'Barra de chocolate amargo', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c277', produto: 'Cereja', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c278', produto: 'Granulado em escamas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c279', produto: 'Chocolate gota 2,5kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c280', produto: 'Creme de avelã', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c281', produto: 'Pasta Colgate', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c282', produto: 'Pasta Sorriso', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c283', produto: 'Veja desengordurante', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c284', produto: 'Sabão em barra Dul Vale', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c285', produto: 'Sabão em pó Ala', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c286', produto: 'Vassoura Noviça', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c287', produto: 'Rodo Noviça', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c288', produto: 'Qboa multiuso', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c289', produto: 'Sabonete Palmolive', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c290', produto: 'Sabonete Protex', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c291', produto: 'Velas faisca', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c292', produto: 'Papel toalha interfolheado', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c293', produto: 'Esponja para grelha Santa Maria', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c294', produto: 'Esponja dupla face 3M', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c295', produto: 'Polidor', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c296', produto: 'Álcool 70% 1L', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c297', produto: 'Água sanitária Dragão', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c298', produto: 'Detergente neutro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c299', produto: 'Desinfetante Juá', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c300', produto: 'Flanela 38x48', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c301', produto: 'Lustra móveis', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c302', produto: 'Lâmpada para forno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c303', produto: 'Rexona', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c304', produto: 'Aerosol Dove', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c305', produto: 'Barbeador', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c306', produto: 'Shampoo Pantene', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c307', produto: 'Shampoo Tresemmé', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c308', produto: 'Guardanapos Girassol', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c309', produto: 'Soda cáustica', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c310', produto: 'Ácido muriático', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c311', produto: 'Cloro gel', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c312', produto: 'Pano de chão', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c313', produto: 'Isqueiro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c314', produto: 'Fósforo', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c315', produto: 'Escova de roupa', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c316', produto: 'Pá de lixo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c317', produto: 'Escovão Noviça', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c318', produto: 'Saco de lixo 30L', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c319', produto: 'Saco de lixo 50L', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c320', produto: 'Papel higiênico floral', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c321', produto: 'Absorvente Sempre Livre', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c322', produto: 'Absorvente Always', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c323', produto: 'Absorvente Conto Baby', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c324', produto: 'Quentinha de isopor 750ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c325', produto: 'Gilete para forno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c326', produto: 'Bom Ar', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c327', produto: 'Bandete', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c328', produto: 'Bloco delivery', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c329', produto: 'Bloco de pedido P', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c330', produto: 'Bloco de almoxarifado grande', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c331', produto: 'Bloco de recibo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c332', produto: 'Papel seda', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c333', produto: 'Cesta de cipó Fortaleza', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c334', produto: 'Laço 50mm Fortaleza', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} }
-];
 
-const SETORES_PADRAO: Setor[] = [
-  { id: 'loja', nome: 'Loja', cor: '#d97706', tarefas: [] },
-  { id: 'restaurante', nome: 'Restaurante', cor: '#0f766e', tarefas: [] },
-  { id: 'padaria', nome: 'Padaria', cor: '#ea580c', tarefas: [] },
-  { id: 'embalagem', nome: 'Embalagem', cor: '#ca8a04', tarefas: [] },
-  { id: 'cozinha-principal', nome: 'Cozinha Principal', cor: '#16a34a', tarefas: [] },
-  { id: 'confeitaria-principal', nome: 'Confeitaria Principal', cor: '#db2777', tarefas: [] },
-  { id: 'confeitaria-auxiliar', nome: 'Confeitaria Auxiliar', cor: '#9333ea', tarefas: [] },
-  { id: 'almoxarifado', nome: 'Almoxarifado', cor: '#2563eb', tarefas: [] },
-  { id: 'sitio', nome: 'Sítio', cor: '#16a34a', tarefas: [] },
-  { id: 'caben', nome: 'CABEN', cor: '#2563eb', tarefas: [] },
-  { id: 'ave-cristo', nome: 'Ave Cristo', cor: '#7c3aed', tarefas: [] },
-  { id: 'manutencao', nome: 'Manutenção', cor: '#0284c7', tarefas: [] }
-];
 
-const nomeSetorSemEmoji = (nome: string) => nome.replace(/^(🥖|🌳|🏢|⛪)\s*/, '');
 
-const normalizarSetores = (setoresSalvos: Setor[]) => {
-  if (!Array.isArray(setoresSalvos)) return SETORES_PADRAO;
-  const comTarefas = (setor?: Setor): Setor | undefined => setor ? { ...setor, tarefas: Array.isArray(setor.tarefas) ? setor.tarefas : [] } : setor;
-  const setorAntigo = comTarefas(setoresSalvos.find(setor => setor.id === 'pao-da-vida'));
-  const salvosPorId = new Map(setoresSalvos.filter(setor => setor.id !== 'pao-da-vida').map(setor => [setor.id, comTarefas(setor)!]));
-  const setoresAtualizados = SETORES_PADRAO.map(setorPadrao => {
-    const setorSalvo = salvosPorId.get(setorPadrao.id);
-    if (setorSalvo) return setorSalvo;
-    if (setorPadrao.id === 'padaria' && setorAntigo) return { ...setorPadrao, tarefas: setorAntigo.tarefas };
-    return setorPadrao;
-  });
-  const idsAtuais = new Set(setoresAtualizados.map(setor => setor.id));
-  return [...setoresAtualizados, ...setoresSalvos.filter(setor => setor.id !== 'pao-da-vida' && !idsAtuais.has(setor.id)).map(setor => comTarefas(setor)!)];
-};
 
-const USUARIOS_SISTEMA: Usuario[] = [
-  {
-    id: 'admin_ramara',
-    nome: 'Ramara',
-    tipo: 'admin',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: true,
-      pagamentos: true,
-      relatorios: true,
-      elieuda: true,
-      manutencao: true,
-      dados: true
-    }
-  },
-  {
-    id: 'gabriela',
-    nome: 'Gabriela',
-    tipo: 'gabriela',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: true,
-      manutencao: false,
-      dados: false
-    }
-  },
-  {
-    id: 'assuncao_duarte',
-    nome: 'Assunção Duarte',
-    tipo: 'assuncao',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: false,
-      manutencao: false,
-      dados: false
-    }
-  },
-  {
-    id: 'luzia_santos',
-    nome: 'Luzia Santos',
-    tipo: 'luzia',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: false,
-      manutencao: false,
-      dados: false
-    }
-  },
-  {
-    id: 'leandro',
-    nome: 'Leandro',
-    tipo: 'leandro',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: false,
-      manutencao: false,
-      dados: false
-    }
-  },
-  {
-    id: 'idenaldo',
-    nome: 'Idenaldo',
-    tipo: 'idenaldo',
-    permissoes: {
-      pendencias: true,
-      conferencias: true,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: false,
-      manutencao: false,
-      dados: false
-    }
-  },
-  {
-    id: 'elias_manutencao',
-    nome: 'Elias (Manutenção)',
-    tipo: 'manutencao',
-    permissoes: {
-      pendencias: true,
-      conferencias: false,
-      cotacao: false,
-      pagamentos: false,
-      relatorios: false,
-      elieuda: false,
-      manutencao: true,
-      dados: false
-    }
-  },
-];
 
-const PERMISSOES_OPCOES: { chave: keyof Usuario['permissoes']; nome: string; detalhe: string }[] = [
-  { chave: 'pendencias', nome: 'Pendências', detalhe: 'Tela inicial e tarefas dos setores' },
-  { chave: 'conferencias', nome: 'Conferência', detalhe: 'Conferir mercadoria que chega' },
-  { chave: 'cotacao', nome: 'Cotação', detalhe: 'Cotar preços, cadastro de produtos e fornecedores' },
-  { chave: 'pagamentos', nome: 'Pagamentos', detalhe: 'Caixa, Cheque e CABEN' },
-  { chave: 'elieuda', nome: 'Pedido Elieuda', detalhe: 'Pedido de hortifrúti' },
-  { chave: 'relatorios', nome: 'Relatórios', detalhe: 'Estatísticas do sistema' },
-  { chave: 'manutencao', nome: 'Manutenção', detalhe: 'Ordens de serviço e reparos' },
-  { chave: 'dados', nome: 'Dados', detalhe: 'Nuvem, backup e gerenciamento' }
-];
 
-const permissoesPadraoNovoUsuario = (): Usuario['permissoes'] => ({
-  pendencias: true,
-  conferencias: false,
-  cotacao: false,
-  pagamentos: false,
-  relatorios: false,
-  elieuda: false,
-  manutencao: false,
-  dados: false
-});
 
-const rotuloPermissoes = (permissoes: Usuario['permissoes']) => {
-  const ativas = PERMISSOES_OPCOES.filter(opcao => permissoes[opcao.chave]).map(opcao => opcao.nome);
-  return ativas.length ? ativas.join(' • ') : 'Sem abas (apenas Segurança)';
-};
 
-const normalizarUsuarioCadastrado = (usuario: Usuario): Usuario | null => {
-  if (!usuario?.id || !usuario?.nome) return null;
-  return {
-    id: String(usuario.id),
-    nome: String(usuario.nome).trim(),
-    tipo: usuario.tipo === 'admin' ? 'admin' : 'usuario',
-    permissoes: {
-      pendencias: Boolean(usuario.permissoes?.pendencias),
-      conferencias: Boolean(usuario.permissoes?.conferencias),
-      cotacao: Boolean(usuario.permissoes?.cotacao),
-      pagamentos: Boolean(usuario.permissoes?.pagamentos),
-      relatorios: Boolean(usuario.permissoes?.relatorios),
-      elieuda: Boolean(usuario.permissoes?.elieuda),
-      manutencao: Boolean(usuario.permissoes?.manutencao),
-      dados: Boolean(usuario.permissoes?.dados)
-    }
-  };
-};
 
-const unirUsuariosCadastrados = (...listas: Array<Usuario[] | undefined>) => {
-  const oficiaisPorId = new Map(USUARIOS_SISTEMA.map(usuario => [usuario.id, usuario]));
-  const extrasPorId = new Map<string, Usuario>();
-  listas.forEach(lista => {
-    (lista || []).forEach(item => {
-      const normalizado = normalizarUsuarioCadastrado(item);
-      if (!normalizado || oficiaisPorId.has(normalizado.id)) return;
-      extrasPorId.set(normalizado.id, normalizado);
-    });
-  });
-  return [...USUARIOS_SISTEMA, ...Array.from(extrasPorId.values())];
-};
 
-const unirPermissoesUsuarios = (...mapas: Array<{ [id: string]: Usuario['permissoes'] } | undefined>) => {
-  const uniao: { [id: string]: Usuario['permissoes'] } = {};
-  mapas.forEach(mapa => {
-    Object.entries(mapa || {}).forEach(([id, permissoes]) => {
-      if (!id || !permissoes) return;
-      uniao[id] = { ...permissoesPadraoNovoUsuario(), ...permissoes };
-    });
-  });
-  return uniao;
-};
 
-const aplicarPermissoesSalvas = (usuario: Usuario, permissoesSalvas: { [id: string]: Usuario['permissoes'] }) => (
-  {
-    ...usuario,
-    permissoes: {
-      ...permissoesPadraoNovoUsuario(),
-      ...usuario.permissoes,
-      ...(permissoesSalvas[usuario.id] || {})
-    }
-  }
-);
 
-const PAGAMENTOS_PADRAO: PagamentosState = { caixa: [], cheque: [], caben: [] };
 
 // 🥕 72 PRODUTOS DE HORTIFRÚTI DA DONA ELIEUDA
-const listaProdutosElieudaPadrao: ProdutoElieuda[] = [
-  { produto: 'Batata Inglesa', unit: 'Kg' }, { produto: 'Tomate', unit: 'Kg' }, { produto: 'Cenoura', unit: 'Kg' },
-  { produto: 'Pimentão', unit: 'Kg' }, { produto: 'Chuchu', unit: 'Kg' }, { produto: 'Repolho Verde', unit: 'Und' },
-  { produto: 'Repolho Roxo', unit: 'Und' }, { produto: 'Alface Roxa', unit: 'Molho' }, { produto: 'Abobrinha', unit: 'Kg' },
-  { produto: 'Berinjela', unit: 'Kg' }, { produto: 'Acelga', unit: 'Und' }, { produto: 'Alface Americano', unit: 'Molho' },
-  { produto: 'Folhagem Sálvia', unit: 'Molho' }, { produto: 'Folhagem Mastruz', unit: 'Molho' }, { produto: 'Folhagem Alecrim', unit: 'Molho' },
-  { produto: 'Pepino', unit: 'Kg' }, { produto: 'Beterraba', unit: 'Kg' }, { produto: 'Uva Roxa', unit: 'Cx/Kg' },
-  { produto: 'Uva Verde', unit: 'Cx/Kg' }, { produto: 'Pimentinha de Cheiro', unit: 'Kg' }, { produto: 'Pimentão Colorido', unit: 'Kg' },
-  { produto: 'Kiwi', unit: 'Kg' }, { produto: 'Ameixa', unit: 'Kg' }, { produto: 'Tomate Cereja', unit: 'Bandeja' },
-  { produto: 'Morango', unit: 'Bandeja' }, { produto: 'Alface', unit: 'Molho' }, { produto: 'Limão', unit: 'Kg' },
-  { produto: 'Batata Doce', unit: 'Kg' }, { produto: 'Cebola Branca', unit: 'Kg' }, { produto: 'Melancia', unit: 'Und/Kg' },
-  { produto: 'Melão', unit: 'Und/Kg' }, { produto: 'Mamão', unit: 'Und/Kg' }, { produto: 'Manga', unit: 'Kg' },
-  { produto: 'Maçã', unit: 'Kg' }, { produto: 'Laranja', unit: 'Cento/Kg' }, { produto: 'Abacate', unit: 'Kg' },
-  { produto: 'Abacaxi', unit: 'Und' }, { produto: 'Banana', unit: 'Palma/Kg' }, { produto: 'Chia', unit: 'Pct/Kg' },
-  { produto: 'Hibisco', unit: 'Pct/Kg' }, { produto: 'Alecrim', unit: 'Pct/Kg' }, { produto: 'Semente de Mostarda', unit: 'Pct/Kg' },
-  { produto: 'Erva Doce', unit: 'Pct/Kg' }, { produto: 'Cravo', unit: 'Pct/Kg' }, { produto: 'Pimenta do Reino', unit: 'Pct/Kg' },
-  { produto: 'Linhaça', unit: 'Pct/Kg' }, { produto: 'Gergelim Branco', unit: 'Pct/Kg' }, { produto: 'Gergelim Preto', unit: 'Pct/Kg' },
-  { produto: 'Orégano', unit: 'Pct/Kg' }, { produto: 'Amendoim Descascado', unit: 'Kg' }, { produto: 'Amendoim Inteiro', unit: 'Kg' },
-  { produto: 'Canela em Casca', unit: 'Pct/Kg' }, { produto: 'Gengibre', unit: 'Kg' }, { produto: 'Alho Número 6', unit: 'Kg' },
-  { produto: 'Colorau', unit: 'Pct/Kg' }, { produto: 'Coco Seco', unit: 'Und' }, { produto: 'Açafrão', unit: 'Pct/Kg' },
-  { produto: 'Brócolis', unit: 'Und/Kg' }, { produto: 'Alho Poró', unit: 'Und' }, { produto: 'Couve Flor', unit: 'Und' },
-  { produto: 'Espinafre', unit: 'Molho' }, { produto: 'Cheiro Verde', unit: 'Molho' }, { produto: 'Espiga de Milho', unit: 'Und' },
-  { produto: 'Jerimum', unit: 'Kg' }, { produto: 'Manjericão', unit: 'Molho' }, { produto: 'Salsa', unit: 'Molho' },
-  { produto: 'Quiabo', unit: 'Kg' }, { produto: 'Maxixe', unit: 'Kg' }, { produto: 'Rabanete', unit: 'Molho/Kg' },
-  { produto: 'Couve Folha', unit: 'Molho' }, { produto: 'Hortelã', unit: 'Molho' }, { produto: 'Capim Santo', unit: 'Molho' }
-];
 
-const LIMITE_JSON_LOCAL = 800000;
 
-const tarefaSemFoto = (tarefa: Tarefa): Tarefa => {
-  if (!tarefa?.foto) return tarefa;
-  const { foto: _foto, ...resto } = tarefa;
-  return resto;
-};
 
-const setoresSemFotos = (lista?: Setor[]) =>
-  (lista || []).map(setor => ({
-    ...setor,
-    tarefas: (setor.tarefas || []).map(tarefaSemFoto)
-  }));
 
-const pedidosSemPdfPesado = (lista?: RelatorioPedidoCotacao[]) =>
-  (lista || []).map(pedido => {
-    if (!pedido?.pdfFornecedor?.conteudo || !String(pedido.pdfFornecedor.conteudo).startsWith('data:')) return pedido;
-    const { conteudo: _c, ...meta } = pedido.pdfFornecedor;
-    return { ...pedido, pdfFornecedor: { ...meta, conteudo: '' } };
-  });
 
-const gravarJsonLocal = (chave: string, valor: unknown) => {
-  try {
-    const texto = JSON.stringify(valor);
-    if (texto.length > LIMITE_JSON_LOCAL) {
-      localStorage.removeItem(chave);
-      return false;
-    }
-    localStorage.setItem(chave, texto);
-    return true;
-  } catch {
-    try { localStorage.removeItem(chave); } catch {}
-    return false;
-  }
-};
 
-const limparChavesLocaisPesadas = () => {
-  try {
-    const chaves: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const chave = localStorage.key(i);
-      if (chave) chaves.push(chave);
-    }
-    chaves.forEach(chave => {
-      if (!chave.startsWith('rm_')) return;
-      const valor = localStorage.getItem(chave);
-      if (valor && valor.length > LIMITE_JSON_LOCAL) localStorage.removeItem(chave);
-    });
-  } catch {}
-};
 
 limparChavesLocaisPesadas();
 
-const lerJsonLocal = (chave: string, padrao: any) => {
-  try {
-    const salvo = localStorage.getItem(chave);
-    if (!salvo) return padrao;
-    return JSON.parse(salvo);
-  } catch {
-    return padrao;
-  }
-};
 
-const resgatarBackupGeral = (chaveBase: string, valorPadrao: any) => {
-  try {
-  for (let i = 70; i >= 1; i--) {
-    const salvo = localStorage.getItem(`${chaveBase}_v${i}`);
-    if (salvo && salvo.length <= LIMITE_JSON_LOCAL) {
-      try {
-        const parsed = JSON.parse(salvo);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        if (typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
-      } catch (e) {}
-    }
-  }
-  const direto = localStorage.getItem(chaveBase);
-  if (direto && direto.length > LIMITE_JSON_LOCAL) {
-    try { localStorage.removeItem(chaveBase); } catch {}
-    return valorPadrao;
-  }
-  if (direto) {
-    try { return JSON.parse(direto); } catch (e) {}
-  }
-  } catch {}
-  return valorPadrao;
-};
 
-const idsDeTarefasDeletadas = (lista: Array<{ id?: string } | string> = []) =>
-  lista.map(item => (typeof item === 'string' ? item : item?.id)).filter((id): id is string => Boolean(id));
 
-const statusDaTarefa = (tarefa: Tarefa): StatusTarefa =>
-  tarefa.status === 'concluida' || tarefa.concluida ? 'concluida' : 'aberta';
 
-const parseDataConclusao = (valor?: string): Date | null => {
-  if (!valor) return null;
-  const direto = new Date(valor);
-  if (!Number.isNaN(direto.getTime())) return direto;
-  const partes = valor.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(?:,?\s*(\d{1,2}):(\d{2}))?/);
-  if (!partes) return null;
-  const dia = Number(partes[1]);
-  const mes = Number(partes[2]) - 1;
-  const anoInformado = partes[3];
-  const ano = anoInformado ? Number(anoInformado.length === 2 ? `20${anoInformado}` : anoInformado) : new Date().getFullYear();
-  const hora = partes[4] ? Number(partes[4]) : 0;
-  const minuto = partes[5] ? Number(partes[5]) : 0;
-  const data = new Date(ano, mes, dia, hora, minuto);
-  return Number.isNaN(data.getTime()) ? null : data;
-};
 
-const escolherTarefaMaisAvancada = (local: Tarefa, recebida: Tarefa): Tarefa => {
-  const statusLocal = statusDaTarefa(local);
-  const statusRecebida = statusDaTarefa(recebida);
-  const escolhida = statusLocal === 'concluida' && statusRecebida !== 'concluida'
-    ? { ...local, status: 'concluida' as StatusTarefa }
-    : statusRecebida === 'concluida' && statusLocal !== 'concluida'
-      ? { ...recebida, status: 'concluida' as StatusTarefa }
-      : local;
-  return { ...escolhida, foto: escolhida.foto || local.foto || recebida.foto };
-};
 
-const mesclarSetores = (setoresBase: Setor[], setoresNovos: Setor[], idsRemovidos: string[] = []) => {
-  const removidos = new Set(idsRemovidos);
-  const novosPorId = new Map((setoresNovos || []).map(setor => [setor.id, setor]));
-  const idsBase = new Set((setoresBase || []).map(setor => setor.id));
-  const setoresMesclados = (setoresBase || []).map(setorBase => {
-    const tarefasBase = Array.isArray(setorBase.tarefas) ? setorBase.tarefas : [];
-    const setorNovo = novosPorId.get(setorBase.id);
-    if (!setorNovo) return { ...setorBase, tarefas: tarefasBase.filter(tarefa => !removidos.has(tarefa.id)) };
-    const tarefasPorId = new Map<string, Tarefa>();
-    const incorporar = (tarefa: Tarefa) => {
-      if (!tarefa?.id || removidos.has(tarefa.id)) return;
-      const existente = tarefasPorId.get(tarefa.id);
-      tarefasPorId.set(tarefa.id, existente ? escolherTarefaMaisAvancada(existente, tarefa) : tarefa);
-    };
-    tarefasBase.forEach(incorporar);
-    (setorNovo.tarefas || []).forEach(incorporar);
-    return { ...setorBase, tarefas: Array.from(tarefasPorId.values()) };
-  });
-  const setoresSoNaNuvem = (setoresNovos || [])
-    .filter(setor => !idsBase.has(setor.id))
-    .map(setor => ({ ...setor, tarefas: (setor.tarefas || []).filter(tarefa => !removidos.has(tarefa.id)) }));
-  return [...setoresMesclados, ...setoresSoNaNuvem];
-};
 
-const unirTarefasDeletadas = (atuais: TarefaDeletada[], extras: Array<TarefaDeletada | { id: string }>) => {
-  const porId = new Map<string, TarefaDeletada | { id: string }>();
-  [...atuais, ...extras].forEach(item => {
-    if (item?.id && !porId.has(item.id)) porId.set(item.id, item);
-  });
-  return Array.from(porId.values()) as TarefaDeletada[];
-};
 
-const contarItensPagamento = (dados?: PagamentosState) =>
-  (dados?.caixa?.length || 0) + (dados?.cheque?.length || 0) + (dados?.caben?.length || 0);
 
-const unirRelatoriosPedidos = (...listas: Array<RelatorioPedidoCotacao[] | undefined>) => {
-  const porId = new Map<string, RelatorioPedidoCotacao>();
-  listas.forEach(lista => {
-    (lista || []).forEach(item => {
-      if (!item?.id) return;
-      const atual = porId.get(item.id);
-      if (!atual) {
-        porId.set(item.id, item);
-        return;
-      }
-      porId.set(item.id, {
-        ...atual,
-        ...item,
-        enviadoConferencia: Boolean(atual.enviadoConferencia || item.enviadoConferencia)
-      });
-    });
-  });
-  return Array.from(porId.values());
-};
 
-const filtrarPedidosNaoDeletados = (lista: RelatorioPedidoCotacao[] | undefined, deletados: string[] | undefined) => {
-  const ids = new Set(deletados || []);
-  return (lista || []).filter(item => item?.id && !ids.has(item.id));
-};
 
-const unirPedidosCotacao = (deletados: string[] | undefined, ...listas: Array<RelatorioPedidoCotacao[] | undefined>) =>
-  filtrarPedidosNaoDeletados(unirRelatoriosPedidos(...listas), deletados);
 
-const unirConferencias = (...listas: Array<RegistroConferencia[] | undefined>) => {
-  const porId = new Map<string, RegistroConferencia>();
-  listas.forEach(lista => {
-    (lista || []).forEach(item => {
-      if (item?.id && !porId.has(item.id)) porId.set(item.id, item);
-    });
-  });
-  return Array.from(porId.values());
-};
 
-const unirIds = (...listas: Array<string[] | undefined>) => Array.from(new Set(listas.flatMap(lista => lista || []).filter(Boolean)));
 
-const unirLotesPagamento = (...listas: Array<LotePagamentoHistorico[] | undefined>) => {
-  const porId = new Map<string, LotePagamentoHistorico>();
-  listas.forEach(lista => {
-    (lista || []).forEach(lote => {
-      if (!lote?.id) return;
-      const atual = porId.get(lote.id);
-      if (!atual || contarItensPagamento(lote.dados) > contarItensPagamento(atual.dados) || (lote.totalGeral || 0) > (atual.totalGeral || 0)) {
-        porId.set(lote.id, lote);
-      }
-    });
-  });
-  return Array.from(porId.values()).sort((a, b) => Number(b.id) - Number(a.id));
-};
 
-const idsItensDeLotes = (lotes: LotePagamentoHistorico[]) => {
-  const ids = new Set<string>();
-  lotes.forEach(lote => {
-    (['caixa', 'cheque', 'caben'] as const).forEach(tipo => {
-      (lote.dados?.[tipo] || []).forEach(item => {
-        if (item?.id) ids.add(item.id);
-      });
-    });
-  });
-  return ids;
-};
 
-const garantirIdPagamento = (item: ItemPagamento, indice: number) => {
-  if (item?.id) return item;
-  return {
-    ...item,
-    id: `pag-${String(item?.descricao || 'item').toLowerCase().replace(/\s+/g, '-')}-${Number(item?.valor) || 0}-${indice}`
-  };
-};
 
-const unirListaPagamento = (a: ItemPagamento[] = [], b: ItemPagamento[] = [], idsFechados: Set<string>) => {
-  const porId = new Map<string, ItemPagamento>();
-  [...a, ...b].map(garantirIdPagamento).forEach(item => {
-    if (!item?.id || idsFechados.has(item.id) || porId.has(item.id)) return;
-    porId.set(item.id, item);
-  });
-  return Array.from(porId.values());
-};
 
-const unirPagamentosAbertos = (a: PagamentosState | undefined, b: PagamentosState | undefined, lotes: LotePagamentoHistorico[]) => {
-  const idsFechados = idsItensDeLotes(lotes);
-  return {
-    caixa: unirListaPagamento(a?.caixa, b?.caixa, idsFechados),
-    cheque: unirListaPagamento(a?.cheque, b?.cheque, idsFechados),
-    caben: unirListaPagamento(a?.caben, b?.caben, idsFechados)
-  };
-};
 
-const lerSenhasLocais = (): SenhasUsuarios => {
-  try {
-    const salvo = localStorage.getItem('rm_senhas_usuarios');
-    const parsed = salvo ? JSON.parse(salvo) : {};
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-  } catch {
-    return {};
-  }
-};
 
-const hashSenha = async (senha: string) => {
-  const dados = new TextEncoder().encode(`rm-sistema-gestao:${senha}`);
-  const buffer = await crypto.subtle.digest('SHA-256', dados);
-  return Array.from(new Uint8Array(buffer)).map(byte => byte.toString(16).padStart(2, '0')).join('');
-};
 
-const comprimirFotoPendencia = (arquivo: File) => new Promise<string>((resolve, reject) => {
-  const leitor = new FileReader();
-  leitor.onerror = () => reject(new Error('Não foi possível ler a foto'));
-  leitor.onload = () => {
-    const imagem = new Image();
-    imagem.onload = () => {
-      const max = 400;
-      const escala = Math.min(1, max / Math.max(imagem.width, imagem.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(imagem.width * escala));
-      canvas.height = Math.max(1, Math.round(imagem.height * escala));
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        resolve(String(leitor.result));
-        return;
-      }
-      ctx.drawImage(imagem, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.5));
-    };
-    imagem.onerror = () => reject(new Error('Foto inválida'));
-    imagem.src = String(leitor.result);
-  };
-  leitor.readAsDataURL(arquivo);
-});
 
-const abrirBancoFotos = () => new Promise<IDBDatabase>((resolve, reject) => {
-  const pedido = indexedDB.open('rm-pendencias-fotos', 1);
-  pedido.onupgradeneeded = () => {
-    if (!pedido.result.objectStoreNames.contains('fotos')) pedido.result.createObjectStore('fotos');
-  };
-  pedido.onsuccess = () => resolve(pedido.result);
-  pedido.onerror = () => reject(pedido.error);
-});
 
-const salvarFotoPendencia = async (id: string, foto: string) => {
-  if (!id || !foto) return;
-  try {
-    const db = await abrirBancoFotos();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('fotos', 'readwrite');
-      tx.objectStore('fotos').put(foto, id);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch {}
-};
 
-const carregarFotosPendencias = async () => {
-  const fotos: { [id: string]: string } = {};
-  try {
-    const db = await abrirBancoFotos();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('fotos', 'readonly');
-      const pedido = tx.objectStore('fotos').openCursor();
-      pedido.onsuccess = () => {
-        const cursor = pedido.result;
-        if (!cursor) return;
-        if (typeof cursor.key === 'string' && typeof cursor.value === 'string') fotos[cursor.key] = cursor.value;
-        cursor.continue();
-      };
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch {}
-  return fotos;
-};
 
-const aplicarFotosNasTarefas = (lista: Setor[], fotos: { [id: string]: string }) =>
-  (Array.isArray(lista) ? lista : []).map(setor => ({
-    ...setor,
-    tarefas: (setor.tarefas || []).map(tarefa => ({ ...tarefa, foto: tarefa.foto || fotos[tarefa.id] }))
-  }));
 
-const extrairFotosSetores = (lista?: Setor[]) => {
-  const fotos: { [id: string]: string } = {};
-  const semFotos = (lista || []).map(setor => ({
-    ...setor,
-    tarefas: (setor.tarefas || []).map(tarefa => {
-      if (tarefa.foto && tarefa.foto.startsWith('data:')) {
-        fotos[tarefa.id] = tarefa.foto;
-        return tarefaSemFoto(tarefa);
-      }
-      return tarefa;
-    })
-  }));
-  Object.entries(fotos).forEach(([id, foto]) => { void salvarFotoPendencia(id, foto); });
-  return { semFotos, fotos };
-};
 
-const ordemSemFoto = (ordem: OrdemManutencao): OrdemManutencao => {
-  if (!ordem?.foto) return ordem;
-  const { foto: _foto, ...resto } = ordem;
-  return resto;
-};
 
-const ordensSemFotos = (lista?: OrdemManutencao[]) => (lista || []).map(ordemSemFoto);
 
-const aplicarFotosNasOrdens = (lista: OrdemManutencao[], fotos: { [id: string]: string }) =>
-  (Array.isArray(lista) ? lista : []).map(ordem => ({ ...ordem, foto: ordem.foto || fotos[ordem.id] }));
 
-const extrairFotosOrdens = (lista?: OrdemManutencao[]) => {
-  const fotos: { [id: string]: string } = {};
-  const semFotos = (lista || []).map(ordem => {
-    if (ordem.foto && ordem.foto.startsWith('data:')) {
-      fotos[ordem.id] = ordem.foto;
-      return ordemSemFoto(ordem);
-    }
-    return ordem;
-  });
-  Object.entries(fotos).forEach(([id, foto]) => { void salvarFotoPendencia(id, foto); });
-  return { semFotos, fotos };
-};
 
-const unirFotosPendencias = (...mapas: Array<{ [id: string]: string } | undefined>) => {
-  const uniao: { [id: string]: string } = {};
-  mapas.forEach(mapa => {
-    Object.entries(mapa || {}).forEach(([id, foto]) => {
-      if (id && typeof foto === 'string' && foto.length > 30) uniao[id] = foto;
-    });
-  });
-  return uniao;
-};
 
-const coletarFotosSetores = (lista?: Setor[]) => {
-  const fotos: { [id: string]: string } = {};
-  (lista || []).forEach(setor => {
-    (setor.tarefas || []).forEach(tarefa => {
-      if (tarefa?.id && tarefa.foto) fotos[tarefa.id] = tarefa.foto;
-    });
-  });
-  return fotos;
-};
 
-const coletarFotosOrdens = (lista?: OrdemManutencao[]) => {
-  const fotos: { [id: string]: string } = {};
-  (lista || []).forEach(ordem => {
-    if (ordem?.id && ordem.foto) fotos[ordem.id] = ordem.foto;
-  });
-  return fotos;
-};
 
-const filtrarFotosUsadas = (fotos: { [id: string]: string }, setores?: Setor[], ordens?: OrdemManutencao[]) => {
-  const ids = new Set<string>();
-  (setores || []).forEach(setor => (setor.tarefas || []).forEach(tarefa => { if (tarefa?.id) ids.add(tarefa.id); }));
-  (ordens || []).forEach(ordem => { if (ordem?.id) ids.add(ordem.id); });
-  const filtrado: { [id: string]: string } = {};
-  Object.entries(fotos).forEach(([id, foto]) => {
-    if (ids.has(id)) filtrado[id] = foto;
-  });
-  return filtrado;
-};
 
-const enxugarFotosNuvem = (fotos: { [id: string]: string }, limite = 600000) => {
-  const entradas = Object.entries(fotos).sort((a, b) => Number(b[0]) - Number(a[0]));
-  const resultado: { [id: string]: string } = {};
-  let tamanho = 2;
-  entradas.forEach(([id, foto]) => {
-    const extra = id.length + foto.length + 8;
-    if (tamanho + extra > limite) return;
-    resultado[id] = foto;
-    tamanho += extra;
-  });
-  return resultado;
-};
 
-const guardarFotosLocal = (fotos: { [id: string]: string }) => {
-  Object.entries(fotos).forEach(([id, foto]) => { void salvarFotoPendencia(id, foto); });
-};
 
-const enviarFotoNuvem = async (id: string, foto: string) => {
-  if (!id || !foto || !foto.startsWith('data:image')) return;
-  try {
-    await fetch('/api/foto', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, foto })
-    });
-  } catch {}
-};
 
-const buscarFotoNuvem = async (id: string) => {
-  try {
-    const resposta = await fetch(`/api/foto?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
-    if (!resposta.ok) return '';
-    const dados = await resposta.json();
-    return typeof dados?.foto === 'string' && dados.foto.startsWith('data:image') ? dados.foto : '';
-  } catch {
-    return '';
-  }
-};
 
-const unirOrdensManutencao = (...listas: Array<OrdemManutencao[] | undefined>) => {
-  const porId = new Map<string, OrdemManutencao>();
-  listas.forEach(lista => {
-    (lista || []).forEach(ordem => {
-      if (!ordem?.id) return;
-      const atual = porId.get(ordem.id);
-      if (!atual || avancaoStatusOrdem(ordem.status) > avancaoStatusOrdem(atual.status) || (ordem.atualizadoEm || '') > (atual.atualizadoEm || '')) {
-        porId.set(ordem.id, { ...atual, ...ordem, foto: ordem.foto || atual?.foto });
-      }
-    });
-  });
-  return Array.from(porId.values()).sort((a, b) => Number(b.id) - Number(a.id));
-};
 
-const LOCAIS_MANUTENCAO = ['Loja', 'Restaurante', 'Padaria', 'Embalagem', 'Cozinha', 'Confeitaria', 'Almoxarifado', 'Sítio', 'CABEN', 'Ave Cristo', 'Área comum', 'Outro'];
-const TIPOS_MANUTENCAO = ['Elétrica', 'Hidráulica', 'Refrigeração', 'Máquina / equipamento', 'Predial / estrutura', 'Outro'];
-const MOTIVOS_PAUSA_MANUTENCAO = [
-  'Falta de equipamento',
-  'Falta de material',
-  'Preciso de auxílio',
-  'Preciso de autorização',
-  'Aguardando fornecedor',
-  'Problema não identificado',
-  'Outro motivo'
-];
-const MOTIVOS_COMPRA_PAUSA = ['Falta de equipamento', 'Falta de material'];
-const statusOrdemNormalizado = (status?: string): Exclude<StatusOrdemManutencao, 'aberta'> =>
-  status === 'andamento' ? 'andamento'
-    : status === 'pausada' ? 'pausada'
-    : status === 'concluida' ? 'concluida'
-    : status === 'nao_realizada' ? 'nao_realizada'
-    : 'pendente';
-const rotuloStatusOrdem = (status?: string) => {
-  const atual = statusOrdemNormalizado(status);
-  return atual === 'andamento' ? 'Em andamento'
-    : atual === 'pausada' ? 'Pausada'
-    : atual === 'concluida' ? 'Concluída'
-    : atual === 'nao_realizada' ? 'Não realizada'
-    : 'Pendente';
-};
-const classeStatusOrdem = (status?: string) => {
-  const atual = statusOrdemNormalizado(status);
-  return atual === 'andamento' ? 'bg-amber-100 text-amber-800'
-    : atual === 'pausada' ? 'bg-violet-100 text-violet-800'
-    : atual === 'concluida' ? 'bg-emerald-100 text-emerald-800'
-    : atual === 'nao_realizada' ? 'bg-slate-200 text-slate-700'
-    : 'bg-sky-100 text-sky-800';
-};
 
-const avancaoStatusOrdem = (status: StatusOrdemManutencao) => {
-  const atual = statusOrdemNormalizado(status);
-  return atual === 'concluida' || atual === 'nao_realizada' ? 2 : atual === 'andamento' || atual === 'pausada' ? 1 : 0;
-};
 
-const publicarRegistroSemFotos = async (record: any) => {
-  if (!record || typeof record !== 'object') return;
-  try {
-    await fetch('/api/nuvem', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...record, setores: setoresSemFotos(record.setores) })
-    });
-  } catch {}
-};
 
-const recordDoJsonBin = (dados: any) =>
-  dados?.record && typeof dados.record === 'object' && !Array.isArray(dados.record) ? dados.record : dados;
 
-const enviarRegistroNuvem = async (registro: Record<string, unknown>) => {
-  const tentar = (corpo: Record<string, unknown>) => fetch('/api/nuvem', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
-  const leve = {
-    ...registro,
-    fotosPendencias: enxugarFotosNuvem((registro.fotosPendencias as { [id: string]: string }) || {}, 400000),
-    relatoriosPedidosCotacao: pedidosSemPdfPesado(registro.relatoriosPedidosCotacao as RelatorioPedidoCotacao[])
-  };
-  let resposta = await tentar(leve);
-  if (!resposta.ok) {
-    resposta = await tentar({
-      setores: leve.setores,
-      tarefasDeletadas: leve.tarefasDeletadas,
-      pagamentos: leve.pagamentos,
-      historicoPagamentos: leve.historicoPagamentos,
-      conferencias: leve.conferencias,
-      fornecedoresCotacao: leve.fornecedoresCotacao,
-      itensCotacao: leve.itensCotacao,
-      quantidadesElieuda: leve.quantidadesElieuda,
-      pedidosConferidos: leve.pedidosConferidos,
-      conferenciasDeletadas: leve.conferenciasDeletadas,
-      pedidosCotacaoDeletados: leve.pedidosCotacaoDeletados,
-      relatoriosPedidosCotacao: leve.relatoriosPedidosCotacao,
-      senhasUsuarios: leve.senhasUsuarios,
-      usuariosExtra: leve.usuariosExtra,
-      permissoesUsuarios: leve.permissoesUsuarios,
-      ordensManutencao: leve.ordensManutencao,
-      ultimaAtualizacao: leve.ultimaAtualizacao
-    });
-  }
-  return resposta;
-};
 
-const LogoRm = ({ size, compact = false }: { size: number; compact?: boolean }) => (
-  <img
-    src="/rm-icon.png"
-    alt="RM"
-    width={size}
-    height={size}
-    decoding="async"
-    style={{ width: size, height: size, borderRadius: Math.max(6, Math.round(size * 0.18)), objectFit: 'cover', display: 'block', flexShrink: 0, boxShadow: '0 4px 10px rgba(15,23,42,0.16)' }}
-  />
-);
 
-const textoPdf = (valor: string) =>
-  valor
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^\x20-\x7E]/g, ' ')
-    .replace(/\\/g, '\\\\')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)');
 
-const gerarPdfPedidoFornecedor = (fornecedorNome: string, linhas: LinhaPedidoPdf[], totalGeral: number) => {
-  const largura = 595;
-  const altura = 842;
-  const linhasPorPagina = 28;
-  const paginas: LinhaPedidoPdf[][] = [];
-  for (let i = 0; i < Math.max(linhas.length, 1); i += linhasPorPagina) {
-    paginas.push(linhas.slice(i, i + linhasPorPagina));
-  }
 
-  const desenharPagina = (itensPagina: LinhaPedidoPdf[], numero: number, totalPaginas: number) => {
-    const comandos: string[] = ['BT', '/F1 16 Tf', '0.06 0.46 0.43 rg', `50 ${altura - 50} Td`, `(RM SISTEMA-GESTAO) Tj`, '0 g', '/F1 11 Tf', '0 -22 Td', `(Pedido de compra) Tj`, '0 -16 Td', `(Fornecedor: ${textoPdf(fornecedorNome)}) Tj`, '0 -14 Td', `(Data: ${textoPdf(new Date().toLocaleString('pt-BR'))}${totalPaginas > 1 ? `  |  Pagina ${numero}/${totalPaginas}` : ''}) Tj`, 'ET'];
-    let y = altura - 130;
-    const cabecalho = [
-      { x: 50, t: 'Produto', w: 220 },
-      { x: 270, t: 'Unid', w: 50 },
-      { x: 320, t: 'Qtd', w: 50 },
-      { x: 380, t: 'Vl unit.', w: 80 },
-      { x: 470, t: 'Total', w: 75 }
-    ];
-    comandos.push('0.06 0.09 0.16 rg', `50 ${y - 4} ${495} 18 re`, 'f', '1 1 1 rg', 'BT', '/F1 9 Tf');
-    cabecalho.forEach((col, i) => {
-      comandos.push(i === 0 ? `1 0 0 1 ${col.x} ${y + 2} Tm` : `1 0 0 1 ${col.x} ${y + 2} Tm`, `(${col.t}) Tj`);
-    });
-    comandos.push('ET', '0 g');
-    y -= 22;
-    itensPagina.forEach((item, indice) => {
-      if (indice % 2 === 1) {
-        comandos.push('0.97 0.98 0.99 rg', `50 ${y - 4} 495 16 re`, 'f', '0 g');
-      }
-      const produto = textoPdf(item.produto).slice(0, 42);
-      const unitario = item.valorUnitario ? `R$ ${item.valorUnitario.toFixed(2)}` : '-';
-      const total = item.valorTotal ? `R$ ${item.valorTotal.toFixed(2)}` : '-';
-      comandos.push('BT', '/F1 8 Tf', `1 0 0 1 52 ${y} Tm`, `(${produto}) Tj`, `1 0 0 1 270 ${y} Tm`, `(${textoPdf(item.unit)}) Tj`, `1 0 0 1 320 ${y} Tm`, `(${textoPdf(item.quantidade)}) Tj`, `1 0 0 1 380 ${y} Tm`, `(${unitario}) Tj`, `1 0 0 1 470 ${y} Tm`, `(${total}) Tj`, 'ET');
-      y -= 16;
-    });
-    if (numero === totalPaginas) {
-      comandos.push('BT', '/F1 12 Tf', `1 0 0 1 320 ${Math.max(y - 10, 40)} Tm`, `(Total geral: R$ ${totalGeral.toFixed(2)}) Tj`, 'ET');
-    }
-    return comandos.join('\n');
-  };
 
-  const streams = paginas.map((itensPagina, indice) => desenharPagina(itensPagina, indice + 1, paginas.length));
-  return montarArquivoPdf(streams, largura, altura);
-};
 
-const montarArquivoPdf = (streams: string[], largura = 595, altura = 842) => {
-  const objetos: string[] = [];
-  objetos.push('<< /Type /Catalog /Pages 2 0 R >>');
-  const kids = streams.map((_, i) => `${3 + i * 2} 0 R`).join(' ');
-  objetos.push(`<< /Type /Pages /Kids [${kids}] /Count ${streams.length} >>`);
-  streams.forEach((conteudo, i) => {
-    const pageId = 3 + i * 2;
-    const contentId = pageId + 1;
-    objetos.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${largura} ${altura}] /Contents ${contentId} 0 R /Resources << /Font << /F1 ${3 + streams.length * 2} 0 R >> >> >>`);
-    objetos.push(`<< /Length ${conteudo.length} >>\nstream\n${conteudo}\nendstream`);
-  });
-  objetos.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
 
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objetos.forEach((objeto, i) => {
-    offsets.push(pdf.length);
-    pdf += `${i + 1} 0 obj\n${objeto}\nendobj\n`;
-  });
-  const xref = pdf.length;
-  pdf += `xref\n0 ${objetos.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach(off => {
-    pdf += `${String(off).padStart(10, '0')} 00000 n \n`;
-  });
-  pdf += `trailer << /Size ${objetos.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  return new Blob([pdf], { type: 'application/pdf' });
-};
 
-const gerarPdfRelatorioPagamentos = (dados: PagamentosState, valorTotal: number, dataRotulo?: string) => {
-  const largura = 595;
-  const altura = 842;
-  const secoes: { nome: string; itens: ItemPagamento[] }[] = [
-    { nome: '1. Caixa', itens: Array.isArray(dados.caixa) ? dados.caixa : [] },
-    { nome: '2. Cheque', itens: Array.isArray(dados.cheque) ? dados.cheque : [] },
-    { nome: '3. CABEN', itens: Array.isArray(dados.caben) ? dados.caben : [] }
-  ];
-  const linhas: LinhaPdfPagamento[] = [];
-  secoes.forEach(secao => {
-    if (secao.itens.length === 0) return;
-    const subtotal = secao.itens.reduce((soma, item) => soma + Number(item.valor || 0), 0);
-    linhas.push({ tipo: 'secao', rotulo: `${secao.nome}  -  Subtotal: R$ ${subtotal.toFixed(2)}` });
-    secao.itens.forEach(item => {
-      linhas.push({ tipo: 'item', rotulo: textoPdf(item.descricao || '-').slice(0, 68), valor: `R$ ${Number(item.valor || 0).toFixed(2)}` });
-    });
-  });
-  if (linhas.length === 0) {
-    linhas.push({ tipo: 'item', rotulo: 'Nenhum pagamento lancado neste relatorio.' });
-  }
 
-  const linhasPorPagina = 30;
-  const paginas: LinhaPdfPagamento[][] = [];
-  for (let i = 0; i < linhas.length; i += linhasPorPagina) {
-    paginas.push(linhas.slice(i, i + linhasPorPagina));
-  }
 
-  const desenharPagina = (itensPagina: LinhaPdfPagamento[], numero: number, totalPaginas: number) => {
-    const emissao = textoPdf(dataRotulo || new Date().toLocaleString('pt-BR'));
-    const comandos: string[] = ['BT', '/F1 16 Tf', '0.06 0.46 0.43 rg', `50 ${altura - 50} Td`, `(RM SISTEMA-GESTAO) Tj`, '0 g', '/F1 11 Tf', '0 -22 Td', `(Relatorio de Pagamentos) Tj`, '0 -16 Td', `(Emissao: ${emissao}${totalPaginas > 1 ? `  |  Pagina ${numero}/${totalPaginas}` : ''}) Tj`, 'ET'];
-    let y = altura - 130;
-    comandos.push('0.06 0.09 0.16 rg', `50 ${y - 4} 495 18 re`, 'f', '1 1 1 rg', 'BT', '/F1 9 Tf', `1 0 0 1 52 ${y + 2} Tm`, `(Descricao) Tj`, `1 0 0 1 470 ${y + 2} Tm`, `(Valor) Tj`, 'ET', '0 g');
-    y -= 22;
-    itensPagina.forEach(linha => {
-      if (linha.tipo === 'secao') {
-        comandos.push('0.06 0.46 0.43 rg', `50 ${y - 4} 495 16 re`, 'f', '1 1 1 rg', 'BT', '/F1 8 Tf', `1 0 0 1 52 ${y} Tm`, `(${textoPdf(linha.rotulo).slice(0, 78)}) Tj`, 'ET', '0 g');
-      } else {
-        comandos.push('BT', '/F1 8 Tf', `1 0 0 1 52 ${y} Tm`, `(${linha.rotulo}) Tj`, `1 0 0 1 455 ${y} Tm`, `(${textoPdf(linha.valor || '')}) Tj`, 'ET');
-      }
-      y -= 16;
-    });
-    if (numero === totalPaginas) {
-      comandos.push('BT', '/F1 12 Tf', `1 0 0 1 320 ${Math.max(y - 14, 50)} Tm`, `(Total geral: R$ ${valorTotal.toFixed(2)}) Tj`, 'ET');
-      comandos.push('BT', '/F1 9 Tf', `1 0 0 1 180 ${40} Tm`, `(Visto Autorizacao Financeiro) Tj`, 'ET');
-    }
-    return comandos.join('\n');
-  };
-
-  const streams = paginas.map((itensPagina, indice) => desenharPagina(itensPagina, indice + 1, paginas.length));
-  return montarArquivoPdf(streams, largura, altura);
-};
-
-const garantirItemCotacao = (item: ItemCotacao): ItemCotacao => ({
-  id: item?.id || '',
-  produto: item?.produto || '',
-  unit: item?.unit || 'Kg',
-  estoqueAtual: item?.estoqueAtual || '',
-  qtdSugerida: item?.qtdSugerida || '',
-  qtdPedir: item?.qtdPedir || '',
-  menorCusto: item?.menorCusto,
-  ultimoPrecoCompra: item?.ultimoPrecoCompra,
-  precos: item?.precos && typeof item.precos === 'object' ? item.precos : {},
-  atualizadoEm: item?.atualizadoEm,
-  secao: item?.secao,
-  fornecedorId: item?.fornecedorId
-});
-const qtdPedirNumero = (item: { qtdPedir?: string }) => parseFloat(String(item?.qtdPedir || '').replace(',', '.')) || 0;
-const pesoItemCotacao = (item: ItemCotacao) =>
-  Object.values(item.precos || {}).filter(valor => String(valor || '').trim()).length
-  + (item.estoqueAtual?.trim() ? 1 : 0)
-  + (item.qtdPedir?.trim() ? 1 : 0)
-  + (item.qtdSugerida?.trim() ? 1 : 0);
-
-const tempoItemCotacao = (item?: ItemCotacao | null) => {
-  if (!item?.atualizadoEm) return 0;
-  const tempo = Date.parse(String(item.atualizadoEm));
-  return Number.isNaN(tempo) ? 0 : tempo;
-};
-
-const escolherItemCotacao = (atual: ItemCotacao, candidato: ItemCotacao) => {
-  const tempoAtual = tempoItemCotacao(atual);
-  const tempoNovo = tempoItemCotacao(candidato);
-  if (tempoNovo !== tempoAtual) return tempoNovo > tempoAtual ? candidato : atual;
-  const pesoAtual = pesoItemCotacao(atual);
-  const pesoNovo = pesoItemCotacao(candidato);
-  if (pesoNovo !== pesoAtual) return pesoNovo > pesoAtual ? candidato : atual;
-  return candidato;
-};
-
-const mesclarItensCotacao = (...listas: Array<ItemCotacao[] | undefined>) => {
-  const porId = new Map<string, ItemCotacao>();
-  listas.forEach(lista => {
-    (lista || []).forEach(item => {
-      if (!item?.id) return;
-      const atual = porId.get(item.id);
-      porId.set(item.id, garantirItemCotacao(atual ? escolherItemCotacao(atual, item) : item));
-    });
-  });
-  return Array.from(porId.values());
-};
-
-const normalizarItensCotacao = (itensSalvos: ItemCotacao[]) => mesclarItensCotacao(ITENS_COTACAO_OFICIAIS, itensSalvos);
-const marcarItensCotacaoAgora = (itens: ItemCotacao[]) => {
-  const agora = new Date().toISOString();
-  return itens.map(item => ({ ...item, atualizadoEm: agora }));
-};
 
 function App() {
   const [autenticado, setAutenticado] = useState<boolean>(false);
