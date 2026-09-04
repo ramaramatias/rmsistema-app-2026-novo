@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export function AbaPendencias(p: {
   adicionarTarefaCentral: any;
   alternarStatusTarefa: any;
@@ -99,11 +97,11 @@ export function AbaPendencias(p: {
                 <div className="flex flex-wrap gap-2">
                   <input type="text" placeholder="Descreva a pendência..." value={novaTarefaCentral} onChange={e => setNovaTarefaCentral(e.target.value)} onKeyDown={e => e.key === 'Enter' && adicionarTarefaCentral()} className="min-w-[180px] flex-[1_1_240px] rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-teal-500" />
                   <select value={setorSelecionadoNovaTarefa} onChange={e => setSetorSelecionadoNovaTarefa(e.target.value)} className="flex-[1_1_180px] rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none">
-                    {(Array.isArray(setores) ? setores : []).map(setor => <option key={setor.id} value={setor.id}>{nomeSetorSemEmoji(setor.nome)}</option>)}
+                    {setores.map(setor => <option key={setor.id} value={setor.id}>{nomeSetorSemEmoji(setor.nome)}</option>)}
                   </select>
                   <select value={responsavelSelecionado[setorSelecionadoNovaTarefa] || ''} onChange={e => setResponsavelSelecionado({ ...responsavelSelecionado, [setorSelecionadoNovaTarefa]: e.target.value })} className="flex-[1_1_150px] rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none">
                     <option value="">Responsável</option>
-                    {(Array.isArray(usuariosDoSistema) ? usuariosDoSistema : []).map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
+                    {usuariosDoSistema.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
                   </select>
                   <label className="cursor-pointer rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-bold text-teal-800 ring-1 ring-slate-200 hover:bg-teal-50">
                     Foto
@@ -118,28 +116,28 @@ export function AbaPendencias(p: {
                   </div>
                 )}
               </div>
-              {Array.isArray(tarefasDeletadas) && tarefasDeletadas.length > 0 && (
-                <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#92400e' }}>⚠️ {tarefasDeletadas.length} tarefa(s) deletada(s) • Clique para recuperar</span>
-                  <button onClick={() => setMostrarHistoricoDelete(!mostrarHistoricoDelete)} style={{ backgroundColor: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+              {tarefasDeletadas.length > 0 && (
+                <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl bg-amber-50 px-4 py-3 ring-1 ring-amber-300">
+                  <span className="text-[13px] font-bold text-amber-900">⚠️ {tarefasDeletadas.length} tarefa(s) deletada(s) • Clique para recuperar</span>
+                  <button type="button" onClick={() => setMostrarHistoricoDelete(!mostrarHistoricoDelete)} className="cursor-pointer rounded-lg border-0 bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-400">
                     {mostrarHistoricoDelete ? 'Ocultar' : 'Ver Histórico'}
                   </button>
                 </div>
               )}
 
-              {mostrarHistoricoDelete && Array.isArray(tarefasDeletadas) && tarefasDeletadas.length > 0 && (
-                <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold', color: '#92400e' }}>📋 Tarefas Deletadas (Pode Recuperar)</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {mostrarHistoricoDelete && tarefasDeletadas.length > 0 && (
+                <div className="mb-5 rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-300">
+                  <h3 className="mb-3 mt-0 text-sm font-bold text-amber-900">📋 Tarefas Deletadas (Pode Recuperar)</h3>
+                  <div className="flex flex-col gap-2.5">
                     {tarefasDeletadas.map(t => (
-                      <div key={t.id} style={{ backgroundColor: '#ffffff', border: '1px solid #fcd34d', borderRadius: '6px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#0f172a', display: 'block', marginBottom: '4px' }}>{t.texto}</span>
-                          <span style={{ fontSize: '10px', color: '#64748b', display: 'block', marginBottom: '2px' }}>Criado por: {t.criador} • Data: {t.dataCriacao}</span>
-                          <span style={{ fontSize: '10px', color: '#d97706', display: 'block' }}>🗑️ Deletado por: {t.deletadaPor} • {t.deletadaEm}</span>
-                          <span style={{ fontSize: '9px', color: '#f59e0b', display: 'block', marginTop: '2px' }}>Setor: {(Array.isArray(setores) ? setores : []).find(s => s.id === t.setorId)?.nome}</span>
+                      <div key={t.id} className="flex items-start justify-between gap-2.5 rounded-xl bg-white p-3 ring-1 ring-amber-200">
+                        <div className="min-w-0 flex-1">
+                          <span className="mb-1 block text-[13px] font-bold text-slate-900">{t.texto}</span>
+                          <span className="mb-0.5 block text-[10px] text-slate-500">Criado por: {t.criador} • Data: {t.criadaEm}</span>
+                          <span className="block text-[10px] text-amber-600">🗑️ Deletado por: {t.deletadaPor} • {t.deletadaEm}</span>
+                          <span className="mt-0.5 block text-[9px] text-amber-500">Setor: {setores.find(s => s.id === t.setorId)?.nome}</span>
                         </div>
-                        <button onClick={() => recuperarTarefa(t)} style={{ backgroundColor: '#10b981', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', flexShrink: 0, marginLeft: '10px' }}>✓ Recuperar</button>
+                        <button type="button" onClick={() => recuperarTarefa(t)} className="ml-2.5 shrink-0 cursor-pointer rounded-lg border-0 bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-400">✓ Recuperar</button>
                       </div>
                     ))}
                   </div>
@@ -147,30 +145,35 @@ export function AbaPendencias(p: {
               )}
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {(Array.isArray(setoresExibidos) ? setoresExibidos : []).map(setor => {
+                {setoresExibidos.map(setor => {
                   const tarefasDoBloco = Array.isArray(setor.tarefas) ? setor.tarefas : [];
                   return (
-                  <div key={setor.id} className="rounded-2xl bg-white p-4.5 ring-1 ring-slate-200" style={{ borderTop: `4px solid ${setor.cor}`, padding: '18px' }}>
-                    <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#0f172a' }}>{nomeSetorSemEmoji(setor.nome)}</h3>
-                    <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                      <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', alignSelf: 'center' }}>Filtro:</label>
-                      <select value={filtroResponsavel[setor.id] || ''} onChange={e => setFiltroResponsavel({ ...filtroResponsavel, [setor.id]: e.target.value })} style={{ padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#ffffff', flex: 1 }}>
+                  <div key={setor.id} className="rounded-2xl border-t-4 bg-white p-[18px] ring-1 ring-slate-200" style={{ borderTopColor: setor.cor }}>
+                    <h3 className="mb-3 mt-0 text-base font-bold text-slate-900">{nomeSetorSemEmoji(setor.nome)}</h3>
+                    <div className="mb-3 flex items-center gap-1.5">
+                      <label className="self-center text-[11px] font-bold text-slate-500">Quem criou / responsável:</label>
+                      <select value={filtroResponsavel[setor.id] || ''} onChange={e => setFiltroResponsavel({ ...filtroResponsavel, [setor.id]: e.target.value })} className="flex-1 rounded-lg border-0 bg-white px-1.5 py-1.5 text-xs text-slate-900 ring-1 ring-slate-200 outline-none">
                         <option value="">Todos</option>
-                        {(Array.isArray(usuariosDoSistema) ? usuariosDoSistema : []).map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
+                        {usuariosDoSistema.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
                       </select>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
-                      {tarefasDoBloco
+                    <div className="flex max-h-[420px] flex-col gap-2 overflow-y-auto">
+                      {(() => {
+                        const tarefasVisiveis = tarefasDoBloco
+                        .slice()
+                        .sort((a, b) => Number(b.id) - Number(a.id) || String(b.criadaEm || '').localeCompare(String(a.criadaEm || '')))
                         .filter(t => {
-                          // Em "todas", não mostrar concluídas (elas ficam disponíveis apenas na aba "concluida")
                           if (filtroStatusTarefas === 'todas' && statusDaTarefa(t) === 'concluida') return false;
                           if (filtroStatusTarefas === 'concluida' && statusDaTarefa(t) !== 'concluida') return false;
-                          // Filtro por responsável
-                          if (filtroResponsavel[setor.id] && t.responsavel !== filtroResponsavel[setor.id]) return false;
+                          const pessoa = filtroResponsavel[setor.id];
+                          if (pessoa && t.responsavel !== pessoa && t.criador !== pessoa) return false;
                           return true;
-                        })
-                        .map(t => (
-                        <div key={t.id} className="flex items-start justify-between gap-2 rounded-xl border border-slate-200 p-2.5" style={{ backgroundColor: t.status === 'concluida' ? '#f8fafc' : '#fff' }}>
+                        });
+                        if (tarefasVisiveis.length === 0) {
+                          return <p className="m-0 text-xs text-slate-400">Nenhuma pendência aberta aqui. Confira o setor escolhido ao lançar.</p>;
+                        }
+                        return tarefasVisiveis.map(t => (
+                        <div key={t.id} className={`flex items-start justify-between gap-2 rounded-xl p-2.5 ring-1 ring-slate-200 ${t.status === 'concluida' ? 'bg-slate-50' : 'bg-white'}`}>
                           {t.foto ? (
                             <button type="button" onClick={() => setFotoAmpliada(t.foto || '')} className="mt-0.5 shrink-0 cursor-pointer border-0 bg-transparent p-0">
                               <img src={t.foto} alt={t.texto} className="h-14 w-14 rounded-lg object-cover ring-1 ring-slate-200" />
@@ -181,28 +184,32 @@ export function AbaPendencias(p: {
                               <input type="file" accept="image/*" capture="environment" className="hidden" onChange={event => escolherFotoPendencia(event, { setorId: setorRealDaTarefa(setor.id, t.id), tarefaId: t.id })} />
                             </label>
                           )}
-                          <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: t.status === 'concluida' ? 'line-through' : 'none', color: t.status === 'concluida' ? '#94a3b8' : '#0f172a', display: 'block', marginBottom: '4px' }}>{t.texto}</span>
-                            <span style={{ fontSize: '10px', color: '#64748b', display: 'block', marginBottom: '2px' }}>Criado por: {t.criador} • Data: {t.dataCriacao}</span>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-                              <span style={{ fontSize: '9px', color: '#94a3b8' }}>⏰ {t.criadaEm}</span>
-                              <select 
-                                value={t.responsavel || ''} 
+                          <div className="min-w-0 flex-1">
+                            <span className={`mb-1 block text-[13px] font-bold ${t.status === 'concluida' ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{t.texto}</span>
+                            {setor.id === 'pao-da-vida' && (
+                              <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-wide text-teal-700">{nomeSetorSemEmoji(setores.find(s => (s.tarefas || []).some(x => x.id === t.id))?.nome || '')}</span>
+                            )}
+                            <span className="mb-0.5 block text-[10px] text-slate-500">Criado por: {t.criador} • Data: {t.dataCriacao}</span>
+                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                              <span className="text-[9px] text-slate-400">⏰ {t.criadaEm}</span>
+                              <select
+                                value={t.responsavel || ''}
                                 onChange={e => mudarResponsavel(setorRealDaTarefa(setor.id, t.id), t.id, e.target.value)}
-                                style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '10px', backgroundColor: '#ffffff', cursor: 'pointer' }}
+                                className="cursor-pointer rounded border-0 bg-white px-1 py-1 text-[10px] ring-1 ring-slate-200 outline-none"
                               >
                                 <option value="">Sem responsável</option>
-                                {(Array.isArray(usuariosDoSistema) ? usuariosDoSistema : []).map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
+                                {usuariosDoSistema.map(u => <option key={u.id} value={u.nome}>{u.nome}</option>)}
                               </select>
-                              {t.responsavel && <span style={{ fontSize: '10px', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold' }}>Responsável: {t.responsavel}</span>}
+                              {t.responsavel && <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-bold text-sky-700">Responsável: {t.responsavel}</span>}
                             </div>
                           </div>
-                          <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                            <button onClick={() => alternarStatusTarefa(setorRealDaTarefa(setor.id, t.id), t.id)} style={{ fontSize: '10px', padding: '4px 8px', cursor: 'pointer', backgroundColor: t.status === 'concluida' ? '#fee2e2' : '#dcfce7', color: t.status === 'concluida' ? '#991b1b' : '#166534', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>{t.status === 'concluida' ? 'Reabrir' : 'Concluir'}</button>
-                            <button onClick={() => removerTarefa(setorRealDaTarefa(setor.id, t.id), t.id)} style={{ color: '#0f766e', background: '#fee2e2', border: '1px solid #fca5a5', cursor: 'pointer', borderRadius: '4px', padding: '4px 8px', fontWeight: 'bold' }}>✕</button>
+                          <div className="flex shrink-0 gap-1.5">
+                            <button type="button" onClick={() => alternarStatusTarefa(setorRealDaTarefa(setor.id, t.id), t.id)} className={`cursor-pointer rounded border-0 px-2 py-1 text-[10px] font-bold ${t.status === 'concluida' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>{t.status === 'concluida' ? 'Reabrir' : 'Concluir'}</button>
+                            <button type="button" onClick={() => removerTarefa(setorRealDaTarefa(setor.id, t.id), t.id)} className="cursor-pointer rounded border-0 bg-rose-100 px-2 py-1 font-bold text-teal-700 ring-1 ring-rose-200">✕</button>
                           </div>
                         </div>
-                      ))}
+                      ));
+                      })()}
                     </div>
                   </div>
                   );

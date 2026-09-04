@@ -11,14 +11,15 @@ export function AbaConferencia(p: {
   divergenciasFiltradas: any;
   enviarPdfConferenciaCompartilhado: any;
   excluirConferencia: any;
+  excluirPedidoNaConferencia: any;
   importarBackupConferencia: any;
   imprimirRelatorioConferencia: any;
   novaConferencia: any;
-  pdfFornecedorVisualizacao: any;
   pedidosPendentesConferencia: any;
   pedidosPendentesFiltrados: any;
   pedidosPendentesTotal: any;
   pedidosRealizadosTotal: any;
+  podeExcluirPedidoConferencia: any;
   relatoriosPedidosCotacao: any;
   removerPdfConferenciaCompartilhado: any;
   salvarConferenciaPedido: any;
@@ -42,14 +43,15 @@ export function AbaConferencia(p: {
     divergenciasFiltradas,
     enviarPdfConferenciaCompartilhado,
     excluirConferencia,
+    excluirPedidoNaConferencia,
     importarBackupConferencia,
     imprimirRelatorioConferencia,
     novaConferencia,
-    pdfFornecedorVisualizacao,
     pedidosPendentesConferencia,
     pedidosPendentesFiltrados,
     pedidosPendentesTotal,
     pedidosRealizadosTotal,
+    podeExcluirPedidoConferencia,
     relatoriosPedidosCotacao,
     removerPdfConferenciaCompartilhado,
     salvarConferenciaPedido,
@@ -60,75 +62,26 @@ export function AbaConferencia(p: {
     setTabAtiva,
     visualizarPdfFornecedor
   } = p;
-  const classeAbaInterna = (ativa: boolean) =>
-    `cursor-pointer rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide transition ${
-      ativa ? 'bg-teal-700 text-white shadow-sm shadow-teal-900/20' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
-    }`;
-  const campo = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15';
-  const rotulo = 'mb-1 block text-[11px] font-bold uppercase tracking-wide text-slate-500';
-  const botaoGhost = 'cursor-pointer rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50';
-  const moeda = (valor: number) => `R$ ${Number(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-  const nomeTipoDivergencia = (tipo?: string) => tipo === 'kg' ? 'quilo (kg)' : tipo === 'quantidade' ? 'quantidade' : tipo === 'valor' ? 'valor' : '';
-  const conferenciaTemDivergencia = (conf: any) => {
-    const delta = conf.valorEsperado !== undefined ? Number(conf.valorRecebido) - Number(conf.valorEsperado) : 0;
-    return Boolean(conf.houveDivergencia || conf.tipoDivergencia || Math.abs(delta) >= 0.01);
-  };
-  const explicarDiferenca = (conf: any) => {
-    const tipo = nomeTipoDivergencia(conf.tipoDivergencia);
-    const esperado = Number(conf.valorEsperado);
-    const recebido = Number(conf.valorRecebido);
-    const temNota = conf.valorEsperado !== undefined && !Number.isNaN(esperado);
-    const delta = temNota ? recebido - esperado : 0;
-    const frases: string[] = [];
-    if (tipo) frases.push(`Houve diferença de ${tipo}.`);
-    else if (conf.houveDivergencia || Math.abs(delta) >= 0.01) frases.push('Houve divergência na conferência.');
-    if (temNota && Math.abs(delta) >= 0.01) {
-      frases.push(delta > 0
-        ? `O valor ficou ${moeda(delta)} a mais que a nota.`
-        : `O valor ficou ${moeda(Math.abs(delta))} a menos que a nota.`);
-    }
-    if (String(conf.observacoes || '').trim()) frases.push(`Motivo informado: ${String(conf.observacoes).trim()}`);
-    return frases.join(' ');
-  };
-  const pdfPedido = (conf: any) => {
-    const pedidoOriginal = conf.pedidoId ? relatoriosPedidosCotacao.find((r: any) => r.id === conf.pedidoId) : null;
-    if (!pedidoOriginal?.pdfFornecedor) return null;
-    return (
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-800">{pedidoOriginal.pdfFornecedor.nome}</span>
-          <span className="text-[10px] text-slate-500">({pedidoOriginal.pdfFornecedor.anexadoEm})</span>
-        </div>
-        <div className="flex gap-1">
-          <button type="button" onClick={() => setPdfFornecedorVisualizacao({ nome: pedidoOriginal.pdfFornecedor.nome, conteudo: pedidoOriginal.pdfFornecedor.conteudo })} className={botaoGhost + ' !px-2 !py-1 text-[10px]'}>Ver</button>
-          <a href={pedidoOriginal.pdfFornecedor.conteudo} download={pedidoOriginal.pdfFornecedor.nome} className="cursor-pointer rounded-lg bg-teal-700 px-2 py-1 text-[10px] font-bold text-white no-underline hover:bg-teal-600">Baixar</a>
-        </div>
-      </div>
-    );
-  };
   return (
-    <>
-            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:p-6">
-              <button type="button" onClick={() => setTabAtiva('compras')} className="mb-4 cursor-pointer rounded-lg bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-white">← Voltar para Compras</button>
-              <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="m-0 text-[11px] font-bold uppercase tracking-[0.16em] text-teal-700">Recebimento</p>
-                  <h2 className="m-0 text-xl font-black tracking-tight text-slate-900">Conferência de pedidos</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={enviarPdfConferenciaCompartilhado} className={arquivoConferencia ? 'cursor-pointer rounded-lg bg-teal-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-teal-600' : 'cursor-pointer rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}>
-                    {arquivoConferencia ? 'PDF enviado' : 'Enviar PDF'}
+            <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #cbd5e1' }}>
+              <button onClick={() => setTabAtiva('compras')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '14px' }}>← Voltar para Compras</button>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', margin: 0, textTransform: 'uppercase' }}>✓ Conferência de Pedidos</h2>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button onClick={enviarPdfConferenciaCompartilhado} style={{ backgroundColor: arquivoConferencia ? '#059669' : '#fef3c7', color: arquivoConferencia ? '#ffffff' : '#92400e', border: `1px solid ${arquivoConferencia ? '#10b981' : '#fcd34d'}`, borderRadius: '4px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    {arquivoConferencia ? '📄 Meu PDF enviado' : '📤 Enviar meu PDF'}
                   </button>
-                  <label className={`${botaoGhost} inline-flex items-center`}>
-                    Importar backup
-                    <input type="file" accept=".json" onChange={importarBackupConferencia} className="hidden" />
+                  <label style={{ backgroundColor: '#e2e8f0', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
+                    📥 Importar Backup
+                    <input type="file" accept=".json" onChange={importarBackupConferencia} style={{ display: 'none' }} />
                   </label>
-                  <button type="button" onClick={imprimirRelatorioConferencia} className="cursor-pointer rounded-lg bg-slate-900 px-3 py-2 text-[11px] font-bold text-white hover:bg-slate-800">Imprimir relatório</button>
+                  <button onClick={imprimirRelatorioConferencia} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>🖨️ Imprimir Relatório</button>
                 </div>
               </div>
 
-              <div className="mb-4 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                <label className={rotulo}>Pesquisar fornecedor</label>
+              <div style={{ marginBottom: '16px', padding: '12px 14px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '6px' }}>🔎 Pesquisar fornecedor</label>
                 <input
                   type="text"
                   value={buscaFornecedorConferencia}
@@ -136,170 +89,264 @@ export function AbaConferencia(p: {
                     setBuscaFornecedorConferencia(event.target.value);
                     setAbaConferencia('pedidos');
                   }}
-                  placeholder="Ex.: JFRIOS, Laredo, Minerva..."
-                  className={campo}
+                  placeholder="Ex.: JFRIOS, Laredo, Minerva... mostra os pedidos abertos da empresa"
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '2px solid #2563eb', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold' }}
                 />
                 {buscaFornecedorConferencia.trim() && (
-                  <span className="mt-2 block text-[11px] font-semibold text-teal-800">
+                  <span style={{ display: 'block', marginTop: '6px', fontSize: '11px', color: '#1e40af' }}>
                     {pedidosPendentesFiltrados.length} pedido(s) aberto(s) de “{buscaFornecedorConferencia.trim()}”
                   </span>
                 )}
               </div>
 
+              {/* SEÇÃO DO PDF COMPARTILHADO DA CONFERÊNCIA */}
               {arquivoConferencia && (
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-teal-50 px-4 py-3 ring-1 ring-teal-100">
-                  <div>
-                    <div className="text-sm font-bold text-slate-900">{arquivoConferencia.nome}</div>
-                    <div className="text-[10px] text-slate-500">Enviado em {arquivoConferencia.dataUpload} por {arquivoConferencia.uploadPor}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <a href={arquivoConferencia.conteudo} download={arquivoConferencia.nome} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-teal-600">Baixar PDF</a>
-                    <button type="button" onClick={() => window.open(arquivoConferencia.conteudo, '_blank')} className={botaoGhost}>Visualizar</button>
-                    <button type="button" onClick={removerPdfConferenciaCompartilhado} className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">Remover</button>
+                <div style={{ marginBottom: '20px', padding: '14px', backgroundColor: '#eff6ff', border: '2px solid #60a5fa', borderRadius: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ fontSize: '32px' }}>📄</div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a' }}>{arquivoConferencia.nome}</div>
+                        <div style={{ fontSize: '10px', color: '#475569' }}>
+                          Enviado em {arquivoConferencia.dataUpload} por {arquivoConferencia.uploadPor}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <a 
+                        href={arquivoConferencia.conteudo} 
+                        download={arquivoConferencia.nome}
+                        style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none', cursor: 'pointer' }}
+                      >
+                        ⬇️ Baixar PDF
+                      </a>
+                      <button 
+                        onClick={() => window.open(arquivoConferencia.conteudo, '_blank')}
+                        style={{ backgroundColor: '#ffffff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        👁️ Visualizar
+                      </button>
+                      <button 
+                        onClick={removerPdfConferenciaCompartilhado}
+                        style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}
+                      >
+                        ✕ Remover
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <div className="rounded-2xl bg-slate-900 px-4 py-3 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-slate-300">Pedidos gerados</div>
-                  <div className="mt-1 text-2xl font-black">{pedidosRealizadosTotal}</div>
+              {/* CARDS DE ESTATÍSTICAS */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', padding: '12px 16px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#1e40af', fontWeight: 'bold', textTransform: 'uppercase' }}>Pedidos Gerados</div>
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#1e3a8a', marginTop: '4px' }}>{pedidosRealizadosTotal}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Aguardando</div>
-                  <div className="mt-1 text-2xl font-black text-slate-900">{pedidosPendentesTotal}</div>
+                <div style={{ backgroundColor: '#fef3c7', borderLeft: '4px solid #d97706', padding: '12px 16px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#92400e', fontWeight: 'bold', textTransform: 'uppercase' }}>Aguardando Conferência</div>
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#78350f', marginTop: '4px' }}>{pedidosPendentesTotal}</div>
                 </div>
-                <div className="rounded-2xl bg-teal-700 px-4 py-3 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-teal-100">Conferidos</div>
-                  <div className="mt-1 text-2xl font-black">{conferencias.length}</div>
+                <div style={{ backgroundColor: '#ecfdf5', borderLeft: '4px solid #059669', padding: '12px 16px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#065f46', fontWeight: 'bold', textTransform: 'uppercase' }}>Conferidos</div>
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#064e3b', marginTop: '4px' }}>{conferencias.length}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-4 py-3 ring-1 ring-rose-200">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-rose-700">Com divergência</div>
-                  <div className="mt-1 text-2xl font-black text-rose-800">{conferencias.filter((c: any) => conferenciaTemDivergencia(c)).length}</div>
+                <div style={{ backgroundColor: '#fef2f2', borderLeft: '4px solid #dc2626', padding: '12px 16px', borderRadius: '6px' }}>
+                  <div style={{ fontSize: '10px', color: '#991b1b', fontWeight: 'bold', textTransform: 'uppercase' }}>Com Divergência</div>
+                  <div style={{ fontSize: '22px', fontWeight: '900', color: '#7f1d1d', marginTop: '4px' }}>{conferencias.filter(c => c.houveDivergencia).length}</div>
                 </div>
               </div>
 
-              <div className="mb-5 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-                <h3 className="m-0 mb-3 text-sm font-bold text-slate-900">Conferência avulsa (sem pedido)</h3>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {/* FORMULÁRIO DE CONFERÊNCIA AVULSA */}
+              <div style={{ marginBottom: '20px', padding: '16px', backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: '6px' }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: '14px', color: '#065f46', fontWeight: 'bold' }}>📋 Conferência Avulsa (sem pedido)</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
                   <div>
-                    <label className={rotulo}>Data</label>
-                    <input type="date" value={novaConferencia.data} onChange={(e) => setNovaConferencia({ ...novaConferencia, data: e.target.value })} className={campo} />
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Data</label>
+                    <input 
+                      type="date" 
+                      value={novaConferencia.data} 
+                      onChange={(e) => setNovaConferencia({ ...novaConferencia, data: e.target.value })}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                    />
                   </div>
                   <div>
-                    <label className={rotulo}>Nome do conferente</label>
-                    <input type="text" placeholder="Seu nome..." value={novaConferencia.nomeConferente} onChange={(e) => setNovaConferencia({ ...novaConferencia, nomeConferente: e.target.value })} className={campo} />
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Nome do Conferente</label>
+                    <input 
+                      type="text" 
+                      placeholder="Seu nome..." 
+                      value={novaConferencia.nomeConferente} 
+                      onChange={(e) => setNovaConferencia({ ...novaConferencia, nomeConferente: e.target.value })}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                    />
                   </div>
                   <div>
-                    <label className={rotulo}>Valor recebido (R$)</label>
-                    <input type="text" placeholder="0,00" value={novaConferencia.valorRecebido} onChange={(e) => setNovaConferencia({ ...novaConferencia, valorRecebido: e.target.value })} className={campo} />
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Valor Recebido (R$)</label>
+                    <input 
+                      type="text" 
+                      placeholder="0,00" 
+                      value={novaConferencia.valorRecebido} 
+                      onChange={(e) => setNovaConferencia({ ...novaConferencia, valorRecebido: e.target.value })}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                    />
                   </div>
                   <div>
-                    <label className={rotulo}>Houve divergência?</label>
-                    <select value={novaConferencia.houveDivergencia ? 'true' : 'false'} onChange={(e) => setNovaConferencia({ ...novaConferencia, houveDivergencia: e.target.value === 'true' })} className={campo}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Houve Divergência?</label>
+                    <select 
+                      value={novaConferencia.houveDivergencia ? 'true' : 'false'} 
+                      onChange={(e) => setNovaConferencia({ ...novaConferencia, houveDivergencia: e.target.value === 'true' })}
+                      style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                    >
                       <option value="false">Não</option>
                       <option value="true">Sim</option>
                     </select>
                   </div>
                   {novaConferencia.houveDivergencia && (
                     <div>
-                      <label className={rotulo}>Tipo de divergência</label>
-                      <select value={novaConferencia.tipoDivergencia || ''} onChange={(e) => setNovaConferencia({ ...novaConferencia, tipoDivergencia: e.target.value as any })} className={campo}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Tipo de Divergência</label>
+                      <select 
+                        value={novaConferencia.tipoDivergencia || ''} 
+                        onChange={(e) => setNovaConferencia({ ...novaConferencia, tipoDivergencia: e.target.value as any })}
+                        style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px' }}
+                      >
                         <option value="">Selecione...</option>
-                        <option value="valor">Diferença de valor</option>
-                        <option value="kg">Diferença de quilo (kg)</option>
-                        <option value="quantidade">Diferença de quantidade</option>
+                        <option value="valor">Valor</option>
+                        <option value="kg">Peso/Kg</option>
+                        <option value="quantidade">Quantidade</option>
                       </select>
                     </div>
                   )}
                 </div>
-                <div className="mt-3">
-                  <label className={rotulo}>Observações</label>
-                  <textarea placeholder="Detalhes da conferência..." value={novaConferencia.observacoes} onChange={(e) => setNovaConferencia({ ...novaConferencia, observacoes: e.target.value })} className={`${campo} min-h-[60px] resize-y`} />
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#334155', marginBottom: '4px' }}>Observações</label>
+                  <textarea 
+                    placeholder="Detalhes da conferência..." 
+                    value={novaConferencia.observacoes} 
+                    onChange={(e) => setNovaConferencia({ ...novaConferencia, observacoes: e.target.value })}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', minHeight: '60px', resize: 'vertical' }}
+                  />
                 </div>
-                <button type="button" onClick={adicionarConferencia} className="mt-3 cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-600">
-                  Registrar conferência
+                <button 
+                  onClick={adicionarConferencia}
+                  style={{ marginTop: '12px', backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '8px 16px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  ✓ Registrar Conferência
                 </button>
               </div>
 
-              <div className="mb-4 flex flex-wrap gap-2">
+              {/* SUB-ABAS */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap', borderBottom: '2px solid #e2e8f0', paddingBottom: '0' }}>
                 {(['pedidos', 'conferidos', 'divergencias'] as const).map(aba => (
-                  <button type="button" key={aba} onClick={() => setAbaConferencia(aba)} className={classeAbaInterna(abaConferencia === aba)}>
-                    {aba === 'pedidos' && `Pedidos pendentes (${buscaFornecedorConferencia.trim() ? pedidosPendentesFiltrados.length : pedidosPendentesTotal})`}
-                    {aba === 'conferidos' && `Conferidos (${buscaFornecedorConferencia.trim() ? conferenciasFiltradas.length : conferencias.length})`}
-                    {aba === 'divergencias' && `Divergências (${buscaFornecedorConferencia.trim() ? divergenciasFiltradas.length : conferencias.filter((c: any) => conferenciaTemDivergencia(c)).length})`}
+                  <button 
+                    key={aba}
+                    onClick={() => setAbaConferencia(aba)}
+                    style={{ 
+                      backgroundColor: abaConferencia === aba ? '#2563eb' : '#ffffff', 
+                      color: abaConferencia === aba ? '#ffffff' : '#334155', 
+                      border: '1px solid #cbd5e1', 
+                      borderBottom: abaConferencia === aba ? 'none' : '1px solid #cbd5e1',
+                      borderRadius: '6px 6px 0 0', 
+                      padding: '10px 16px', 
+                      fontSize: '12px', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer',
+                      transform: abaConferencia === aba ? 'translateY(2px)' : 'none'
+                    }}
+                  >
+                    {aba === 'pedidos' && `📦 Pedidos Pendentes (${buscaFornecedorConferencia.trim() ? pedidosPendentesFiltrados.length : pedidosPendentesTotal})`}
+                    {aba === 'conferidos' && `✅ Conferidos (${buscaFornecedorConferencia.trim() ? conferenciasFiltradas.length : conferencias.length})`}
+                    {aba === 'divergencias' && `⚠️ Divergências (${buscaFornecedorConferencia.trim() ? divergenciasFiltradas.length : conferencias.filter(c => c.houveDivergencia).length})`}
                   </button>
                 ))}
               </div>
 
+              {/* ABA: PEDIDOS PENDENTES */}
               {abaConferencia === 'pedidos' && (
                 <div>
                   {pedidosPendentesConferencia.length === 0 ? (
-                    <div className="rounded-2xl bg-slate-50 px-5 py-10 text-center ring-1 ring-slate-200">
-                      <strong className="mb-1 block text-sm text-slate-900">Nenhum pedido pendente</strong>
-                      <span className="text-sm text-slate-500">Todos os pedidos já foram conferidos. Gere novos pedidos na cotação.</span>
+                    <div style={{ padding: '40px 20px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                      <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎉</div>
+                      <strong style={{ display: 'block', fontSize: '14px', color: '#0f172a', marginBottom: '4px' }}>Nenhum pedido pendente!</strong>
+                      Todos os pedidos já foram conferidos. Gere novos pedidos na aba de Cotação.
                     </div>
                   ) : pedidosPendentesFiltrados.length === 0 ? (
-                    <div className="rounded-2xl bg-white px-5 py-10 text-center ring-1 ring-rose-200">
-                      <strong className="mb-1 block text-sm text-slate-900">Nenhum pedido aberto deste fornecedor</strong>
-                      <span className="text-sm text-slate-500">Não achei “{buscaFornecedorConferencia.trim()}” nos pedidos pendentes. Confira o nome ou limpe a pesquisa.</span>
+                    <div style={{ padding: '40px 20px', backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', textAlign: 'center', color: '#9a3412', fontSize: '13px' }}>
+                      <strong style={{ display: 'block', fontSize: '14px', color: '#7c2d12', marginBottom: '4px' }}>Nenhum pedido aberto deste fornecedor</strong>
+                      Não achei “{buscaFornecedorConferencia.trim()}” nos Pedidos Pendentes. Confira o nome ou limpe a pesquisa.
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-4">
-                      {pedidosPendentesFiltrados.map((relatorio: any) => (
-                        <section key={relatorio.id} className="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-                          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-4 py-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {pedidosPendentesFiltrados.map(relatorio => (
+                        <section key={relatorio.id} style={{ width: '100%', boxSizing: 'border-box', border: '2px solid #2563eb', borderRadius: '6px', padding: '14px', backgroundColor: '#ffffff' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe', margin: '-14px -14px 10px', padding: '10px 14px' }}>
                             <div>
-                              <strong className="block text-sm text-slate-900">{relatorio.itens[0]?.fornecedor || 'Fornecedor não informado'}</strong>
-                              <span className="text-[11px] text-slate-500">
-                                {relatorio.data} • {relatorio.itens.length} item(ns) • <strong className="text-teal-800">Valor nota: {moeda(relatorio.totalGeral)}</strong>
+                              <strong style={{ display: 'block', fontSize: '14px', color: '#1e3a8a' }}>
+                                📦 {relatorio.itens[0]?.fornecedor || 'Fornecedor não informado'}
+                              </strong>
+                              <span style={{ fontSize: '11px', color: '#475569' }}>
+                                {relatorio.data} • {relatorio.itens.length} item(ns) • 
+                                <strong style={{ color: '#1e3a8a' }}> Valor Nota: R$ {relatorio.totalGeral.toFixed(2)}</strong>
                               </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              {podeExcluirPedidoConferencia && (
+                                <button onClick={() => excluirPedidoNaConferencia(relatorio.id)} style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '4px', padding: '4px 10px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                  Excluir pedido
+                                </button>
+                              )}
                               {!relatorio.pdfFornecedor ? (
-                                <button type="button" onClick={() => anexarPdfFornecedor(relatorio)} className={botaoGhost}>Anexar PDF do fornecedor</button>
+                                <button onClick={() => anexarPdfFornecedor(relatorio)} style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: '4px', padding: '4px 10px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                  📎 Anexar PDF do fornecedor
+                                </button>
                               ) : (
                                 <>
-                                  <span className="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-slate-700 ring-1 ring-slate-200">{relatorio.pdfFornecedor.nome}</span>
-                                  <button type="button" onClick={() => visualizarPdfFornecedor(relatorio)} className={botaoGhost + ' !px-2 !py-1 text-[10px]'}>Ver</button>
-                                  <a href={relatorio.pdfFornecedor.conteudo} download={relatorio.pdfFornecedor.nome} className="cursor-pointer rounded-lg bg-teal-700 px-2 py-1 text-[10px] font-bold text-white no-underline hover:bg-teal-600">Baixar</a>
+                                  <span style={{ backgroundColor: '#fef3c7', color: '#92400e', padding: '3px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #fcd34d' }}>
+                                    📄 {relatorio.pdfFornecedor.nome}
+                                  </span>
+                                  <button onClick={() => visualizarPdfFornecedor(relatorio)} style={{ backgroundColor: '#ffffff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                    👁️ Ver
+                                  </button>
+                                  <a href={relatorio.pdfFornecedor.conteudo} download={relatorio.pdfFornecedor.nome} style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none' }}>
+                                    ⬇️
+                                  </a>
                                 </>
                               )}
                             </div>
                           </div>
 
-                          <div className="mx-4 mt-3 max-h-[180px] overflow-y-auto rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                            {Object.entries(relatorio.itens.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]: [string, any]) => (
+                          <div style={{ marginTop: '7px', display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '180px', overflowY: 'auto', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                            {Object.entries<any[]>(relatorio.itens.reduce((grupos, item) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {} as { [fornecedor: string]: any[] })).map(([fornecedor, itensFornecedor]) => (
                               <div key={`${relatorio.id}-${fornecedor}`}>
-                                {itensFornecedor.map((item: any, indice: number) => (
-                                  <div key={`${relatorio.id}-${fornecedor}-${indice}`} className="grid grid-cols-[1fr_70px_90px] gap-1.5 border-t border-slate-100 py-1 text-[11px] first:border-t-0 first:pt-0">
-                                    <span className="text-slate-600">{item.produto}</span>
-                                    <strong className="text-slate-900">{item.quantidade} {item.unit}</strong>
-                                    <span className="text-right text-slate-600">{moeda(item.valorTotal)}</span>
+                                {itensFornecedor.map((item, indice) => (
+                                  <div key={`${relatorio.id}-${fornecedor}-${indice}`} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 90px', gap: '6px', fontSize: '11px', borderTop: '1px solid #f1f5f9', paddingTop: '4px' }}>
+                                    <span style={{ color: '#334155' }}>{item.produto}</span>
+                                    <strong style={{ color: '#0f172a' }}>{item.quantidade} {item.unit}</strong>
+                                    <span style={{ textAlign: 'right', color: '#334155' }}>R$ {item.valorTotal.toFixed(2)}</span>
                                   </div>
                                 ))}
                               </div>
                             ))}
                           </div>
 
-                          <div className="m-4 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
-                            <strong className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-slate-500">Preencher conferência deste pedido</strong>
-                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                              <input placeholder="Nome do conferente" value={conferenciasPorPedido[relatorio.id]?.conferente || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'conferente', event.target.value)} className={campo} />
-                              <input placeholder="Valor recebido (R$)" value={conferenciasPorPedido[relatorio.id]?.valor || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'valor', event.target.value)} className={campo} />
-                              <input placeholder="Por que da diferença (ex.: peso veio a mais)" value={conferenciasPorPedido[relatorio.id]?.obs || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'obs', event.target.value)} className={campo} />
-                              <select value={conferenciasPorPedido[relatorio.id]?.tipoDivergencia || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'tipoDivergencia', event.target.value)} className={campo}>
+                          <div style={{ marginTop: '12px', padding: '10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '5px' }}>
+                            <strong style={{ display: 'block', fontSize: '11px', color: '#1e3a8a', marginBottom: '7px' }}>✓ Preencher Conferência deste Pedido</strong>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '6px' }}>
+                              <input placeholder="Nome do conferente" value={conferenciasPorPedido[relatorio.id]?.conferente || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'conferente', event.target.value)} style={{ padding: '6px', border: '1px solid #93c5fd', borderRadius: '4px', fontSize: '11px' }} />
+                              <input placeholder="Valor recebido (R$)" value={conferenciasPorPedido[relatorio.id]?.valor || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'valor', event.target.value)} style={{ padding: '6px', border: '1px solid #93c5fd', borderRadius: '4px', fontSize: '11px' }} />
+                              <input placeholder="Detalhes / observações" value={conferenciasPorPedido[relatorio.id]?.obs || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'obs', event.target.value)} style={{ padding: '6px', border: '1px solid #93c5fd', borderRadius: '4px', fontSize: '11px' }} />
+                              <select value={conferenciasPorPedido[relatorio.id]?.tipoDivergencia || ''} onChange={event => atualizarConferenciaPedido(relatorio.id, 'tipoDivergencia', event.target.value)} style={{ padding: '6px', border: '1px solid #93c5fd', borderRadius: '4px', fontSize: '11px' }}>
                                 <option value="">Sem divergência</option>
-                                <option value="valor">Diferença de valor</option>
-                                <option value="kg">Diferença de quilo (kg)</option>
-                                <option value="quantidade">Diferença de quantidade</option>
+                                <option value="valor">Divergência de valor</option>
+                                <option value="kg">Divergência de Kg</option>
+                                <option value="quantidade">Divergência de quantidade</option>
                               </select>
-                              <label className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
-                                <input type="checkbox" checked={conferenciasPorPedido[relatorio.id]?.divergencia || false} onChange={event => atualizarConferenciaPedido(relatorio.id, 'divergencia', event.target.checked)} className="accent-teal-700" /> Houve divergência
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#1e3a8a' }}>
+                                <input type="checkbox" checked={conferenciasPorPedido[relatorio.id]?.divergencia || false} onChange={event => atualizarConferenciaPedido(relatorio.id, 'divergencia', event.target.checked)} /> Houve divergência
                               </label>
                             </div>
-                            <button type="button" onClick={() => salvarConferenciaPedido(relatorio)} className="mt-3 cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-[11px] font-bold text-white hover:bg-teal-600">
-                              Salvar e marcar como conferido
+
+                            <button onClick={() => salvarConferenciaPedido(relatorio)} style={{ marginTop: '7px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 14px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
+                              💾 Salvar e Marcar como Conferido
                             </button>
                           </div>
                         </section>
@@ -309,165 +356,206 @@ export function AbaConferencia(p: {
                 </div>
               )}
 
+              {/* ABA: CONFERIDOS */}
               {abaConferencia === 'conferidos' && (
                 <div>
                   {conferencias.length === 0 ? (
-                    <div className="rounded-2xl bg-slate-50 px-5 py-10 text-center ring-1 ring-slate-200">
-                      <strong className="mb-1 block text-sm text-slate-900">Nenhuma conferência registrada ainda</strong>
-                      <span className="text-sm text-slate-500">Conforme os pedidos chegarem, eles aparecerão aqui após serem conferidos.</span>
+                    <div style={{ padding: '40px 20px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                      <div style={{ fontSize: '40px', marginBottom: '10px' }}>📭</div>
+                      <strong style={{ display: 'block', fontSize: '14px', color: '#0f172a', marginBottom: '4px' }}>Nenhuma conferência registrada ainda.</strong>
+                      Conforme os pedidos chegarem, eles aparecerão aqui após serem conferidos.
                     </div>
                   ) : conferenciasFiltradas.length === 0 ? (
-                    <div className="rounded-2xl bg-white px-5 py-8 text-center text-sm text-slate-600 ring-1 ring-slate-200">Nenhuma conferência deste fornecedor.</div>
+                    <div style={{ padding: '24px 20px', backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', textAlign: 'center', color: '#9a3412', fontSize: '13px' }}>
+                      Nenhuma conferência deste fornecedor.
+                    </div>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      {conferenciasFiltradas.map((conf: any) => {
-                        const temDivergencia = conferenciaTemDivergencia(conf);
-                        const motivo = explicarDiferenca(conf);
-                        const esperado = Number(conf.valorEsperado);
-                        const delta = conf.valorEsperado !== undefined ? Number(conf.valorRecebido) - esperado : 0;
-                        return (
-                        <div key={conf.id} className={`flex items-start justify-between gap-3 rounded-2xl p-4 ring-1 ${temDivergencia ? 'bg-rose-50 ring-rose-200' : 'bg-white ring-slate-200'}`}>
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <strong className="text-sm text-slate-900">{conf.nomeConferente}</strong>
-                              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">{conf.data}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {conferenciasFiltradas.map((conf) => (
+                        <div key={conf.id} style={{ padding: '14px', backgroundColor: conf.houveDivergencia ? '#fff7ed' : '#ffffff', border: `1px solid ${conf.houveDivergencia ? '#fed7aa' : '#cbd5e1'}`, borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
+                              <strong style={{ fontSize: '13px', color: '#0f172a' }}>{conf.nomeConferente}</strong>
+                              <span style={{ fontSize: '11px', color: '#64748b', backgroundColor: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>{conf.data}</span>
                               {conf.fornecedor && (
-                                <span className="rounded-md bg-teal-50 px-2 py-0.5 text-[11px] font-bold text-teal-800">{conf.fornecedor}</span>
-                              )}
-                              {temDivergencia ? (
-                                <span className="rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
-                                  {nomeTipoDivergencia(conf.tipoDivergencia) ? `Diferença de ${nomeTipoDivergencia(conf.tipoDivergencia)}` : 'Com divergência'}
+                                <span style={{ fontSize: '11px', color: '#1e3a8a', backgroundColor: '#dbeafe', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  📦 {conf.fornecedor}
                                 </span>
-                              ) : (
-                                <span className="rounded-md bg-teal-50 px-2 py-0.5 text-[10px] font-bold text-teal-800">Sem divergências</span>
+                              )}
+                              {conf.houveDivergencia && (
+                                <span style={{ fontSize: '10px', color: '#dc2626', backgroundColor: '#fee2e2', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  ⚠️ Divergência: {conf.tipoDivergencia}
+                                </span>
+                              )}
+                              {!conf.houveDivergencia && (
+                                <span style={{ fontSize: '10px', color: '#047857', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  ✓ Sem divergências
+                                </span>
                               )}
                             </div>
-                            <div className="mb-2 grid gap-2 sm:grid-cols-3">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', marginBottom: '8px' }}>
                               {conf.valorEsperado !== undefined && (
-                                <div className="text-[11px] text-slate-600"><strong className="text-slate-800">Valor nota:</strong> {moeda(conf.valorEsperado)}</div>
+                                <div style={{ fontSize: '11px', color: '#334155' }}>
+                                  <strong>Valor Nota:</strong> R$ {conf.valorEsperado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </div>
                               )}
-                              <div className="text-[11px] text-slate-600">
-                                <strong className="text-slate-800">Valor recebido:</strong>{' '}
-                                <span className={`font-bold ${Math.abs(delta) >= 0.01 ? 'text-rose-700' : 'text-teal-800'}`}>{moeda(conf.valorRecebido)}</span>
+                              <div style={{ fontSize: '11px', color: '#334155' }}>
+                                <strong>Valor Recebido:</strong> <span style={{ color: conf.valorEsperado && conf.valorRecebido !== conf.valorEsperado ? '#dc2626' : '#065f46', fontWeight: 'bold' }}>R$ {conf.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                               </div>
-                              {conf.valorEsperado !== undefined && Math.abs(delta) >= 0.01 && (
-                                <div className="text-[11px] font-semibold text-rose-700">
-                                  <strong>{delta > 0 ? 'Valor a mais:' : 'Valor a menos:'}</strong> {moeda(Math.abs(delta))}
+                              {conf.valorEsperado !== undefined && conf.valorRecebido !== conf.valorEsperado && (
+                                <div style={{ fontSize: '11px', color: '#dc2626' }}>
+                                  <strong>Diferença:</strong> R$ {Math.abs(conf.valorRecebido - conf.valorEsperado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                 </div>
                               )}
                             </div>
-                            {motivo && (
-                              <div className="mb-2 rounded-xl bg-white px-3 py-2 text-[12px] font-semibold leading-snug text-slate-800 ring-1 ring-rose-100">
-                                {motivo}
-                              </div>
-                            )}
                             {conf.itensConferidos && conf.itensConferidos.length > 0 && (
-                              <details className="mb-2">
-                                <summary className="cursor-pointer text-[11px] font-bold text-slate-600">Ver itens conferidos ({conf.itensConferidos.length})</summary>
-                                <div className="mt-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-100">
-                                  {conf.itensConferidos.map((item: any, idx: number) => (
-                                    <div key={idx} className={`grid grid-cols-[1fr_70px_90px] gap-1.5 py-1 text-[10px] ${idx > 0 ? 'border-t border-slate-100' : ''}`}>
+                              <details style={{ marginBottom: '6px' }}>
+                                <summary style={{ fontSize: '11px', color: '#334155', cursor: 'pointer', fontWeight: 'bold' }}>
+                                  📋 Ver itens conferidos ({conf.itensConferidos.length})
+                                </summary>
+                                <div style={{ marginTop: '6px', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                                  {conf.itensConferidos.map((item, idx) => (
+                                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 90px', gap: '6px', fontSize: '10px', borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none', paddingTop: idx > 0 ? '4px' : '0' }}>
                                       <span>{item.produto}</span>
                                       <strong>{item.quantidade} {item.unit}</strong>
-                                      <span className="text-right">{moeda(item.valorTotal)}</span>
+                                      <span style={{ textAlign: 'right' }}>R$ {item.valorTotal.toFixed(2)}</span>
                                     </div>
                                   ))}
                                 </div>
                               </details>
                             )}
-                            {pdfPedido(conf)}
+                            {(() => {
+                              const pedidoOriginal = conf.pedidoId ? relatoriosPedidosCotacao.find(r => r.id === conf.pedidoId) : null;
+                              if (!pedidoOriginal?.pdfFornecedor) return null;
+                              return (
+                                <div style={{ marginBottom: '6px', padding: '6px 10px', backgroundColor: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ fontSize: '14px' }}>📄</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e' }}>{pedidoOriginal.pdfFornecedor.nome}</span>
+                                    <span style={{ fontSize: '10px', color: '#64748b' }}>({pedidoOriginal.pdfFornecedor.anexadoEm})</span>
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button onClick={() => setPdfFornecedorVisualizacao({ nome: pedidoOriginal.pdfFornecedor!.nome, conteudo: pedidoOriginal.pdfFornecedor!.conteudo })} style={{ backgroundColor: '#ffffff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                      👁️ Ver
+                                    </button>
+                                    <a href={pedidoOriginal.pdfFornecedor.conteudo} download={pedidoOriginal.pdfFornecedor.nome} style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none' }}>
+                                      ⬇️ Baixar
+                                    </a>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                            {conf.observacoes && (
+                              <div style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic', borderLeft: '3px solid #cbd5e1', paddingLeft: '8px' }}>
+                                "{conf.observacoes}"
+                              </div>
+                            )}
                           </div>
-                          <button type="button" onClick={() => excluirConferencia(conf.id)} className="shrink-0 cursor-pointer rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">✕</button>
+                          {podeExcluirPedidoConferencia && (
+                          <button 
+                            onClick={() => excluirConferencia(conf.id)}
+                            style={{ color: '#ef4444', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', flexShrink: 0 }}
+                          >
+                            ✕
+                          </button>
+                          )}
                         </div>
-                        );
-                      })}
+                      ))}
                     </div>
                   )}
                 </div>
               )}
 
+              {/* ABA: DIVERGÊNCIAS */}
               {abaConferencia === 'divergencias' && (
                 <div>
-                  {conferencias.filter((c: any) => conferenciaTemDivergencia(c)).length === 0 ? (
-                    <div className="rounded-2xl bg-teal-50 px-5 py-10 text-center ring-1 ring-teal-100">
-                      <strong className="mb-1 block text-sm text-teal-900">Nenhuma divergência registrada</strong>
-                      <span className="text-sm text-teal-800">Todas as conferências estão sem problemas.</span>
+                  {conferencias.filter(c => c.houveDivergencia).length === 0 ? (
+                    <div style={{ padding: '40px 20px', backgroundColor: '#ecfdf5', border: '1px solid #86efac', borderRadius: '6px', textAlign: 'center', color: '#065f46', fontSize: '13px' }}>
+                      <div style={{ fontSize: '40px', marginBottom: '10px' }}>✅</div>
+                      <strong style={{ display: 'block', fontSize: '14px', color: '#064e3b', marginBottom: '4px' }}>Ótimo! Nenhuma divergência registrada.</strong>
+                      Todas as conferências estão sem problemas.
                     </div>
                   ) : divergenciasFiltradas.length === 0 ? (
-                    <div className="rounded-2xl bg-white px-5 py-8 text-center text-sm text-slate-600 ring-1 ring-slate-200">Nenhuma divergência deste fornecedor.</div>
+                    <div style={{ padding: '24px 20px', backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '6px', textAlign: 'center', color: '#9a3412', fontSize: '13px' }}>
+                      Nenhuma divergência deste fornecedor.
+                    </div>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      {divergenciasFiltradas.map((conf: any) => {
-                        const motivo = explicarDiferenca(conf);
-                        const delta = conf.valorEsperado !== undefined ? Number(conf.valorRecebido) - Number(conf.valorEsperado) : 0;
-                        return (
-                        <div key={conf.id} className="flex items-start justify-between gap-3 rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200">
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-3 flex flex-wrap items-center gap-2">
-                              <span className="rounded-md bg-rose-700 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                                {nomeTipoDivergencia(conf.tipoDivergencia) ? `Diferença de ${nomeTipoDivergencia(conf.tipoDivergencia)}` : 'Divergência'}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {divergenciasFiltradas.map((conf) => (
+                        <div key={conf.id} style={{ padding: '14px', backgroundColor: '#fff7ed', border: '2px solid #f97316', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '11px', color: '#ffffff', backgroundColor: '#dc2626', padding: '3px 10px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                                ⚠️ Divergência de {conf.tipoDivergencia}
                               </span>
-                              <strong className="text-sm text-slate-900">{conf.nomeConferente}</strong>
-                              <span className="rounded-md bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-slate-200">{conf.data}</span>
+                              <strong style={{ fontSize: '13px', color: '#0f172a' }}>{conf.nomeConferente}</strong>
+                              <span style={{ fontSize: '11px', color: '#64748b', backgroundColor: '#ffffff', padding: '2px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>{conf.data}</span>
                               {conf.fornecedor && (
-                                <span className="rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-teal-800 ring-1 ring-slate-200">{conf.fornecedor}</span>
+                                <span style={{ fontSize: '11px', color: '#1e3a8a', backgroundColor: '#dbeafe', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  📦 {conf.fornecedor}
+                                </span>
                               )}
                             </div>
-                            <div className="mb-3 grid gap-2 sm:grid-cols-3">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px', marginBottom: '8px' }}>
                               {conf.valorEsperado !== undefined && (
-                                <div className="rounded-xl bg-white p-2.5 ring-1 ring-slate-200">
-                                  <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Valor da nota</div>
-                                  <div className="text-base font-black text-slate-900">{moeda(conf.valorEsperado)}</div>
+                                <div style={{ fontSize: '11px', color: '#334155', padding: '6px', backgroundColor: '#ffffff', borderRadius: '4px', border: '1px solid #fed7aa' }}>
+                                  <div style={{ color: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>Valor da Nota</div>
+                                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#1e3a8a' }}>R$ {conf.valorEsperado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                                 </div>
                               )}
-                              <div className="rounded-xl bg-white p-2.5 ring-1 ring-slate-200">
-                                <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Valor recebido</div>
-                                <div className="text-base font-black text-rose-700">{moeda(conf.valorRecebido)}</div>
+                              <div style={{ fontSize: '11px', color: '#334155', padding: '6px', backgroundColor: '#ffffff', borderRadius: '4px', border: '1px solid #fed7aa' }}>
+                                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>Valor Recebido</div>
+                                <div style={{ fontSize: '15px', fontWeight: '900', color: '#dc2626' }}>R$ {conf.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                               </div>
-                              {conf.valorEsperado !== undefined && Math.abs(delta) >= 0.01 && (
-                                <div className="rounded-xl bg-white p-2.5 ring-1 ring-rose-200">
-                                  <div className="text-[10px] font-bold uppercase tracking-wide text-rose-700">{delta > 0 ? 'Valor a mais' : 'Valor a menos'}</div>
-                                  <div className="text-base font-black text-rose-800">{moeda(Math.abs(delta))}</div>
+                              {conf.valorEsperado !== undefined && (
+                                <div style={{ fontSize: '11px', color: '#334155', padding: '6px', backgroundColor: '#fee2e2', borderRadius: '4px', border: '1px solid #fca5a5' }}>
+                                  <div style={{ color: '#991b1b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>Diferença</div>
+                                  <div style={{ fontSize: '15px', fontWeight: '900', color: '#991b1b' }}>R$ {Math.abs(conf.valorRecebido - conf.valorEsperado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                                 </div>
                               )}
                             </div>
-                            {motivo && (
-                              <div className="mb-3 rounded-xl bg-white px-3 py-2 text-[12px] font-semibold leading-snug text-slate-800 ring-1 ring-rose-100">
-                                {motivo}
+                            {(() => {
+                              const pedidoOriginal = conf.pedidoId ? relatoriosPedidosCotacao.find(r => r.id === conf.pedidoId) : null;
+                              if (!pedidoOriginal?.pdfFornecedor) return null;
+                              return (
+                                <div style={{ marginBottom: '8px', padding: '6px 10px', backgroundColor: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ fontSize: '14px' }}>📄</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#92400e' }}>{pedidoOriginal.pdfFornecedor.nome}</span>
+                                    <span style={{ fontSize: '10px', color: '#64748b' }}>({pedidoOriginal.pdfFornecedor.anexadoEm})</span>
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button onClick={() => setPdfFornecedorVisualizacao({ nome: pedidoOriginal.pdfFornecedor!.nome, conteudo: pedidoOriginal.pdfFornecedor!.conteudo })} style={{ backgroundColor: '#ffffff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                      👁️ Ver
+                                    </button>
+                                    <a href={pedidoOriginal.pdfFornecedor.conteudo} download={pedidoOriginal.pdfFornecedor.nome} style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none' }}>
+                                      ⬇️ Baixar
+                                    </a>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                            {conf.observacoes && (
+                              <div style={{ fontSize: '11px', color: '#334155', backgroundColor: '#ffffff', border: '1px solid #fed7aa', borderRadius: '4px', padding: '8px' }}>
+                                <strong style={{ color: '#9a3412' }}>📝 Observações:</strong><br />
+                                "{conf.observacoes}"
                               </div>
                             )}
-                            {pdfPedido(conf)}
                           </div>
-                          <button type="button" onClick={() => excluirConferencia(conf.id)} className="shrink-0 cursor-pointer rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">✕</button>
+                          {podeExcluirPedidoConferencia && (
+                          <button 
+                            onClick={() => excluirConferencia(conf.id)}
+                            style={{ color: '#ef4444', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', flexShrink: 0 }}
+                          >
+                            ✕
+                          </button>
+                          )}
                         </div>
-                        );
-                      })}
+                      ))}
                     </div>
                   )}
                 </div>
               )}
             </section>
-
-          {pdfFornecedorVisualizacao && (
-            <div className="fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-slate-900/85 p-5">
-              <div className="flex max-h-[92vh] w-full max-w-[900px] flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-                  <div>
-                    <strong className="block text-sm text-slate-900">{pdfFornecedorVisualizacao.nome}</strong>
-                    <span className="text-[10px] text-slate-500">Visualização do PDF</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <a href={pdfFornecedorVisualizacao.conteudo} download={pdfFornecedorVisualizacao.nome} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-teal-600">Baixar</a>
-                    <button type="button" onClick={() => window.open(pdfFornecedorVisualizacao.conteudo, '_blank')} className={botaoGhost}>Abrir nova aba</button>
-                    <button type="button" onClick={() => setPdfFornecedorVisualizacao(null)} className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">Fechar</button>
-                  </div>
-                </div>
-                <div className="min-h-[70vh] flex-1 overflow-hidden bg-black">
-                  <iframe src={pdfFornecedorVisualizacao.conteudo} title="PDF do fornecedor" className="h-full min-h-[70vh] w-full border-0" />
-                </div>
-              </div>
-            </div>
-          )}
-    </>
   );
 }
