@@ -6,6 +6,9 @@ import { AbaManutencao } from './abas/manutencao/AbaManutencao';
 import { AbaCadastroProdutos } from './abas/cadastro-produtos/AbaCadastroProdutos';
 import { AbaCadastroFornecedores } from './abas/cadastro-fornecedores/AbaCadastroFornecedores';
 import { AbaCompras } from './abas/compras/AbaCompras';
+import { AbaPagamentos } from './abas/pagamentos/AbaPagamentos';
+import { AbaRelatorios } from './abas/relatorios/AbaRelatorios';
+import { AbaSeguranca } from './abas/seguranca/AbaSeguranca';
 import { montarItensLaticinios, PRODUTOS_POR_SECAO } from './catalogo/secoesDados';
 import { config } from '../config';
 import type {
@@ -3676,135 +3679,34 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
           )}
 {/* 💰 TELA DE PAGAMENTOS (CAIXA, CHEQUE E CABEN) */}
           {tabAtiva === 'pagamentos' && (
-            <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #cbd5e1' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <button onClick={() => setTabAtiva('compras')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>← Voltar para Compras</button>
-                  <h2 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '900', textTransform: 'uppercase' }}>💳 Gestão de Pagamentos</h2>
-                  <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#0f766e' }}>Ao lançar (botão +), o pagamento é salvo na nuvem e aparece em qualquer computador ao entrar no site.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button onClick={() => imprimirRelatorioPagamentos(pagamentos, totalGeralPagamentos)} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🖨️ Imprimir / Visualizar</button>
-                  <button onClick={() => enviarRelatorioPagamentosPdf(pagamentos, totalGeralPagamentos)} style={{ backgroundColor: '#25d366', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>WhatsApp PDF</button>
-                  <button onClick={fecharLotePagamentos} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🔒 Fechar Lote</button>
-                  <button onClick={() => setMostrarPastaHistorico(!mostrarPastaHistorico)} style={{ backgroundColor: '#e2e8f0', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>📁 Histórico ({historicoPagamentos.length})</button>
-                </div>
-              </div>
-
-              {/* Totais do Topo */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
-                <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #0f766e', borderRadius: '6px', padding: '12px 16px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>PAGAMENTOS EM CAIXA</span>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#0f766e', marginTop: '4px' }}>R$ {totalCaixa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '12px 16px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>PAGAMENTOS EM CHEQUE</span>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#2563eb', marginTop: '4px' }}>R$ {totalCheque.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #7c3aed', borderRadius: '6px', padding: '12px 16px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>PAGAMENTOS CABEN</span>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#7c3aed', marginTop: '4px' }}>R$ {totalCaben.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                </div>
-                <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #86efac', borderRadius: '6px', padding: '12px 16px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '11px', color: '#065f46', fontWeight: 'bold' }}>TOTAL GERAL</span>
-                  <div style={{ fontSize: '20px', fontWeight: '900', color: '#059669', marginTop: '4px' }}>R$ {totalGeralPagamentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                </div>
-              </div>
-
-              {/* As 3 Colunas Principais */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                
-                {/* 1. CAIXA */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#ffffff' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#0f766e', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '2px solid #0f766e', paddingBottom: '6px' }}>💵 1. Caixa</h3>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                    <input type="text" placeholder="Descrição..." value={novoCaixa.descricao} onChange={e => setNovoCaixa({ ...novoCaixa, descricao: e.target.value })} style={{ flex: 2, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <input type="text" placeholder="Valor (R$)" value={novoCaixa.valor} onChange={e => setNovoCaixa({ ...novoCaixa, valor: e.target.value })} onKeyDown={e => e.key === 'Enter' && adicionarPagamentoCaixa()} style={{ flex: 1, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <button onClick={adicionarPagamentoCaixa} style={{ backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '7px 12px', fontWeight: 'bold', cursor: 'pointer' }}>＋</button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '280px', overflowY: 'auto' }}>
-                    {listaCaixaSegura.length === 0 ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>Nenhum lançamento no Caixa.</span> : listaCaixaSegura.map(item => (
-                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '12px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#334155' }}>{item.descricao}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ color: '#0f766e' }}>R$ {Number(item.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-                          <button onClick={() => removerPagamento('caixa', item.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. CHEQUE */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#ffffff' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#2563eb', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '2px solid #2563eb', paddingBottom: '6px' }}>📝 2. Cheque</h3>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                    <input type="text" placeholder="Favorecido / Motivo..." value={novoCheque.descricao} onChange={e => setNovoCheque({ ...novoCheque, descricao: e.target.value })} style={{ flex: 2, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <input type="text" placeholder="Valor (R$)" value={novoCheque.valor} onChange={e => setNovoCheque({ ...novoCheque, valor: e.target.value })} onKeyDown={e => e.key === 'Enter' && adicionarPagamentoCheque()} style={{ flex: 1, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <button onClick={adicionarPagamentoCheque} style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '7px 12px', fontWeight: 'bold', cursor: 'pointer' }}>＋</button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '280px', overflowY: 'auto' }}>
-                    {listaChequeSegura.length === 0 ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>Nenhum lançamento em Cheque.</span> : listaChequeSegura.map(item => (
-                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '12px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#334155' }}>{item.descricao}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ color: '#2563eb' }}>R$ {Number(item.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-                          <button onClick={() => removerPagamento('cheque', item.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3. CABEN */}
-                <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#ffffff' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#7c3aed', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '2px solid #7c3aed', paddingBottom: '6px' }}>🏢 3. CABEN</h3>
-                  <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                    <input type="text" placeholder="Descrição..." value={novoCaben.descricao} onChange={e => setNovoCaben({ ...novoCaben, descricao: e.target.value })} style={{ flex: 2, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <input type="text" placeholder="Valor (R$)" value={novoCaben.valor} onChange={e => setNovoCaben({ ...novoCaben, valor: e.target.value })} onKeyDown={e => e.key === 'Enter' && adicionarPagamentoCaben()} style={{ flex: 1, padding: '7px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <button onClick={adicionarPagamentoCaben} style={{ backgroundColor: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '7px 12px', fontWeight: 'bold', cursor: 'pointer' }}>＋</button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '280px', overflowY: 'auto' }}>
-                    {listaCabenSegura.length === 0 ? <span style={{ fontSize: '11px', color: '#94a3b8' }}>Nenhum lançamento no CABEN.</span> : listaCabenSegura.map(item => (
-                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '12px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#334155' }}>{item.descricao}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ color: '#7c3aed' }}>R$ {Number(item.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-                          <button onClick={() => removerPagamento('caben', item.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Histórico de Lotes Fechados */}
-              <div style={{ marginTop: '24px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#0f172a' }}>📁 Histórico de Lotes Fechados ({historicoPagamentos.length})</h3>
-                  {historicoPagamentos.length === 0 ? <span style={{ fontSize: '12px', color: '#64748b' }}>Nenhum lote foi fechado ainda.</span> : historicoPagamentos.map(lote => (
-                    <div key={lote.id} style={{ padding: '10px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <div>
-                          <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a' }}>Fechamento: {lote.dataFechamento}</strong>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>Caixa: R$ {lote.totalCaixa.toFixed(2)} | Cheque: R$ {lote.totalCheque.toFixed(2)} | CABEN: R$ {lote.totalCaben.toFixed(2)}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <strong style={{ fontSize: '14px', color: '#059669' }}>Total: R$ {lote.totalGeral.toFixed(2)}</strong>
-                          <button onClick={() => imprimirRelatorioPagamentos(lote.dados, lote.totalGeral, lote.dataFechamento)} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>🖨️ Ver</button>
-                          <button onClick={() => enviarRelatorioPagamentosPdf(lote.dados, lote.totalGeral, lote.dataFechamento)} style={{ backgroundColor: '#25d366', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>WhatsApp PDF</button>
-                          <button onClick={() => removerLoteHistorico(lote.id)} style={{ color: '#ef4444', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '5px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Excluir</button>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: '8px', fontSize: '11px', color: '#334155', lineHeight: 1.45 }}>
-                        {(lote.dados?.caixa || []).length > 0 && <div><strong>Caixa:</strong> {(lote.dados.caixa || []).map(i => `${i.descricao} (R$ ${Number(i.valor).toFixed(2)})`).join(', ')}</div>}
-                        {(lote.dados?.cheque || []).length > 0 && <div><strong>Cheque:</strong> {(lote.dados.cheque || []).map(i => `${i.descricao} (R$ ${Number(i.valor).toFixed(2)})`).join(', ')}</div>}
-                        {(lote.dados?.caben || []).length > 0 && <div><strong>CABEN:</strong> {(lote.dados.caben || []).map(i => `${i.descricao} (R$ ${Number(i.valor).toFixed(2)})`).join(', ')}</div>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-            </section>
+            <AbaPagamentos
+              adicionarPagamentoCaben={adicionarPagamentoCaben}
+              adicionarPagamentoCaixa={adicionarPagamentoCaixa}
+              adicionarPagamentoCheque={adicionarPagamentoCheque}
+              enviarRelatorioPagamentosPdf={enviarRelatorioPagamentosPdf}
+              fecharLotePagamentos={fecharLotePagamentos}
+              historicoPagamentos={historicoPagamentos}
+              imprimirRelatorioPagamentos={imprimirRelatorioPagamentos}
+              listaCabenSegura={listaCabenSegura}
+              listaCaixaSegura={listaCaixaSegura}
+              listaChequeSegura={listaChequeSegura}
+              mostrarPastaHistorico={mostrarPastaHistorico}
+              novoCaben={novoCaben}
+              novoCaixa={novoCaixa}
+              novoCheque={novoCheque}
+              pagamentos={pagamentos}
+              removerLoteHistorico={removerLoteHistorico}
+              removerPagamento={removerPagamento}
+              setMostrarPastaHistorico={setMostrarPastaHistorico}
+              setNovoCaben={setNovoCaben}
+              setNovoCaixa={setNovoCaixa}
+              setNovoCheque={setNovoCheque}
+              setTabAtiva={setTabAtiva}
+              totalCaben={totalCaben}
+              totalCaixa={totalCaixa}
+              totalCheque={totalCheque}
+              totalGeralPagamentos={totalGeralPagamentos}
+            />
           )}
 
           {tabAtiva === 'elieuda' && (
@@ -4346,308 +4248,58 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
           )}
 
       {tabAtiva === 'relatorios' && (
-
-          <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', padding: '20px', marginTop: '20px' }}>
-            <button onClick={() => setTabAtiva('pendencias')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '14px' }}>← Voltar ao sistema</button>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', margin: 0, textTransform: 'uppercase' }}>📈 Relatórios e Estatísticas</h2>
-                <input 
-                  type="date" 
-                  value={dataSelecionada} 
-                  onChange={(e) => setDataSelecionada(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '4px', border: '2px solid #cbd5e1', fontSize: '13px', fontWeight: 'bold', color: '#0f172a' }}
-                />
-              </div>
-
-              {(() => {
-                const dadosData = relatoriosPorData[dataSelecionada] || { pendentes: 0, concluidas: 0, pagamentos: 0, conferencias: 0 };
-                const isSelecionadoHoje = dataSelecionada === new Date().toISOString().split('T')[0];
-                const economiaPorFornecedor = fornecedoresCotacao.map(fornecedor => {
-                  const itensDoFornecedor = itensCotacao.filter(item => {
-                    const quantidade = qtdPedirNumero(item);
-                    return quantidade > 0 && calcularMenorPrecoItem(item).vencedorFornId === fornecedor.id;
-                  });
-                  const valores = itensDoFornecedor.map(item => {
-                    const quantidade = qtdPedirNumero(item);
-                    const precosValidos = Object.values(item.precos).map(preco => parseFloat(preco.replace(',', '.'))).filter(preco => !Number.isNaN(preco) && preco > 0);
-                    const menor = calcularMenorPrecoItem(item).menorPreco || 0;
-                    const referencia = (precosValidos.length ? Math.max(...precosValidos) : menor) * quantidade;
-                    const pago = menor * quantidade;
-                    return { referencia, pago };
-                  });
-                  const referencia = valores.reduce((total, item) => total + item.referencia, 0);
-                  const pago = valores.reduce((total, item) => total + item.pago, 0);
-                  const economia = referencia - pago;
-                  return { fornecedor, referencia, economia, percentual: referencia > 0 ? (economia / referencia) * 100 : 0 };
-                }).filter(item => item.referencia > 0);
-                
-                return (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '20px' }}>
-                    <div style={{ backgroundColor: '#f0f9ff', borderLeft: '3px solid #0f172a', padding: '10px 12px', borderRadius: '5px' }}>
-                      <h3 style={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Tarefas Pendentes</h3>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', margin: 0 }}>{isSelecionadoHoje ? setores.reduce((acc, s) => acc + s.tarefas.filter(t => t.status === 'aberta').length, 0) : dadosData.pendentes}</p>
-                      <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0 0' }}>Em {setores.length} setores</p>
-                    </div>
-
-                    <div style={{ backgroundColor: '#f0fdf4', borderLeft: '3px solid #059669', padding: '10px 12px', borderRadius: '5px' }}>
-                      <h3 style={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Tarefas Concluídas</h3>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#059669', margin: 0 }}>{isSelecionadoHoje ? setores.reduce((acc, s) => acc + s.tarefas.filter(t => t.status === 'concluida').length, 0) : dadosData.concluidas}</p>
-                      <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0 0' }}>Completas</p>
-                    </div>
-
-                    <div style={{ backgroundColor: '#fef3c7', borderLeft: '3px solid #059669', padding: '10px 12px', borderRadius: '5px' }}>
-                      <h3 style={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Total Pagamentos</h3>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#059669', margin: 0 }}>R$ {isSelecionadoHoje ? ((pagamentos.caixa.reduce((a, i) => a + i.valor, 0) + pagamentos.cheque.reduce((a, i) => a + i.valor, 0) + pagamentos.caben.reduce((a, i) => a + i.valor, 0))).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : dadosData.pagamentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                      <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0 0' }}>Registrados</p>
-                    </div>
-
-                    <div style={{ backgroundColor: '#fce7f3', borderLeft: '3px solid #2563eb', padding: '10px 12px', borderRadius: '5px' }}>
-                      <h3 style={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Conferências</h3>
-                      <p style={{ fontSize: '18px', fontWeight: '900', color: '#2563eb', margin: 0 }}>{isSelecionadoHoje ? conferencias.length : dadosData.conferencias}</p>
-                      <p style={{ fontSize: '10px', color: '#64748b', margin: '4px 0 0 0' }}>Registradas</p>
-                    </div>
-                  <div style={{ gridColumn: '1 / -1', marginTop: '4px', padding: '12px', backgroundColor: '#ecfdf5', border: '1px solid #86efac', borderRadius: '6px' }}>
-                    <h3 style={{ margin: '0 0 8px', fontSize: '13px', color: '#065f46' }}>Economia por fornecedor</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                      {economiaPorFornecedor.length === 0 ? <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhuma compra com preços comparáveis.</span> : economiaPorFornecedor.map(item => <div key={item.fornecedor.id} style={{ padding: '9px', backgroundColor: '#ffffff', border: '1px solid #bbf7d0', borderRadius: '5px' }}><strong style={{ display: 'block', fontSize: '11px', color: '#334155' }}>{item.fornecedor.nome}</strong><span style={{ display: 'block', fontSize: '10px', color: '#64748b' }}>Referência: R$ {item.referencia.toFixed(2)}</span><strong style={{ display: 'block', marginTop: '3px', fontSize: '13px', color: '#047857' }}>Economia: R$ {item.economia.toFixed(2)} ({item.percentual.toFixed(1)}%)</strong></div>)}
-                    </div>
-                  </div>
-                  </div>
-                );
-              })()}
-
-              <div style={{ marginTop: '30px', padding: '18px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '14px' }}>
-                  <div>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', margin: 0, textTransform: 'uppercase' }}>Pedidos por fornecedor</h3>
-                    <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0' }}>Cada produto está no fornecedor com o menor preço.</p>
-                  </div>
-                  <button onClick={imprimirRelatorioPedidosPorVendedor} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Imprimir todos</button>
-                </div>
-                {fornecedoresCotacao.map(fornecedor => {
-                  const itensDoFornecedor = itensCotacao.filter(item => {
-                    const quantidade = qtdPedirNumero(item);
-                    return quantidade > 0 && calcularMenorPrecoItem(item).vencedorFornId === fornecedor.id;
-                  });
-                  if (itensDoFornecedor.length === 0) return null;
-                  return (
-                    <div key={fornecedor.id} style={{ marginBottom: '12px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '5px', overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '8px 10px', backgroundColor: '#0f172a' }}>
-                        <strong style={{ color: '#ffffff', fontSize: '12px' }}>{fornecedor.nome}</strong>
-                        <div style={{ display: 'flex', gap: '5px' }}>
-                          <button onClick={() => imprimirPedidoIndividual(fornecedor)} style={{ backgroundColor: '#ffffff', color: '#0f172a', border: 'none', borderRadius: '3px', padding: '4px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Imprimir pedido</button>
-                          <button onClick={() => enviarPedidoWhatsAppPdf(fornecedor, itensDoFornecedor)} style={{ backgroundColor: '#25d366', color: '#ffffff', border: 'none', borderRadius: '3px', padding: '4px 8px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>WhatsApp PDF</button>
-                        </div>
-                      </div>
-                  {itensDoFornecedor.map(item => <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: '8px', padding: '7px 10px', borderBottom: '1px solid #e2e8f0', fontSize: '11px' }}><span>{item.produto}</span><span>{item.unit}</span><strong style={{ textAlign: 'right' }}>{item.qtdPedir}</strong></div>)}
-                </div>
-              );
-            })}
-            {itensCotacao.filter(item => qtdPedirNumero(item) > 0 && !calcularMenorPrecoItem(item).vencedorFornId).length > 0 && <div style={{ padding: '10px', backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '4px', fontSize: '11px', color: '#9a3412' }}>Existem produtos com quantidade preenchida, mas ainda sem preço para definir o fornecedor.</div>}
-          </div>
-
-          <div style={{ marginTop: '30px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', margin: '0 0 12px 0', textTransform: 'uppercase' }}>Resumo por Setor</h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead style={{ backgroundColor: '#f1f5f9' }}>
-                  <tr>
-                    <th style={{ padding: '10px 12px', fontSize: '11px', color: '#0f172a', fontWeight: 'bold', borderBottom: '2px solid #cbd5e1' }}>Setor</th>
-                    <th style={{ padding: '10px 12px', fontSize: '11px', color: '#0f172a', fontWeight: 'bold', borderBottom: '2px solid #cbd5e1', textAlign: 'center' }}>Tarefas Abertas</th>
-                    <th style={{ padding: '10px 12px', fontSize: '11px', color: '#0f172a', fontWeight: 'bold', borderBottom: '2px solid #cbd5e1', textAlign: 'center' }}>Tarefas Concluídas</th>
-                    <th style={{ padding: '10px 12px', fontSize: '11px', color: '#0f172a', fontWeight: 'bold', borderBottom: '2px solid #cbd5e1', textAlign: 'center' }}>Total</th>
-                    <th style={{ padding: '10px 12px', fontSize: '11px', color: '#0f172a', fontWeight: 'bold', borderBottom: '2px solid #cbd5e1', textAlign: 'center' }}>Taxa Conclusão</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {setores.map((setor, idx) => {
-                    const abertas = setor.tarefas.filter(t => t.status === 'aberta').length;
-                    const concluidas = setor.tarefas.filter(t => t.status === 'concluida').length;
-                    const total = setor.tarefas.length;
-                    const taxa = total === 0 ? 0 : Math.round((concluidas / total) * 100);
-                    return (
-                      <tr key={setor.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                        <td style={{ padding: '12px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a' }}>{nomeSetorSemEmoji(setor.nome)}</td>
-                        <td style={{ padding: '12px', fontSize: '12px', textAlign: 'center', color: '#ef4444', fontWeight: 'bold' }}>{abertas}</td>
-                        <td style={{ padding: '12px', fontSize: '12px', textAlign: 'center', color: '#059669', fontWeight: 'bold' }}>{concluidas}</td>
-                        <td style={{ padding: '12px', fontSize: '12px', textAlign: 'center', color: '#0f172a', fontWeight: 'bold' }}>{total}</td>
-                        <td style={{ padding: '12px', fontSize: '12px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                            <div style={{ width: '60px', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ width: `${taxa}%`, height: '100%', backgroundColor: taxa >= 75 ? '#059669' : taxa >= 50 ? '#ea580c' : '#ef4444', transition: 'width 0.3s ease' }}></div>
-                            </div>
-                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#64748b' }}>{taxa}%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+        <AbaRelatorios
+          calcularMenorPrecoItem={calcularMenorPrecoItem}
+          conferencias={conferencias}
+          dataSelecionada={dataSelecionada}
+          enviarPedidoWhatsAppPdf={enviarPedidoWhatsAppPdf}
+          fornecedoresCotacao={fornecedoresCotacao}
+          imprimirPedidoIndividual={imprimirPedidoIndividual}
+          imprimirRelatorioPedidosPorVendedor={imprimirRelatorioPedidosPorVendedor}
+          itensCotacao={itensCotacao}
+          nomeSetorSemEmoji={nomeSetorSemEmoji}
+          pagamentos={pagamentos}
+          qtdPedirNumero={qtdPedirNumero}
+          relatoriosPorData={relatoriosPorData}
+          setDataSelecionada={setDataSelecionada}
+          setTabAtiva={setTabAtiva}
+          setores={setores}
+        />
       )}
 
       {tabAtiva === 'seguranca' && (
-        <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #cbd5e1' }}>
-          <button onClick={() => setTabAtiva('pendencias')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '14px' }}>← Voltar ao sistema</button>
-          <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', margin: '0 0 6px', textTransform: 'uppercase' }}>🛡 Segurança</h2>
-          <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>Senhas, usuários e bloqueio do sistema. Fica nesta tela até você voltar.</p>
-          {statusSalvoSeguranca && (
-            <div style={{ position: 'sticky', top: '8px', zIndex: 20, marginBottom: '16px', padding: '12px 14px', backgroundColor: statusSalvoSeguranca.startsWith('Salvando') ? '#fffbeb' : '#d1fae5', color: statusSalvoSeguranca.startsWith('Salvando') ? '#92400e' : '#065f46', border: `2px solid ${statusSalvoSeguranca.startsWith('Salvando') ? '#fcd34d' : '#10b981'}`, borderRadius: '8px', fontSize: '14px', fontWeight: '900' }}>
-              {statusSalvoSeguranca}
-            </div>
-          )}
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '16px' }}>
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>Usuário ativo</strong>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#0f766e' }}>{usuarioLogado?.nome}</div>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>{usuarioLogado?.tipo === 'admin' ? 'Administrador' : 'Usuário do sistema'}</span>
-              <button onClick={fazerLogout} style={{ marginTop: '12px', width: '100%', backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                🔒 Sair / Bloquear
-              </button>
-            </div>
-
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '8px' }}>Minha senha</strong>
-              <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#64748b' }}>
-                {usuarioLogado && senhasUsuarios[usuarioLogado.id]
-                  ? 'Altere a senha pessoal. Ela vale em qualquer computador.'
-                  : 'Defina uma senha só sua. Depois ela substitui a senha padrão neste usuário.'}
-              </p>
-              <input type="password" placeholder="Nova senha" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', marginBottom: '8px' }} />
-              <input type="password" placeholder="Confirmar nova senha" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', marginBottom: '8px' }} />
-              {erroSenha && (
-                <div style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>{erroSenha}</div>
-              )}
-              <button onClick={salvarMinhaSenha} disabled={salvandoSenha} style={{ width: '100%', backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
-                {salvandoSenha ? 'Salvando...' : 'Salvar senha'}
-              </button>
-            </div>
-          </div>
-
-          {usuarioLogado?.tipo === 'admin' && (
-            <>
-            <div style={{ border: '1px solid #86efac', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f0fdf4' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#065f46', marginBottom: '6px' }}>＋ Adicionar novo usuário</strong>
-              <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#047857' }}>Marque as permissões: é isso que a pessoa vai poder abrir no sistema.</p>
-              <input
-                type="text"
-                placeholder="Nome do usuário"
-                value={novoUsuarioNome}
-                onChange={e => setNovoUsuarioNome(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #86efac', fontSize: '13px', marginBottom: '8px' }}
-              />
-              <input
-                type="password"
-                placeholder="Senha inicial (opcional — se vazio, usa a senha padrão)"
-                value={novoUsuarioSenha}
-                onChange={e => setNovoUsuarioSenha(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #86efac', fontSize: '13px', marginBottom: '12px' }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginBottom: '10px' }}>
-                {PERMISSOES_OPCOES.map(opcao => (
-                  <label key={opcao.chave} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px', backgroundColor: '#ffffff', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={novoUsuarioPermissoes[opcao.chave]}
-                      onChange={e => setNovoUsuarioPermissoes(atuais => ({ ...atuais, [opcao.chave]: e.target.checked }))}
-                      style={{ marginTop: '2px' }}
-                    />
-                    <span>
-                      <strong style={{ display: 'block' }}>{opcao.nome}</strong>
-                      <span style={{ fontSize: '10px', color: '#64748b' }}>{opcao.detalhe}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <div style={{ fontSize: '11px', color: '#065f46', marginBottom: '10px', fontWeight: 'bold' }}>
-                Vai poder acessar: {rotuloPermissoes(novoUsuarioPermissoes)}
-              </div>
-              {erroNovoUsuario && (
-                <div style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>{erroNovoUsuario}</div>
-              )}
-              <button onClick={adicionarNovoUsuario} style={{ width: '100%', backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
-                Salvar novo usuário
-              </button>
-            </div>
-
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '8px' }}>Usuários e permissões</strong>
-              <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#64748b' }}>Marque ou desmarque o que cada pessoa pode abrir. A mudança vale no próximo acesso e também agora, se ela estiver logada neste computador.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {usuariosDoSistema.map(usuario => (
-                  <div key={usuario.id} style={{ padding: '10px 12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                      <div style={{ flex: 1, minWidth: '180px' }}>
-                        <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a' }}>{usuario.nome}</strong>
-                        <span style={{ display: 'block', fontSize: '11px', color: '#1e40af', margin: '4px 0' }}>
-                          Pode acessar: {rotuloPermissoes(usuario.permissoes)}
-                        </span>
-                        {usuarioPermissaoSalvaId === usuario.id && statusSalvoSeguranca.startsWith('✓') && (
-                          <span style={{ display: 'inline-block', marginBottom: '4px', backgroundColor: '#059669', color: '#ffffff', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold' }}>✓ Gravado</span>
-                        )}
-                        <span style={{ fontSize: '11px', color: senhasUsuarios[usuario.id] ? '#047857' : '#b45309' }}>
-                          {senhasUsuarios[usuario.id] ? '✓ Senha pessoal cadastrada' : '⚠ Ainda usa a senha padrão'}
-                        </span>
-                      </div>
-                      {usuario.id !== usuarioLogado.id && (
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          <button onClick={() => redefinirSenhaUsuario(usuario.id)} style={{ backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74', borderRadius: '5px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Voltar à senha padrão
-                          </button>
-                          {!USUARIOS_SISTEMA.some(oficial => oficial.id === usuario.id) && (
-                            <button onClick={() => removerUsuarioCadastrado(usuario.id)} style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '5px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                              Remover
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '6px' }}>
-                      {PERMISSOES_OPCOES.map(opcao => (
-                        <label key={`${usuario.id}-${opcao.chave}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#0f172a', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '6px 8px', cursor: 'pointer' }}>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(usuario.permissoes[opcao.chave])}
-                            onChange={e => alterarPermissaoUsuario(usuario.id, opcao.chave, e.target.checked)}
-                          />
-                          {opcao.nome}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            </>
-          )}
-
-          <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px' }}>
-            <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>Proteção de {usuarioLogado?.nome}</strong>
-            <span style={{ fontSize: '11px', color: '#64748b' }}>{historicoBackupsUsuario.length} visita(s) protegida(s) neste navegador</span>
-            <div style={{ marginTop: '12px' }}>
-              {historicoBackupsUsuario.length === 0 ? (
-                <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhum backup deste usuário foi registrado ainda.</span>
-              ) : (
-                historicoBackupsUsuario.map((backup, indice) => {
-                  const tarefas = Array.isArray(backup.setores) ? backup.setores.reduce((total: number, setor: Setor) => total + setor.tarefas.length, 0) : 0;
-                  return (
-                    <div key={`${backup.salvoEm}-${indice}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: indice < historicoBackupsUsuario.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                      <div>
-                        <strong style={{ display: 'block', fontSize: '11px', color: '#334155' }}>{new Date(backup.salvoEm).toLocaleString('pt-BR')}</strong>
-                        <span style={{ fontSize: '10px', color: '#64748b' }}>{tarefas} tarefa(s) • atualização {backup.ultimaAtualizacao || 'não informada'}</span>
-                      </div>
-                      <button onClick={() => restaurarBackupDoUsuarioAtual(backup)} style={{ backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74', borderRadius: '5px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Restaurar esta visita</button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </section>
+        <AbaSeguranca
+          PERMISSOES_OPCOES={PERMISSOES_OPCOES}
+          USUARIOS_SISTEMA={USUARIOS_SISTEMA}
+          adicionarNovoUsuario={adicionarNovoUsuario}
+          alterarPermissaoUsuario={alterarPermissaoUsuario}
+          confirmarSenha={confirmarSenha}
+          erroNovoUsuario={erroNovoUsuario}
+          erroSenha={erroSenha}
+          fazerLogout={fazerLogout}
+          historicoBackupsUsuario={historicoBackupsUsuario}
+          novaSenha={novaSenha}
+          novoUsuarioNome={novoUsuarioNome}
+          novoUsuarioPermissoes={novoUsuarioPermissoes}
+          novoUsuarioSenha={novoUsuarioSenha}
+          redefinirSenhaUsuario={redefinirSenhaUsuario}
+          removerUsuarioCadastrado={removerUsuarioCadastrado}
+          restaurarBackupDoUsuarioAtual={restaurarBackupDoUsuarioAtual}
+          rotuloPermissoes={rotuloPermissoes}
+          salvandoSenha={salvandoSenha}
+          salvarMinhaSenha={salvarMinhaSenha}
+          senhasUsuarios={senhasUsuarios}
+          setConfirmarSenha={setConfirmarSenha}
+          setNovaSenha={setNovaSenha}
+          setNovoUsuarioNome={setNovoUsuarioNome}
+          setNovoUsuarioPermissoes={setNovoUsuarioPermissoes}
+          setNovoUsuarioSenha={setNovoUsuarioSenha}
+          setTabAtiva={setTabAtiva}
+          statusSalvoSeguranca={statusSalvoSeguranca}
+          usuarioLogado={usuarioLogado}
+          usuarioPermissaoSalvaId={usuarioPermissaoSalvaId}
+          usuariosDoSistema={usuariosDoSistema}
+        />
       )}
 
       {relatorioPagamentosVisualizacao && (
