@@ -1,3 +1,9 @@
+const campo = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15';
+const botaoPrimario = 'w-full cursor-pointer rounded-lg bg-teal-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-600 disabled:cursor-wait disabled:opacity-80';
+const botaoPerigo = 'cursor-pointer rounded-lg bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100';
+const botaoAlerta = 'cursor-pointer rounded-lg bg-orange-50 px-3 py-1.5 text-[11px] font-bold text-orange-800 ring-1 ring-orange-200 hover:bg-orange-100';
+const aviso = 'mb-2 rounded-lg bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800 ring-1 ring-amber-200';
+
 export function AbaSeguranca(p: {
   PERMISSOES_OPCOES: any;
   USUARIOS_SISTEMA: any;
@@ -62,164 +68,159 @@ export function AbaSeguranca(p: {
     usuarioPermissaoSalvaId,
     usuariosDoSistema
   } = p;
+
   return (
-        <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #cbd5e1' }}>
-          <button onClick={() => setTabAtiva('pendencias')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '14px' }}>← Voltar ao sistema</button>
-          <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#0f172a', margin: '0 0 6px', textTransform: 'uppercase' }}>🛡 Segurança</h2>
-          <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>Senhas, usuários e bloqueio do sistema. Fica nesta tela até você voltar.</p>
-          {statusSalvoSeguranca && (
-            <div style={{ position: 'sticky', top: '8px', zIndex: 20, marginBottom: '16px', padding: '12px 14px', backgroundColor: statusSalvoSeguranca.startsWith('Salvando') ? '#fffbeb' : '#d1fae5', color: statusSalvoSeguranca.startsWith('Salvando') ? '#92400e' : '#065f46', border: `2px solid ${statusSalvoSeguranca.startsWith('Salvando') ? '#fcd34d' : '#10b981'}`, borderRadius: '8px', fontSize: '14px', fontWeight: '900' }}>
-              {statusSalvoSeguranca}
-            </div>
-          )}
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:p-6">
+      <button type="button" onClick={() => setTabAtiva('pendencias')} className="mb-4 cursor-pointer rounded-lg bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-white">
+        ← Voltar ao sistema
+      </button>
+      <h2 className="m-0 text-lg font-black uppercase tracking-tight text-slate-900">Segurança</h2>
+      <p className="mb-4 mt-1 text-xs text-slate-500">Senhas, usuários e bloqueio do sistema. Fica nesta tela até você voltar.</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '16px' }}>
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>Usuário ativo</strong>
-              <div style={{ fontSize: '16px', fontWeight: '900', color: '#0f766e' }}>{usuarioLogado?.nome}</div>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>{usuarioLogado?.tipo === 'admin' ? 'Administrador' : 'Usuário do sistema'}</span>
-              <button onClick={fazerLogout} style={{ marginTop: '12px', width: '100%', backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                🔒 Sair / Bloquear
-              </button>
-            </div>
+      {statusSalvoSeguranca && (
+        <div className={`sticky top-2 z-20 mb-4 rounded-2xl px-4 py-3 text-sm font-black ring-1 ${
+          statusSalvoSeguranca.startsWith('Salvando')
+            ? 'bg-amber-50 text-amber-900 ring-amber-200'
+            : 'bg-teal-50 text-teal-900 ring-teal-200'
+        }`}>
+          {statusSalvoSeguranca}
+        </div>
+      )}
 
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '8px' }}>Minha senha</strong>
-              <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#64748b' }}>
-                {usuarioLogado && senhasUsuarios[usuarioLogado.id]
-                  ? 'Altere a senha pessoal. Ela vale em qualquer computador.'
-                  : 'Defina uma senha só sua. Depois ela substitui a senha padrão neste usuário.'}
-              </p>
-              <input type="password" placeholder="Nova senha" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', marginBottom: '8px' }} />
-              <input type="password" placeholder="Confirmar nova senha" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', marginBottom: '8px' }} />
-              {erroSenha && (
-                <div style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>{erroSenha}</div>
-              )}
-              <button onClick={salvarMinhaSenha} disabled={salvandoSenha} style={{ width: '100%', backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
-                {salvandoSenha ? 'Salvando...' : 'Salvar senha'}
-              </button>
+      <div className="mb-4 grid gap-3.5 md:grid-cols-2">
+        <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+          <strong className="mb-1.5 block text-sm text-slate-900">Usuário ativo</strong>
+          <div className="text-base font-black text-teal-700">{usuarioLogado?.nome}</div>
+          <span className="text-[11px] text-slate-500">{usuarioLogado?.tipo === 'admin' ? 'Administrador' : 'Usuário do sistema'}</span>
+          <button type="button" onClick={fazerLogout} className="mt-3 w-full cursor-pointer rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-800 ring-1 ring-rose-200 hover:bg-rose-100">
+            Sair / Bloquear
+          </button>
+        </div>
+
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+          <strong className="mb-2 block text-sm text-slate-900">Minha senha</strong>
+          <p className="mb-2.5 mt-0 text-[11px] text-slate-500">
+            {usuarioLogado && senhasUsuarios[usuarioLogado.id]
+              ? 'Altere a senha pessoal. Ela vale em qualquer computador.'
+              : 'Defina uma senha só sua. Depois ela substitui a senha padrão neste usuário.'}
+          </p>
+          <input type="password" placeholder="Nova senha" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} className={`${campo} mb-2`} />
+          <input type="password" placeholder="Confirmar nova senha" value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)} className={`${campo} mb-2`} />
+          {erroSenha && <div className={aviso}>{erroSenha}</div>}
+          <button type="button" onClick={salvarMinhaSenha} disabled={salvandoSenha} className={botaoPrimario}>
+            {salvandoSenha ? 'Salvando...' : 'Salvar senha'}
+          </button>
+        </div>
+      </div>
+
+      {usuarioLogado?.tipo === 'admin' && (
+        <>
+          <div className="mb-4 rounded-2xl bg-teal-50 p-4 ring-1 ring-teal-200">
+            <strong className="mb-1.5 block text-sm text-teal-950">Adicionar novo usuário</strong>
+            <p className="mb-3 mt-0 text-[11px] text-teal-800">Marque as permissões: é isso que a pessoa vai poder abrir no sistema.</p>
+            <input type="text" placeholder="Nome do usuário" value={novoUsuarioNome} onChange={e => setNovoUsuarioNome(e.target.value)} className={`${campo} mb-2`} />
+            <input type="password" placeholder="Senha inicial (opcional — se vazio, usa a senha padrão)" value={novoUsuarioSenha} onChange={e => setNovoUsuarioSenha(e.target.value)} className={`${campo} mb-3`} />
+            <div className="mb-2.5 grid gap-2 sm:grid-cols-2">
+              {PERMISSOES_OPCOES.map((opcao: any) => (
+                <label key={opcao.chave} className="flex cursor-pointer items-start gap-2 rounded-xl bg-white p-2 ring-1 ring-teal-100">
+                  <input
+                    type="checkbox"
+                    checked={novoUsuarioPermissoes[opcao.chave]}
+                    onChange={e => setNovoUsuarioPermissoes((atuais: any) => ({ ...atuais, [opcao.chave]: e.target.checked }))}
+                    className="mt-0.5 h-4 w-4 accent-teal-700"
+                  />
+                  <span>
+                    <strong className="block text-xs text-slate-900">{opcao.nome}</strong>
+                    <span className="text-[10px] text-slate-500">{opcao.detalhe}</span>
+                  </span>
+                </label>
+              ))}
             </div>
+            <div className="mb-2.5 text-[11px] font-bold text-teal-900">
+              Vai poder acessar: {rotuloPermissoes(novoUsuarioPermissoes)}
+            </div>
+            {erroNovoUsuario && <div className={aviso}>{erroNovoUsuario}</div>}
+            <button type="button" onClick={adicionarNovoUsuario} className={botaoPrimario}>
+              Salvar novo usuário
+            </button>
           </div>
 
-          {usuarioLogado?.tipo === 'admin' && (
-            <>
-            <div style={{ border: '1px solid #86efac', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f0fdf4' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#065f46', marginBottom: '6px' }}>＋ Adicionar novo usuário</strong>
-              <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#047857' }}>Marque as permissões: é isso que a pessoa vai poder abrir no sistema.</p>
-              <input
-                type="text"
-                placeholder="Nome do usuário"
-                value={novoUsuarioNome}
-                onChange={e => setNovoUsuarioNome(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #86efac', fontSize: '13px', marginBottom: '8px' }}
-              />
-              <input
-                type="password"
-                placeholder="Senha inicial (opcional — se vazio, usa a senha padrão)"
-                value={novoUsuarioSenha}
-                onChange={e => setNovoUsuarioSenha(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '9px', borderRadius: '6px', border: '1px solid #86efac', fontSize: '13px', marginBottom: '12px' }}
-              />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginBottom: '10px' }}>
-                {PERMISSOES_OPCOES.map(opcao => (
-                  <label key={opcao.chave} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px', backgroundColor: '#ffffff', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={novoUsuarioPermissoes[opcao.chave]}
-                      onChange={e => setNovoUsuarioPermissoes(atuais => ({ ...atuais, [opcao.chave]: e.target.checked }))}
-                      style={{ marginTop: '2px' }}
-                    />
-                    <span>
-                      <strong style={{ display: 'block' }}>{opcao.nome}</strong>
-                      <span style={{ fontSize: '10px', color: '#64748b' }}>{opcao.detalhe}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <div style={{ fontSize: '11px', color: '#065f46', marginBottom: '10px', fontWeight: 'bold' }}>
-                Vai poder acessar: {rotuloPermissoes(novoUsuarioPermissoes)}
-              </div>
-              {erroNovoUsuario && (
-                <div style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center' }}>{erroNovoUsuario}</div>
-              )}
-              <button onClick={adicionarNovoUsuario} style={{ width: '100%', backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
-                Salvar novo usuário
-              </button>
-            </div>
-
-            <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-              <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '8px' }}>Usuários e permissões</strong>
-              <p style={{ margin: '0 0 12px', fontSize: '11px', color: '#64748b' }}>Marque ou desmarque o que cada pessoa pode abrir. A mudança vale no próximo acesso e também agora, se ela estiver logada neste computador.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {usuariosDoSistema.map(usuario => (
-                  <div key={usuario.id} style={{ padding: '10px 12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                      <div style={{ flex: 1, minWidth: '180px' }}>
-                        <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a' }}>{usuario.nome}</strong>
-                        <span style={{ display: 'block', fontSize: '11px', color: '#1e40af', margin: '4px 0' }}>
-                          Pode acessar: {rotuloPermissoes(usuario.permissoes)}
-                        </span>
-                        {usuarioPermissaoSalvaId === usuario.id && statusSalvoSeguranca.startsWith('✓') && (
-                          <span style={{ display: 'inline-block', marginBottom: '4px', backgroundColor: '#059669', color: '#ffffff', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 'bold' }}>✓ Gravado</span>
-                        )}
-                        <span style={{ fontSize: '11px', color: senhasUsuarios[usuario.id] ? '#047857' : '#b45309' }}>
-                          {senhasUsuarios[usuario.id] ? '✓ Senha pessoal cadastrada' : '⚠ Ainda usa a senha padrão'}
-                        </span>
-                      </div>
-                      {usuario.id !== usuarioLogado.id && (
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          <button onClick={() => redefinirSenhaUsuario(usuario.id)} style={{ backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74', borderRadius: '5px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                            Voltar à senha padrão
-                          </button>
-                          {!USUARIOS_SISTEMA.some(oficial => oficial.id === usuario.id) && (
-                            <button onClick={() => removerUsuarioCadastrado(usuario.id)} style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '5px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                              Remover
-                            </button>
-                          )}
-                        </div>
+          <div className="mb-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+            <strong className="mb-2 block text-sm text-slate-900">Usuários e permissões</strong>
+            <p className="mb-3 mt-0 text-[11px] text-slate-500">Marque ou desmarque o que cada pessoa pode abrir. Quem você criou aqui pode ser removido; Ramara e os usuários oficiais do sistema não saem da lista.</p>
+            <div className="flex flex-col gap-2">
+              {usuariosDoSistema.map((usuario: any) => (
+                <div key={usuario.id} className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
+                  <div className="mb-2 flex flex-wrap items-start justify-between gap-2.5">
+                    <div className="min-w-[180px] flex-1">
+                      <strong className="block text-sm text-slate-900">{usuario.nome}</strong>
+                      <span className="my-1 block text-[11px] text-sky-800">
+                        Pode acessar: {rotuloPermissoes(usuario.permissoes)}
+                      </span>
+                      {usuarioPermissaoSalvaId === usuario.id && statusSalvoSeguranca.startsWith('✓') && (
+                        <span className="mb-1 inline-block rounded-full bg-teal-700 px-2 py-0.5 text-[10px] font-bold text-white">Gravado</span>
                       )}
+                      <span className={`text-[11px] font-semibold ${senhasUsuarios[usuario.id] ? 'text-teal-800' : 'text-amber-700'}`}>
+                        {senhasUsuarios[usuario.id] ? 'Senha pessoal cadastrada' : 'Ainda usa a senha padrão'}
+                      </span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '6px' }}>
-                      {PERMISSOES_OPCOES.map(opcao => (
-                        <label key={`${usuario.id}-${opcao.chave}`} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#0f172a', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '6px 8px', cursor: 'pointer' }}>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(usuario.permissoes[opcao.chave])}
-                            onChange={e => alterarPermissaoUsuario(usuario.id, opcao.chave, e.target.checked)}
-                          />
-                          {opcao.nome}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            </>
-          )}
-
-          <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px' }}>
-            <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>Proteção de {usuarioLogado?.nome}</strong>
-            <span style={{ fontSize: '11px', color: '#64748b' }}>{historicoBackupsUsuario.length} visita(s) protegida(s) neste navegador</span>
-            <div style={{ marginTop: '12px' }}>
-              {historicoBackupsUsuario.length === 0 ? (
-                <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhum backup deste usuário foi registrado ainda.</span>
-              ) : (
-                historicoBackupsUsuario.map((backup, indice) => {
-                  const tarefas = Array.isArray(backup.setores) ? backup.setores.reduce((total: number, setor: any) => total + (setor.tarefas?.length || 0), 0) : 0;
-                  return (
-                    <div key={`${backup.salvoEm}-${indice}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: indice < historicoBackupsUsuario.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                      <div>
-                        <strong style={{ display: 'block', fontSize: '11px', color: '#334155' }}>{new Date(backup.salvoEm).toLocaleString('pt-BR')}</strong>
-                        <span style={{ fontSize: '10px', color: '#64748b' }}>{tarefas} tarefa(s) • atualização {backup.ultimaAtualizacao || 'não informada'}</span>
+                    {usuario.id !== usuarioLogado.id && (
+                      <div className="flex flex-wrap gap-1.5">
+                        <button type="button" onClick={() => redefinirSenhaUsuario(usuario.id)} className={botaoAlerta}>
+                          Voltar à senha padrão
+                        </button>
+                        {!USUARIOS_SISTEMA.some((oficial: any) => oficial.id === usuario.id) && (
+                          <button type="button" onClick={() => removerUsuarioCadastrado(usuario.id)} className={botaoPerigo}>
+                            Remover
+                          </button>
+                        )}
                       </div>
-                      <button onClick={() => restaurarBackupDoUsuarioAtual(backup)} style={{ backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74', borderRadius: '5px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Restaurar esta visita</button>
-                    </div>
-                  );
-                })
-              )}
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-4">
+                    {PERMISSOES_OPCOES.map((opcao: any) => (
+                      <label key={`${usuario.id}-${opcao.chave}`} className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-white px-2 py-1.5 text-[11px] text-slate-900 ring-1 ring-slate-200">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(usuario.permissoes[opcao.chave])}
+                          onChange={e => alterarPermissaoUsuario(usuario.id, opcao.chave, e.target.checked)}
+                          className="h-3.5 w-3.5 accent-teal-700"
+                        />
+                        {opcao.nome}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </section>
+        </>
+      )}
+
+      <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+        <strong className="mb-1.5 block text-sm text-slate-900">Proteção de {usuarioLogado?.nome}</strong>
+        <span className="text-[11px] text-slate-500">{historicoBackupsUsuario.length} visita(s) protegida(s) neste navegador</span>
+        <div className="mt-3">
+          {historicoBackupsUsuario.length === 0 ? (
+            <span className="text-[11px] text-slate-500">Nenhum backup deste usuário foi registrado ainda.</span>
+          ) : (
+            historicoBackupsUsuario.map((backup: any, indice: number) => {
+              const tarefas = Array.isArray(backup.setores) ? backup.setores.reduce((total: number, setor: any) => total + (setor.tarefas?.length || 0), 0) : 0;
+              return (
+                <div key={`${backup.salvoEm}-${indice}`} className={`flex items-center justify-between gap-2.5 py-2 ${indice < historicoBackupsUsuario.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                  <div>
+                    <strong className="block text-[11px] text-slate-700">{new Date(backup.salvoEm).toLocaleString('pt-BR')}</strong>
+                    <span className="text-[10px] text-slate-500">{tarefas} tarefa(s) • atualização {backup.ultimaAtualizacao || 'não informada'}</span>
+                  </div>
+                  <button type="button" onClick={() => restaurarBackupDoUsuarioAtual(backup)} className={botaoAlerta}>
+                    Restaurar esta visita
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </section>
   );
 }

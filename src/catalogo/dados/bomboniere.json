@@ -1,0 +1,1579 @@
+[
+  {
+    "id": "bom_214",
+    "codigo": "214",
+    "nome": "BARRA PROTEICA 3 CORACOES CAPP CLASSIC 50G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.56",
+    "ativo": true
+  },
+  {
+    "id": "bom_1482",
+    "codigo": "1482",
+    "nome": "CHOC QUEBRA QUEBRA BIENE CACAU (UN)",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "16.17",
+    "ativo": true
+  },
+  {
+    "id": "bom_2201",
+    "codigo": "2201",
+    "nome": "PIRULITO CHERRY POP UN",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "0.27",
+    "ativo": true
+  },
+  {
+    "id": "bom_2230",
+    "codigo": "2230",
+    "nome": "CHOC BATON GAROTO BRANCO UN 16G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.37",
+    "ativo": true
+  },
+  {
+    "id": "bom_2263",
+    "codigo": "2263",
+    "nome": "CHOC GAROTO TALENTO CAST PARA UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.83",
+    "ativo": true
+  },
+  {
+    "id": "bom_2301",
+    "codigo": "2301",
+    "nome": "KINDER BUENO UN 43G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.81",
+    "ativo": true
+  },
+  {
+    "id": "bom_2525",
+    "codigo": "2525",
+    "nome": "BALA MASTIGAVEL BOMBONS  R$ 0,10",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "0.06",
+    "ativo": true
+  },
+  {
+    "id": "bom_2928",
+    "codigo": "2928",
+    "nome": "CHOC FERRERO ROCHER 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.45",
+    "ativo": true
+  },
+  {
+    "id": "bom_3615",
+    "codigo": "3615",
+    "nome": "CHOC NESTLE RECHEADOS PRESTIGIO (UN) 90G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.44",
+    "ativo": true
+  },
+  {
+    "id": "bom_4971",
+    "codigo": "4971",
+    "nome": "MENTOS GF PURE FRESH WINTERGREEN 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "9.22",
+    "ativo": true
+  },
+  {
+    "id": "bom_7511",
+    "codigo": "7511",
+    "nome": "KINDER JOY MENINA UN 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.03",
+    "ativo": true
+  },
+  {
+    "id": "bom_100005",
+    "codigo": "100005",
+    "nome": "IOIO MIX DUO 41,9G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.69",
+    "ativo": true
+  },
+  {
+    "id": "bom_100006",
+    "codigo": "100006",
+    "nome": "IOIO MIX CHOCO CHOCOLATE E AVELA 41,9G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.69",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000124",
+    "codigo": "4000124",
+    "nome": "CHOC GAROTO TALENTO MEIO AMARGO AMENDOAS UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.85",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000125",
+    "codigo": "4000125",
+    "nome": "CHOC GAROTO TALENTO AVELA UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.83",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000126",
+    "codigo": "4000126",
+    "nome": "CHOC GAROTO TALENTO CEREAIS E PASSAS UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000127",
+    "codigo": "4000127",
+    "nome": "CHOC GAROTO TALENTO AMEND PASSAS UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000130",
+    "codigo": "4000130",
+    "nome": "CHOC BATON GAROTO AO LEITE (UN) 16G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.42",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000134",
+    "codigo": "4000134",
+    "nome": "CHOC GAROTO TALENTO AVELA DIET UN 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.40",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000136",
+    "codigo": "4000136",
+    "nome": "MENTOS PURE FRESH MINT 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "9.21",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000146",
+    "codigo": "4000146",
+    "nome": "DROPS HALLS CEREJA UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.19",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000147",
+    "codigo": "4000147",
+    "nome": "HALLS EXTRA FORTE UN 27,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.19",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000148",
+    "codigo": "4000148",
+    "nome": "DROPS HALLS MENTOL UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.18",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000149",
+    "codigo": "4000149",
+    "nome": "DROPS HALLS MENTA 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.20",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000150",
+    "codigo": "4000150",
+    "nome": "DROPS HALLS FRUTAS MOR 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.19",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000151",
+    "codigo": "4000151",
+    "nome": "HALLS MELANCIA UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.20",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000152",
+    "codigo": "4000152",
+    "nome": "DROPS HALLS UVA VERDE UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.20",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000154",
+    "codigo": "4000154",
+    "nome": "CHOC LACTA SONHO VALSA UN 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.15",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000155",
+    "codigo": "4000155",
+    "nome": "CHOC LACTA OURO BRANCO UN 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.12",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000158",
+    "codigo": "4000158",
+    "nome": "KINDER JOY MENINO UN 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.81",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000159",
+    "codigo": "4000159",
+    "nome": "TIC TAC MENTA UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.73",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000160",
+    "codigo": "4000160",
+    "nome": "TIC TAC LARANJA UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.73",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000161",
+    "codigo": "4000161",
+    "nome": "TIC TAC FRUTAS TEGUSTA UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000162",
+    "codigo": "4000162",
+    "nome": "TIC TAC MORANGO UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000164",
+    "codigo": "4000164",
+    "nome": "TIC TAC MENTA FRESH UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000165",
+    "codigo": "4000165",
+    "nome": "KINDER BUENO WHITE UN 39G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.79",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000341",
+    "codigo": "4000341",
+    "nome": "CHICLE TRIDENT X FRESH INTENSE UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000342",
+    "codigo": "4000342",
+    "nome": "CHICLE TRIDENT X FRESH HERBAL 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000345",
+    "codigo": "4000345",
+    "nome": "WAFER RECHEADO SONHO DE VALSA 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.99",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000346",
+    "codigo": "4000346",
+    "nome": "WAFER RECHEADO OURO BRANCO 25G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.99",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000347",
+    "codigo": "4000347",
+    "nome": "CHICLE TRIDENT MELANCIA MINT 54G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.73",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000348",
+    "codigo": "4000348",
+    "nome": "CHICLE TRIDENT MORANGO LIME 54G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.94",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000349",
+    "codigo": "4000349",
+    "nome": "CHICLE TRIDENT HORTELA PEPPERMINT 54G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.65",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000350",
+    "codigo": "4000350",
+    "nome": "CHICLE TRIDENT MENTA PEPPERMINT 54G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.65",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000351",
+    "codigo": "4000351",
+    "nome": "CHOC LACTA DIAMANTE NEGRO 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.22",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000352",
+    "codigo": "4000352",
+    "nome": "CHOC LACTA LAKA CHOC BRANCO 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.21",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000353",
+    "codigo": "4000353",
+    "nome": "CHOC LACTA CHOC AO LEITE 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.21",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000354",
+    "codigo": "4000354",
+    "nome": "CHOC LACTA LAKA DIAMANTE NEGRO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.18",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000359",
+    "codigo": "4000359",
+    "nome": "CHOC LACTA AO LEITE 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.34",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000360",
+    "codigo": "4000360",
+    "nome": "CHOC LACTA DIAMANTE NEGRO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.73",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000361",
+    "codigo": "4000361",
+    "nome": "CHOC LACTA LAKA 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.34",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000362",
+    "codigo": "4000362",
+    "nome": "CHOC LACTA LAKA OREO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.49",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000363",
+    "codigo": "4000363",
+    "nome": "CHOC LACTA MEIO AMARGO 40% CACAU 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "9.28",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000377",
+    "codigo": "4000377",
+    "nome": "CHOC MINI OREO COM RECH DE BAUNI 35G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.67",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000431",
+    "codigo": "4000431",
+    "nome": "CHOC BIS XTRA AO LEITE 45G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.99",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000434",
+    "codigo": "4000434",
+    "nome": "CHOC BIS OREO 100,8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.33",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000468",
+    "codigo": "4000468",
+    "nome": "FERRERO ROCHER 100G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "25.10",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000586",
+    "codigo": "4000586",
+    "nome": "CHOC NESLTE LOLLO UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.45",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000647",
+    "codigo": "4000647",
+    "nome": "CHOC NESTLE SUFLAIR CHOC AO LEITE 50G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.31",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000716",
+    "codigo": "4000716",
+    "nome": "CHOC NESTLE KIT KAT 41,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.62",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000718",
+    "codigo": "4000718",
+    "nome": "CHOC NESTLE KIT KAT WHITE 41,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.50",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000868",
+    "codigo": "4000868",
+    "nome": "CHOC NESTLE PRESTIGIO UN 33G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.46",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000870",
+    "codigo": "4000870",
+    "nome": "CHOC CHOKITO UN 32G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.44",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000871",
+    "codigo": "4000871",
+    "nome": "CHOC NESLTE CHARGE UN 40G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.51",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000889",
+    "codigo": "4000889",
+    "nome": "CHOC GAROTO CAIXA UN 250G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "13.00",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000893",
+    "codigo": "4000893",
+    "nome": "CHOC GAROTO CARIBE UN 28G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.47",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000894",
+    "codigo": "4000894",
+    "nome": "CHOC GAROTO TALENTO MEIO AMARGO AMENDOAS 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.00",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000896",
+    "codigo": "4000896",
+    "nome": "CHOC GAROTO TALENTO CEREIAS E PASSAS 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.96",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000897",
+    "codigo": "4000897",
+    "nome": "CHOC GAROTO TALENTO CEREIAS E PASSAS BRANCO 90G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.12",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000898",
+    "codigo": "4000898",
+    "nome": "CHOC GAROTO TALENTO AVELAS 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000899",
+    "codigo": "4000899",
+    "nome": "CHOC GAROTO TALENTO CASTANHA DO PARA 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.96",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000900",
+    "codigo": "4000900",
+    "nome": "CHOC GAROTO TALENTO AMEND E PASSAS 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.68",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000904",
+    "codigo": "4000904",
+    "nome": "CHOC GAROTO TALENTO OPERATA CAST DE CAJU 85G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.68",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000909",
+    "codigo": "4000909",
+    "nome": "CHOC GAROTO TABLETE AO LEITE 90G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.74",
+    "ativo": true
+  },
+  {
+    "id": "bom_4000913",
+    "codigo": "4000913",
+    "nome": "CHOC GAROTO TABLETE NEGRESCO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.74",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002183",
+    "codigo": "4002183",
+    "nome": "MENTOS GF UP2U TUTTI FRUTTI E MINT 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "9.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002199",
+    "codigo": "4002199",
+    "nome": "MENTOS PURE FRESH MORANGO 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.83",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002206",
+    "codigo": "4002206",
+    "nome": "MENTOS STICK FRUTAS VERMELHAS UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.93",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002207",
+    "codigo": "4002207",
+    "nome": "MENTOS STICK YOGURT MORANGO UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002209",
+    "codigo": "4002209",
+    "nome": "MENTOS STICK RAINBOW UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002211",
+    "codigo": "4002211",
+    "nome": "MENTOS STICK TUTTI FRUTTI UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002239",
+    "codigo": "4002239",
+    "nome": "CHICLE TRIDENT MORANGO UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.89",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002245",
+    "codigo": "4002245",
+    "nome": "CHICLE TRIDENT HORTELA/MENTA UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.90",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002246",
+    "codigo": "4002246",
+    "nome": "CHICLE TRIDENT MENTA VERDE UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.90",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002247",
+    "codigo": "4002247",
+    "nome": "CHICLE TRIDENT CANELA UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.90",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002251",
+    "codigo": "4002251",
+    "nome": "CHICLE TRIDENT MELANCIA UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.90",
+    "ativo": true
+  },
+  {
+    "id": "bom_4002256",
+    "codigo": "4002256",
+    "nome": "CHICLE TRIDENT TUTTI FRUTTI UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.88",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003020",
+    "codigo": "4003020",
+    "nome": "MENTOS STICK MINT UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003021",
+    "codigo": "4003021",
+    "nome": "MENTOS STICK FRUIT UN 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.93",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003270",
+    "codigo": "4003270",
+    "nome": "CHOC M&M CRISPY 35G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.99",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003278",
+    "codigo": "4003278",
+    "nome": "CHOC M&M CHOCOLATE TUBO 30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.88",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003279",
+    "codigo": "4003279",
+    "nome": "CHOC SNICKERS UN 45G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.34",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003280",
+    "codigo": "4003280",
+    "nome": "CHOC SNICKERS UN 78G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.70",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003286",
+    "codigo": "4003286",
+    "nome": "CHOC SNICKERS MARACUJA 42G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.41",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003290",
+    "codigo": "4003290",
+    "nome": "CHOC M&M CHOCOLATE COM AMENDOIM 40G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.98",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003291",
+    "codigo": "4003291",
+    "nome": "CHOC M&M CHOCOLATE AO LEITE 40G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.82",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003294",
+    "codigo": "4003294",
+    "nome": "CHOC SNICKERS DARK 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.25",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003296",
+    "codigo": "4003296",
+    "nome": "CHOC SNICKERS PE DE MOLEQUE 45G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.33",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003874",
+    "codigo": "4003874",
+    "nome": "BAR CER TRIO LIGHT BRIGADEIRO 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.59",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003877",
+    "codigo": "4003877",
+    "nome": "BAR CER TRIO ZERO ACUCAR BAN E CHOC 18G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.62",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003879",
+    "codigo": "4003879",
+    "nome": "BAR CER TRIO ZERO ACUCAR MOR E CHOC 18G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.62",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003898",
+    "codigo": "4003898",
+    "nome": "CHOC FERRERO ROCHER T12 150G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "37.19",
+    "ativo": true
+  },
+  {
+    "id": "bom_4003903",
+    "codigo": "4003903",
+    "nome": "WAFER RECHEADO NUTELLA B",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.71",
+    "ativo": true
+  },
+  {
+    "id": "bom_4004118",
+    "codigo": "4004118",
+    "nome": "CHOC KAKAUZINHO AO LEITE 16,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "0.57",
+    "ativo": true
+  },
+  {
+    "id": "bom_4004119",
+    "codigo": "4004119",
+    "nome": "CHOC KAKAUZINHO BRANCO 16,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "0.58",
+    "ativo": true
+  },
+  {
+    "id": "bom_4004499",
+    "codigo": "4004499",
+    "nome": "CHOC HERSHEYS AO LEITE 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.28",
+    "ativo": true
+  },
+  {
+    "id": "bom_4004500",
+    "codigo": "4004500",
+    "nome": "CHOC HERSHEYS OVOMALTINE 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.08",
+    "ativo": true
+  },
+  {
+    "id": "bom_4004516",
+    "codigo": "4004516",
+    "nome": "DIP LOKO DIPPEER STICK 30G (UN)",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.71",
+    "ativo": true
+  },
+  {
+    "id": "bom_4005458",
+    "codigo": "4005458",
+    "nome": "KINDER TRONKY 18G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.88",
+    "ativo": true
+  },
+  {
+    "id": "bom_4005796",
+    "codigo": "4005796",
+    "nome": "MENTOS STICK FRUIT 29,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.40",
+    "ativo": true
+  },
+  {
+    "id": "bom_4005797",
+    "codigo": "4005797",
+    "nome": "MENTOS STICK MINT 29,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.40",
+    "ativo": true
+  },
+  {
+    "id": "bom_4005798",
+    "codigo": "4005798",
+    "nome": "MENTOS STICK RAINBOW 29,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.43",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006161",
+    "codigo": "4006161",
+    "nome": "CHOC SNICKERS MORANGO 42G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.36",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006178",
+    "codigo": "4006178",
+    "nome": "CHOC LACTA BIS AO LEITE UN 100,8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.51",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006179",
+    "codigo": "4006179",
+    "nome": "CHICLE TRIDENT CEREJA ICE UN 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006225",
+    "codigo": "4006225",
+    "nome": "TIC TAC CITRUS UN 14,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006238",
+    "codigo": "4006238",
+    "nome": "OVO DIP LOKO SURPRISE ANIMALS 11G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.00",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006239",
+    "codigo": "4006239",
+    "nome": "OVO DIP LOKO SURPRISE PET MONSTER 11G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.00",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006416",
+    "codigo": "4006416",
+    "nome": "KINDER JOY HARRY POTTER 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.36",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006557",
+    "codigo": "4006557",
+    "nome": "BALA GEL CARAMELO 7G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.17",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006573",
+    "codigo": "4006573",
+    "nome": "KINDER JOY HARRY POTTER 40G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "14.51",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006760",
+    "codigo": "4006760",
+    "nome": "CHICLE ZOIO BOOL AZEDINHO 10G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.90",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006761",
+    "codigo": "4006761",
+    "nome": "PIRULITO LITO BOCA 3,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.67",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006824",
+    "codigo": "4006824",
+    "nome": "CHOC SNICKERS BRANCO 42G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.32",
+    "ativo": true
+  },
+  {
+    "id": "bom_4006829",
+    "codigo": "4006829",
+    "nome": "BALA SLIME LOKA 8G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.58",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007198",
+    "codigo": "4007198",
+    "nome": "CHOC LACTA OREO 20,1G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.13",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007331",
+    "codigo": "4007331",
+    "nome": "MENTOS PURE FRESH MELANCIA GF 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.91",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007429",
+    "codigo": "4007429",
+    "nome": "CHOC LACTA BIS AO LEITE 63G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.79",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007497",
+    "codigo": "4007497",
+    "nome": "CHICLE ZOIO BOOL BOLA OLHO 9,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.48",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007523",
+    "codigo": "4007523",
+    "nome": "BARRA PROTEINA BANANA BRASIL SUPINO BANANA E ACAI 24G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.24",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007524",
+    "codigo": "4007524",
+    "nome": "BARRA PROTEINA BANANA BRASIL SUPINO BANANA E ABACAXI 24G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.17",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007525",
+    "codigo": "4007525",
+    "nome": "BARRA PROTEINA BANANA BRASIL PROTEIN MORANGO 30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.62",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007584",
+    "codigo": "4007584",
+    "nome": "WAFER HERSHEYS COOKIES 102G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.57",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007586",
+    "codigo": "4007586",
+    "nome": "BARRA CHOC HERSHEY´S MEIO AMARGO 40% CACAU 82G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.87",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007587",
+    "codigo": "4007587",
+    "nome": "BARRA CHOC HERSHEY´S AMENDOIM 75G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.87",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007588",
+    "codigo": "4007588",
+    "nome": "BARRA CHOC HERSHEY´S BCO 82G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.86",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007589",
+    "codigo": "4007589",
+    "nome": "BARRA CHOC HERSHEY´S COKIES N CREME 77G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.73",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007596",
+    "codigo": "4007596",
+    "nome": "BARRA CHOC HERSHEY´S OVOMALTINE MEIO AMARGO 75G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "6.67",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007606",
+    "codigo": "4007606",
+    "nome": "DIP LOKO OCEANO  30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.33",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007607",
+    "codigo": "4007607",
+    "nome": "DIP LOKO MINHOCAS 30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.52",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007608",
+    "codigo": "4007608",
+    "nome": "MENTOS PURE WHITE SPEARM 56G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "11.30",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007610",
+    "codigo": "4007610",
+    "nome": "BARRA CHOC HERSHEY´S CHOC AO LEITE 82G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.08",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007644",
+    "codigo": "4007644",
+    "nome": "BAR CER TRIO AVELA CAST E CHOC 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.81",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007645",
+    "codigo": "4007645",
+    "nome": "BAR CER TRIO BANANA AEVEIA E MEL 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.58",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "bom_4007646",
+    "codigo": "4007646",
+    "nome": "BAR CER TRIO MORANGO E CHOCOLATE 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.58",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007662",
+    "codigo": "4007662",
+    "nome": "BAR CER TRIO SOBREMESA MORAN E CHAN 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.63",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007663",
+    "codigo": "4007663",
+    "nome": "BAR CER TRIO COCO E CHOCOLATE 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.77",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007673",
+    "codigo": "4007673",
+    "nome": "BARRA PROTEICA 3 CORACOES CAPP COOKIES 50G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "8.56",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007718",
+    "codigo": "4007718",
+    "nome": "CHOC NESTLE KIT KAT MINI SACHE 417,6G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "37.67",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007720",
+    "codigo": "4007720",
+    "nome": "CHOC GAROTO TABLETE NEGRESCO 90G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.21",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007736",
+    "codigo": "4007736",
+    "nome": "BAR CER ALL NUTRI AVEIA CASTANHA COM CHOC 22G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.97",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007737",
+    "codigo": "4007737",
+    "nome": "BAR CER ALL NUTRY AVELA COM CHOCOLATE 22G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.06",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007738",
+    "codigo": "4007738",
+    "nome": "BAR CER ALL NUTRY MORANGO COM CHOCOLATE 22G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.06",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007739",
+    "codigo": "4007739",
+    "nome": "BAR CER ALL NUTRY BANANA E MEL 22G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.06",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "bom_4007740",
+    "codigo": "4007740",
+    "nome": "BAR CER ALL NUTRI FRTS VERM CHIA E QUINOA 22G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.97",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007750",
+    "codigo": "4007750",
+    "nome": "BAR CER TRIO BRIGADEIRO 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.14",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007757",
+    "codigo": "4007757",
+    "nome": "BARRA PROTEINA BANANA BRASIL CHOC S ACUCAR 30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.93",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007758",
+    "codigo": "4007758",
+    "nome": "BARRA PROTEINA BANANA BRASIL COCO S ACUCAR 30G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "4.93",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007759",
+    "codigo": "4007759",
+    "nome": "BARRA PROTEINA BANANA BRASIL SUPINO BANANA E AMEIXA 24G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.32",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007771",
+    "codigo": "4007771",
+    "nome": "SPRAY AZEDINHO DOCE MIX CANDY 20ML",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.13",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007803",
+    "codigo": "4007803",
+    "nome": "CHOC HERSHEYS COOKIES N CREME 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.28",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007806",
+    "codigo": "4007806",
+    "nome": "CHOC NESTLE ALPINO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "7.75",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007807",
+    "codigo": "4007807",
+    "nome": "CHOC NESTLE SUFLAIR 50G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "5.62",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007834",
+    "codigo": "4007834",
+    "nome": "PIRULITO SONIC 9G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.47",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007835",
+    "codigo": "4007835",
+    "nome": "BALA DE GELATINA BURGER LITO 18G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.15",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007847",
+    "codigo": "4007847",
+    "nome": "BARRA CHOC BIENE CACAU 35 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "14.50",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007848",
+    "codigo": "4007848",
+    "nome": "BARRA CHOC BIENE CACAU 45 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "16.10",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007849",
+    "codigo": "4007849",
+    "nome": "BARRA CHOC BIENE CACAU 65 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "18.50",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007850",
+    "codigo": "4007850",
+    "nome": "BARRA CHOC BIENE CACAU ZERO ACUCAR 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "18.50",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007851",
+    "codigo": "4007851",
+    "nome": "BARRA CHOC BIENE CACAU CHOC BRANCO 80G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "14.50",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007857",
+    "codigo": "4007857",
+    "nome": "CHOC NESTLE KIT KAT COTTON CANDY 41,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.00",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007862",
+    "codigo": "4007862",
+    "nome": "CHOC BANANINHA TAMBAU 23G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.76",
+    "ativo": true
+  },
+  {
+    "id": "bom_4007863",
+    "codigo": "4007863",
+    "nome": "BAR CER TRIO MOUSSE DE CHOCOLATE 20G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "2.58",
+    "ativo": true
+  },
+  {
+    "id": "bom_4008999",
+    "codigo": "4008999",
+    "nome": "CHOC LACTA BIS BRANCO 63G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "3.72",
+    "ativo": true
+  },
+  {
+    "id": "bom_4009013",
+    "codigo": "4009013",
+    "nome": "MENTOS STICK WILDSPEARMINT 37,5G",
+    "unidade": "un",
+    "secao": "Bomboniere",
+    "custo": "1.93",
+    "ativo": true
+  }
+]

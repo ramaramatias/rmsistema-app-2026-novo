@@ -34,14 +34,18 @@ export const enviarRegistroNuvem = async (registro: Record<string, unknown>) => 
       fornecedoresCotacao: leve.fornecedoresCotacao,
       itensCotacao: leve.itensCotacao,
       quantidadesElieuda: leve.quantidadesElieuda,
+      custosCatalogo: leve.custosCatalogo,
       pedidosConferidos: leve.pedidosConferidos,
       conferenciasDeletadas: leve.conferenciasDeletadas,
+      pagamentosDeletados: leve.pagamentosDeletados,
       pedidosCotacaoDeletados: leve.pedidosCotacaoDeletados,
       relatoriosPedidosCotacao: leve.relatoriosPedidosCotacao,
       senhasUsuarios: leve.senhasUsuarios,
       usuariosExtra: leve.usuariosExtra,
+      usuariosExtraDeletados: leve.usuariosExtraDeletados,
       permissoesUsuarios: leve.permissoesUsuarios,
       ordensManutencao: leve.ordensManutencao,
+      ordensManutencaoDeletadas: leve.ordensManutencaoDeletadas,
       ultimaAtualizacao: leve.ultimaAtualizacao
     });
   }

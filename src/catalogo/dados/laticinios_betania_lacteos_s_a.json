@@ -7,7 +7,8 @@
     "secao": "Laticínios",
     "custo": "7.02",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.32"
   },
   {
     "id": "lat_4004638",
@@ -17,7 +18,8 @@
     "secao": "Laticínios",
     "custo": "7.26",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.74"
   },
   {
     "id": "lat_4004639",
@@ -27,7 +29,8 @@
     "secao": "Laticínios",
     "custo": "10.07",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.67"
   },
   {
     "id": "lat_4004640",
@@ -37,7 +40,8 @@
     "secao": "Laticínios",
     "custo": "20.93",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "36.73"
   },
   {
     "id": "lat_4004643",
@@ -47,7 +51,9 @@
     "secao": "Laticínios",
     "custo": "7.45",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "10.06"
   },
   {
     "id": "lat_4004645",
@@ -57,7 +63,8 @@
     "secao": "Laticínios",
     "custo": "3.20",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.62"
   },
   {
     "id": "lat_4004646",
@@ -67,7 +74,8 @@
     "secao": "Laticínios",
     "custo": "3.20",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.62"
   },
   {
     "id": "lat_4004647",
@@ -77,7 +85,9 @@
     "secao": "Laticínios",
     "custo": "7.94",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "10.72"
   },
   {
     "id": "lat_4004650",
@@ -87,7 +97,8 @@
     "secao": "Laticínios",
     "custo": "5.74",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.07"
   },
   {
     "id": "lat_4004651",
@@ -97,7 +108,8 @@
     "secao": "Laticínios",
     "custo": "1.68",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "2.95"
   },
   {
     "id": "lat_4004652",
@@ -107,7 +119,8 @@
     "secao": "Laticínios",
     "custo": "5.25",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.21"
   },
   {
     "id": "lat_4004656",
@@ -117,7 +130,8 @@
     "secao": "Laticínios",
     "custo": "10.94",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.20"
   },
   {
     "id": "lat_4004657",
@@ -127,7 +141,8 @@
     "secao": "Laticínios",
     "custo": "2.90",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.09"
   },
   {
     "id": "lat_4004658",
@@ -137,7 +152,8 @@
     "secao": "Laticínios",
     "custo": "10.95",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.22"
   },
   {
     "id": "lat_4004659",
@@ -147,7 +163,8 @@
     "secao": "Laticínios",
     "custo": "2.89",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.07"
   },
   {
     "id": "lat_4004660",
@@ -157,7 +174,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_4004661",
@@ -167,7 +185,8 @@
     "secao": "Laticínios",
     "custo": "3.25",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.70"
   },
   {
     "id": "lat_4004663",
@@ -177,7 +196,8 @@
     "secao": "Laticínios",
     "custo": "3.21",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.63"
   },
   {
     "id": "lat_4004668",
@@ -187,7 +207,8 @@
     "secao": "Laticínios",
     "custo": "10.90",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.13"
   },
   {
     "id": "lat_4004669",
@@ -197,7 +218,8 @@
     "secao": "Laticínios",
     "custo": "2.89",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.07"
   },
   {
     "id": "lat_4004672",
@@ -207,7 +229,8 @@
     "secao": "Laticínios",
     "custo": "5.75",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.09"
   },
   {
     "id": "lat_4004677",
@@ -217,7 +240,8 @@
     "secao": "Laticínios",
     "custo": "3.36",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.90"
   },
   {
     "id": "lat_4004678",
@@ -227,7 +251,8 @@
     "secao": "Laticínios",
     "custo": "11.34",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.90"
   },
   {
     "id": "lat_4004680",
@@ -237,7 +262,8 @@
     "secao": "Laticínios",
     "custo": "3.36",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.90"
   },
   {
     "id": "lat_4004681",
@@ -247,7 +273,8 @@
     "secao": "Laticínios",
     "custo": "10.97",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.25"
   },
   {
     "id": "lat_4004683",
@@ -257,7 +284,8 @@
     "secao": "Laticínios",
     "custo": "5.75",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.09"
   },
   {
     "id": "lat_4004688",
@@ -267,7 +295,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_4004698",
@@ -277,7 +306,9 @@
     "secao": "Laticínios",
     "custo": "6.68",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "61.11%",
+    "precoVenda": "11.72"
   },
   {
     "id": "lat_4004700",
@@ -287,7 +318,9 @@
     "secao": "Laticínios",
     "custo": "8.61",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "11.62"
   },
   {
     "id": "lat_4004702",
@@ -297,7 +330,8 @@
     "secao": "Laticínios",
     "custo": "3.36",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.90"
   },
   {
     "id": "lat_4004709",
@@ -307,7 +341,9 @@
     "secao": "Laticínios",
     "custo": "5.84",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "61.11%",
+    "precoVenda": "10.25"
   },
   {
     "id": "lat_4004718",
@@ -317,7 +353,8 @@
     "secao": "Laticínios",
     "custo": "6.24",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.95"
   },
   {
     "id": "lat_4004724",
@@ -327,7 +364,8 @@
     "secao": "Laticínios",
     "custo": "3.00",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.26"
   },
   {
     "id": "lat_4006567",
@@ -337,7 +375,8 @@
     "secao": "Laticínios",
     "custo": "7.14",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.53"
   },
   {
     "id": "lat_4007537",
@@ -347,7 +386,8 @@
     "secao": "Laticínios",
     "custo": "7.04",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.36"
   },
   {
     "id": "lat_4007658",
@@ -357,7 +397,8 @@
     "secao": "Laticínios",
     "custo": "5.85",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.27"
   },
   {
     "id": "lat_4007699",
@@ -367,7 +408,8 @@
     "secao": "Laticínios",
     "custo": "3.03",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.32"
   },
   {
     "id": "lat_4007870",
@@ -377,6 +419,7 @@
     "secao": "Laticínios",
     "custo": "7.05",
     "fornecedor": "BETANIA LACTEOS S/A",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.37"
   }
 ]

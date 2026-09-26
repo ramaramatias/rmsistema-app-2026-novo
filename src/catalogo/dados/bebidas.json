@@ -6,7 +6,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.23",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "3.57"
   },
   {
     "id": "beb_4000129",
@@ -15,7 +17,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.85",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.96"
   },
   {
     "id": "beb_4000131",
@@ -24,7 +28,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.85",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.96"
   },
   {
     "id": "beb_4000132",
@@ -33,7 +39,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.24",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "3.58"
   },
   {
     "id": "beb_4000156",
@@ -42,7 +50,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.85",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.96"
   },
   {
     "id": "beb_4000185",
@@ -51,7 +61,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.33",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "13.33"
   },
   {
     "id": "beb_4000187",
@@ -60,7 +71,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.37",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "13.39"
   },
   {
     "id": "beb_4000189",
@@ -69,7 +81,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.21",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "3.54"
   },
   {
     "id": "beb_4000203",
@@ -78,7 +91,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.37",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "13.39"
   },
   {
     "id": "beb_4000730",
@@ -87,7 +101,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.33",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.33"
   },
   {
     "id": "beb_4001770",
@@ -96,7 +111,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.14",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.28"
   },
   {
     "id": "beb_4001771",
@@ -105,7 +122,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.06",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.12"
   },
   {
     "id": "beb_4002061",
@@ -114,7 +133,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.22",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.44"
   },
   {
     "id": "beb_4002065",
@@ -123,7 +144,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.95",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.32"
   },
   {
     "id": "beb_4002069",
@@ -132,7 +155,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.03",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.45"
   },
   {
     "id": "beb_4002072",
@@ -141,7 +166,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.44",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "3.90"
   },
   {
     "id": "beb_4002073",
@@ -150,7 +177,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "9.39",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.02"
   },
   {
     "id": "beb_4002074",
@@ -159,7 +188,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.37",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "10.19"
   },
   {
     "id": "beb_4002075",
@@ -168,7 +199,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.64",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.28"
   },
   {
     "id": "beb_4002078",
@@ -177,7 +210,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "7.75",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "12.40"
   },
   {
     "id": "beb_4002084",
@@ -186,7 +221,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.64",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.28"
   },
   {
     "id": "beb_4002085",
@@ -195,7 +232,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "7.75",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "12.40"
   },
   {
     "id": "beb_4002088",
@@ -204,7 +243,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.47",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "4.94"
   },
   {
     "id": "beb_4002098",
@@ -213,7 +254,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.15",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.30"
   },
   {
     "id": "beb_4002105",
@@ -222,7 +265,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.31",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.90"
   },
   {
     "id": "beb_4002106",
@@ -231,7 +275,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.51",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.42"
   },
   {
     "id": "beb_4002107",
@@ -240,7 +286,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.86",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "4.58"
   },
   {
     "id": "beb_4002111",
@@ -249,7 +297,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.71",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.74"
   },
   {
     "id": "beb_4002112",
@@ -258,7 +308,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.77",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.43"
   },
   {
     "id": "beb_4002113",
@@ -267,7 +318,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "5.42",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "8.67"
   },
   {
     "id": "beb_4002117",
@@ -276,7 +328,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.91",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.66"
   },
   {
     "id": "beb_4002118",
@@ -285,7 +338,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "5.94",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.50"
   },
   {
     "id": "beb_4002124",
@@ -294,7 +348,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.89",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "3.02"
   },
   {
     "id": "beb_4002127",
@@ -303,7 +358,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "12.05",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.28"
   },
   {
     "id": "beb_4002131",
@@ -312,7 +368,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.64",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.82"
   },
   {
     "id": "beb_4002132",
@@ -321,7 +379,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.64",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.28"
   },
   {
     "id": "beb_4002134",
@@ -330,7 +390,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.22",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.44"
   },
   {
     "id": "beb_4002135",
@@ -339,7 +401,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "9.06",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "14.50"
   },
   {
     "id": "beb_4002136",
@@ -348,7 +412,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.96",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.34"
   },
   {
     "id": "beb_4002139",
@@ -357,7 +423,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.64",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.28"
   },
   {
     "id": "beb_4002360",
@@ -366,7 +434,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.53",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.25"
   },
   {
     "id": "beb_4002376",
@@ -375,7 +444,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.53",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.25"
   },
   {
     "id": "beb_4002377",
@@ -384,7 +454,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.53",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.25"
   },
   {
     "id": "beb_4002378",
@@ -393,7 +464,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.28",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "2.05"
   },
   {
     "id": "beb_4002379",
@@ -402,7 +474,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.28",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "2.05"
   },
   {
     "id": "beb_4003469",
@@ -411,7 +484,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.44",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.10"
   },
   {
     "id": "beb_4003470",
@@ -420,7 +494,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "17.84",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "28.54"
   },
   {
     "id": "beb_4003495",
@@ -429,7 +504,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.86",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.78"
   },
   {
     "id": "beb_4003499",
@@ -438,7 +514,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "11.04",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.66"
   },
   {
     "id": "beb_4003500",
@@ -447,7 +524,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "4.57",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.31"
   },
   {
     "id": "beb_4003677",
@@ -456,7 +534,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "9.65",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.44"
   },
   {
     "id": "beb_4003678",
@@ -465,7 +545,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.67",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "10.67"
   },
   {
     "id": "beb_4003981",
@@ -474,7 +556,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.14",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "3.42"
   },
   {
     "id": "beb_4003982",
@@ -483,7 +566,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.87",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.19"
   },
   {
     "id": "beb_4004037",
@@ -492,7 +576,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "7.01",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "11.22"
   },
   {
     "id": "beb_4004290",
@@ -501,7 +586,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "5.97",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "9.55"
   },
   {
     "id": "beb_4004291",
@@ -510,7 +597,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.72",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.95"
   },
   {
     "id": "beb_4004293",
@@ -519,7 +608,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "7.33",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "11.73"
   },
   {
     "id": "beb_4004294",
@@ -528,7 +619,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.75",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.80"
   },
   {
     "id": "beb_4004301",
@@ -537,7 +630,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.49",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.38"
   },
   {
     "id": "beb_4004302",
@@ -546,7 +641,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.49",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.38"
   },
   {
     "id": "beb_4004303",
@@ -555,7 +652,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.49",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.38"
   },
   {
     "id": "beb_4004304",
@@ -564,7 +663,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.23",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "3.57"
   },
   {
     "id": "beb_4004305",
@@ -573,7 +674,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.25",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.20"
   },
   {
     "id": "beb_4004310",
@@ -582,7 +684,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.56",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.50"
   },
   {
     "id": "beb_4004619",
@@ -591,7 +695,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.25",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.00"
   },
   {
     "id": "beb_4004620",
@@ -600,7 +706,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.67",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "4.27"
   },
   {
     "id": "beb_4004621",
@@ -609,7 +717,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.73",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.77"
   },
   {
     "id": "beb_4005703",
@@ -618,7 +728,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "11.44",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "18.30"
   },
   {
     "id": "beb_4005846",
@@ -627,7 +738,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "7.04",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "11.26"
   },
   {
     "id": "beb_4005858",
@@ -636,7 +748,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.25",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.20"
   },
   {
     "id": "beb_4005877",
@@ -645,7 +758,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.17",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "3.47"
   },
   {
     "id": "beb_4005899",
@@ -654,7 +769,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.27",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.23"
   },
   {
     "id": "beb_4006912",
@@ -663,7 +780,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.15",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "9.84"
   },
   {
     "id": "beb_4006996",
@@ -672,7 +791,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.08",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "4.93"
   },
   {
     "id": "beb_4007214",
@@ -681,7 +802,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.29",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "5.26"
   },
   {
     "id": "beb_4007219",
@@ -690,7 +813,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.12",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.99"
   },
   {
     "id": "beb_4007269",
@@ -699,7 +823,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.12",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.99"
   },
   {
     "id": "beb_4007383",
@@ -708,7 +833,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.24",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "6.48"
   },
   {
     "id": "beb_4007468",
@@ -717,7 +844,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "2.78",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.45"
   },
   {
     "id": "beb_4007614",
@@ -726,7 +854,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.50",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "10.40"
   },
   {
     "id": "beb_4007723",
@@ -735,7 +865,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.50",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.40"
   },
   {
     "id": "beb_4007724",
@@ -744,7 +875,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "8.01",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "12.82"
   },
   {
     "id": "beb_4007734",
@@ -753,7 +885,8 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "3.25",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.20"
   },
   {
     "id": "beb_4007735",
@@ -762,7 +895,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.49",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.38"
   },
   {
     "id": "beb_4007799",
@@ -771,7 +906,9 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "1.75",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "2.80"
   },
   {
     "id": "beb_4007869",
@@ -780,6 +917,7 @@
     "unidade": "un",
     "secao": "Bebidas",
     "custo": "6.66",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.66"
   }
 ]

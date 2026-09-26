@@ -1,0 +1,654 @@
+[
+  {
+    "id": "art_1125",
+    "codigo": "1125",
+    "nome": "GELEIA DIET REQUINTES DO CAMPO 170G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "23.11",
+    "ativo": true
+  },
+  {
+    "id": "art_1226",
+    "codigo": "1226",
+    "nome": "DRAGEAS DE CAPUCCINO DOCE PALADAR 40G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "8.00",
+    "ativo": true
+  },
+  {
+    "id": "art_1440",
+    "codigo": "1440",
+    "nome": "GELEIA REQUINTES DO CAMPO 170G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "19.19",
+    "ativo": true
+  },
+  {
+    "id": "art_1471",
+    "codigo": "1471",
+    "nome": "CAIXINHA DE MOLHO PICANTE REQUINTES DO CAMPO 50ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.00",
+    "ativo": true
+  },
+  {
+    "id": "art_1473",
+    "codigo": "1473",
+    "nome": "GELEIA DIET REQUINTES DO CAMPO 120G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "19.00",
+    "ativo": true
+  },
+  {
+    "id": "art_1474",
+    "codigo": "1474",
+    "nome": "DOCE DE FRUTAS REQUINTES DO CAMPO 240G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.00",
+    "ativo": true
+  },
+  {
+    "id": "art_1475",
+    "codigo": "1475",
+    "nome": "KIT COM 1 MEL SABORIZADO 50ML E 1 MINI TACINHA REQUINTES DO CAMPO",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "30.00",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_1480",
+    "codigo": "1480",
+    "nome": "BRIGADEIRO CREMOSO DOCE PALADAR 200ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "23.00",
+    "ativo": true
+  },
+  {
+    "id": "art_1572",
+    "codigo": "1572",
+    "nome": "GARRAFINHAS DE MOLHO PICANTE REQUINTES DO CAMPO 50ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "15.00",
+    "ativo": true
+  },
+  {
+    "id": "art_2508",
+    "codigo": "2508",
+    "nome": "DOCES DONA CILENE FRUTAS EM BARRA 400G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "14.46",
+    "ativo": true
+  },
+  {
+    "id": "art_3547",
+    "codigo": "3547",
+    "nome": "CAFE PACHECO ORGANICO VILA FLOR 250G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "22.25",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_3558",
+    "codigo": "3558",
+    "nome": "COLORAU ORGANICO VILA FLOR 100G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "5.00",
+    "ativo": true
+  },
+  {
+    "id": "art_3860",
+    "codigo": "3860",
+    "nome": "HIBISCO (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "79.20",
+    "ativo": true
+  },
+  {
+    "id": "art_4524",
+    "codigo": "4524",
+    "nome": "DOCES DONA CILENE LEITE 700G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "32.76",
+    "ativo": true
+  },
+  {
+    "id": "art_4830",
+    "codigo": "4830",
+    "nome": "CASTANHA DO PARA (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "107.69",
+    "ativo": true
+  },
+  {
+    "id": "art_5192",
+    "codigo": "5192",
+    "nome": "LINHACA SEMENTE (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "46.67",
+    "ativo": true
+  },
+  {
+    "id": "art_5679",
+    "codigo": "5679",
+    "nome": "ACAFRAO A GRANEL KG",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "23.68",
+    "ativo": true
+  },
+  {
+    "id": "art_5757",
+    "codigo": "5757",
+    "nome": "OVOS DE CODORNA C/30",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "8.29",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_5901",
+    "codigo": "5901",
+    "nome": "CANELA EM CASCA (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "82.65",
+    "ativo": true
+  },
+  {
+    "id": "art_5959",
+    "codigo": "5959",
+    "nome": "ERVA DOCE (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "45.00",
+    "ativo": true
+  },
+  {
+    "id": "art_6600",
+    "codigo": "6600",
+    "nome": "DOCE DE BURITI PASTOSO REQUINTES DO CAMPO 200G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.00",
+    "ativo": true
+  },
+  {
+    "id": "art_6728",
+    "codigo": "6728",
+    "nome": "DOCE DE FRUTAS REQUINTES DO CAMPO 700G (EM MDF) (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "36.00",
+    "ativo": true
+  },
+  {
+    "id": "art_6741",
+    "codigo": "6741",
+    "nome": "CHIA EM GRAOS (KG)",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "29.45",
+    "ativo": true
+  },
+  {
+    "id": "art_7003",
+    "codigo": "7003",
+    "nome": "MEL DE ABELHA MEL E CIA 400G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.33",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7087",
+    "codigo": "7087",
+    "nome": "DOCES DONA CILENE LEITE UN 400G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.85",
+    "ativo": true
+  },
+  {
+    "id": "art_7325",
+    "codigo": "7325",
+    "nome": "MEL DE ABELHA FLORA PURA MEL 210G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.93",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7326",
+    "codigo": "7326",
+    "nome": "COMPOSTO MEL COM PIMENTA FLORA PURA MEL 210G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "22.05",
+    "ativo": true
+  },
+  {
+    "id": "art_7327",
+    "codigo": "7327",
+    "nome": "COMPOSTO DE MEL E EXTRATOS FLORA PURA MEL 210G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.93",
+    "ativo": true
+  },
+  {
+    "id": "art_7532",
+    "codigo": "7532",
+    "nome": "ACAFRAO DA TERRA ORGANICO VILA FLOR 100G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "6.95",
+    "ativo": true
+  },
+  {
+    "id": "art_7546",
+    "codigo": "7546",
+    "nome": "ARMARIO EM MDF REQUINTES DO CAMPO (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "45.15",
+    "ativo": true
+  },
+  {
+    "id": "art_7708",
+    "codigo": "7708",
+    "nome": "MEL DE ABELHA MEL E CIA 500G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "23.22",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7779",
+    "codigo": "7779",
+    "nome": "MEL DE ABELHA LAGOA DO UBARI 250G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "13.00",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7792",
+    "codigo": "7792",
+    "nome": "MEL DE ABELHA MEL E CIA 280G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "17.90",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7903",
+    "codigo": "7903",
+    "nome": "MEL DE ABELHA MEL E CIA 700G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.80",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_7956",
+    "codigo": "7956",
+    "nome": "CAPSULAS EXPLOSIVAS DOCE PALADAR C/4 (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.63",
+    "ativo": true
+  },
+  {
+    "id": "art_7980",
+    "codigo": "7980",
+    "nome": "PREPARO P/ CHOCOCCINO DOCE PALADAR 240G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "26.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8019",
+    "codigo": "8019",
+    "nome": "CASTANHA CAJU INTEIRA",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "60.28",
+    "ativo": true
+  },
+  {
+    "id": "art_8029",
+    "codigo": "8029",
+    "nome": "CAFE ARABICA SOMBREADO SERRA DA IBIAPABA 200G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "24.43",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_8031",
+    "codigo": "8031",
+    "nome": "DOCE DE LEITE REQUINTES DO CAMPO 200G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "20.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8058",
+    "codigo": "8058",
+    "nome": "BAU ACRILICO C/1 GELEIA 170G REQUINTES DO CAMPO",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "17.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8062",
+    "codigo": "8062",
+    "nome": "PREPARO P/ CHOCOCCINO DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.85",
+    "ativo": true
+  },
+  {
+    "id": "art_8068",
+    "codigo": "8068",
+    "nome": "CAJUINA ARTESANAL CAJUEIRO DA PRAIA 950ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "9.17",
+    "ativo": true
+  },
+  {
+    "id": "art_8069",
+    "codigo": "8069",
+    "nome": "CAJUINA ARTESANAL CAJUEIRO DA PRAIA 330ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "3.33",
+    "ativo": true
+  },
+  {
+    "id": "art_8070",
+    "codigo": "8070",
+    "nome": "DOCE DE LEITE REQUINTES DO CAMPO 240G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8071",
+    "codigo": "8071",
+    "nome": "COMPOTA REQUINTES DO CAMPO 240G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "24.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8073",
+    "codigo": "8073",
+    "nome": "DOCE DE LEITE REQUINTES DO CAMPO 170G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "22.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8075",
+    "codigo": "8075",
+    "nome": "DRAGEAS BIENE CACAU 100G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "19.25",
+    "ativo": true
+  },
+  {
+    "id": "art_8366",
+    "codigo": "8366",
+    "nome": "GELEIA REQUINTES DO CAMPO 170G C/ BAU MDF",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "28.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8548",
+    "codigo": "8548",
+    "nome": "CAIXA EM MDF C/3 MINI GELEIA 40G REQUINTES DO CAMPO",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "32.17",
+    "ativo": true
+  },
+  {
+    "id": "art_8603",
+    "codigo": "8603",
+    "nome": "PREPARO PARA CHOCOLATE QUENTE DOCE PALADAR 240G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.68",
+    "ativo": true
+  },
+  {
+    "id": "art_8604",
+    "codigo": "8604",
+    "nome": "PREPARO PARA CAPUCCINO DOCE PALADAR 240G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8700",
+    "codigo": "8700",
+    "nome": "CAIXA EM MDF C/ BOMBONS TRUFADOS REQUINTES DO CAMP",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "30.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8779",
+    "codigo": "8779",
+    "nome": "PREPARO P/ CHOCOLATE QUENTE DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.48",
+    "ativo": true
+  },
+  {
+    "id": "art_8780",
+    "codigo": "8780",
+    "nome": "PREPARO P/ CAPUCCINO DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.39",
+    "ativo": true
+  },
+  {
+    "id": "art_8820",
+    "codigo": "8820",
+    "nome": "MINI GELEIA REQUINTES DO CAMPO 40G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "12.00",
+    "ativo": true
+  },
+  {
+    "id": "art_8942",
+    "codigo": "8942",
+    "nome": "MINI BAU GELEIA MDF REQUINTES DO CAMPO 40G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "18.54",
+    "ativo": true
+  },
+  {
+    "id": "art_4000209",
+    "codigo": "4000209",
+    "nome": "MACAXEIRA CHIPS CHIPS DA SERRA 30G (UN)",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "1.98",
+    "ativo": true
+  },
+  {
+    "id": "art_4004851",
+    "codigo": "4004851",
+    "nome": "DOCES DONA CILENE FRUTAS UN 700G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "24.60",
+    "ativo": true
+  },
+  {
+    "id": "art_4005619",
+    "codigo": "4005619",
+    "nome": "MEL DE ABELHA LAGOA DO UBARI 700G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "24.87",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_4005901",
+    "codigo": "4005901",
+    "nome": "DOCES DONA CILENE FRUTAS UN 400G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.00",
+    "ativo": true
+  },
+  {
+    "id": "art_4005935",
+    "codigo": "4005935",
+    "nome": "MEL DE ABELHA LAGOA DO UBARI 1400G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "52.35",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_4006016",
+    "codigo": "4006016",
+    "nome": "MEL DE ABELHA MEL E CIA 1,400 KG",
+    "unidade": "Kg",
+    "secao": "Artesanato",
+    "custo": "47.75",
+    "ativo": true,
+    "tributacao": "61.11%"
+  },
+  {
+    "id": "art_4006267",
+    "codigo": "4006267",
+    "nome": "PREPARO PARA FRAPPUCCINO DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "15.90",
+    "ativo": true
+  },
+  {
+    "id": "art_4006310",
+    "codigo": "4006310",
+    "nome": "PREPARO P/ MOCACCINO DOCE PALADAR 240G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "26.00",
+    "ativo": true
+  },
+  {
+    "id": "art_4006311",
+    "codigo": "4006311",
+    "nome": "PREPARO P/ CAP OVOMALTINE DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "18.00",
+    "ativo": true
+  },
+  {
+    "id": "art_4006350",
+    "codigo": "4006350",
+    "nome": "PREPARO PARA FRAPPUCCINO DOCE PALADAR 240G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "25.60",
+    "ativo": true
+  },
+  {
+    "id": "art_4006351",
+    "codigo": "4006351",
+    "nome": "PREPARO P/ MOCACCINO DOCE PALADAR 120G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.40",
+    "ativo": true
+  },
+  {
+    "id": "art_4006604",
+    "codigo": "4006604",
+    "nome": "MINI DOCE DE LEITE REQUINTES DO CAMPO 40G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "12.00",
+    "ativo": true
+  },
+  {
+    "id": "art_4007632",
+    "codigo": "4007632",
+    "nome": "BRIGADEIRO CREMOSO DOCE PALADAR 120ML",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "16.50",
+    "ativo": true
+  },
+  {
+    "id": "art_4007820",
+    "codigo": "4007820",
+    "nome": "CHURRY SADIO 30G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "1.92",
+    "ativo": true
+  },
+  {
+    "id": "art_4007821",
+    "codigo": "4007821",
+    "nome": "ACAFRAO SADIO 20G",
+    "unidade": "un",
+    "secao": "Artesanato",
+    "custo": "1.92",
+    "ativo": true
+  }
+]

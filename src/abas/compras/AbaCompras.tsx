@@ -5,13 +5,14 @@ type Permissoes = {
   conferencias?: boolean;
 };
 
-type Destino = 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'elieuda' | 'conferencia';
+type Destino = 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia';
 
 const MODULOS: { destino: Destino; titulo: string; detalhe: string; permissao: keyof Permissoes }[] = [
   { destino: 'cotacao', titulo: 'Cotação', detalhe: 'Comparar preços e montar o pedido de compra.', permissao: 'cotacao' },
   { destino: 'cadastroProdutos', titulo: 'Cadastro de produtos', detalhe: 'Lista atual, bebidas, laticínios e embalagens.', permissao: 'cotacao' },
   { destino: 'cadastroFornecedores', titulo: 'Cadastro de fornecedores', detalhe: 'Incluir e manter os fornecedores da cotação.', permissao: 'cotacao' },
   { destino: 'pagamentos', titulo: 'Pagamentos', detalhe: 'Caixa, cheque e CABEN.', permissao: 'pagamentos' },
+  { destino: 'reciboComprador', titulo: 'Recibo', detalhe: 'Escolher o fornecedor, o produto e imprimir.', permissao: 'pagamentos' },
   { destino: 'elieuda', titulo: 'Pedido Elieuda', detalhe: 'Pedido de hortifrúti da semana.', permissao: 'elieuda' },
   { destino: 'conferencia', titulo: 'Conferência', detalhe: 'Conferir mercadoria que chegou.', permissao: 'conferencias' }
 ];

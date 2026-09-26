@@ -40,6 +40,14 @@ export const escolherItemCotacao = (atual: ItemCotacao, candidato: ItemCotacao) 
   return candidato;
 };
 
+export const chaveNomeItemCotacao = (item: { produto?: string }) =>
+  String(item?.produto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
 export const mesclarItensCotacao = (...listas: Array<ItemCotacao[] | undefined>) => {
   const porId = new Map<string, ItemCotacao>();
   listas.forEach(lista => {
@@ -49,7 +57,26 @@ export const mesclarItensCotacao = (...listas: Array<ItemCotacao[] | undefined>)
       porId.set(item.id, garantirItemCotacao(atual ? escolherItemCotacao(atual, item) : item));
     });
   });
-  return Array.from(porId.values());
+  const porNome = new Map<string, ItemCotacao>();
+  const semNome: ItemCotacao[] = [];
+  porId.forEach(item => {
+    const chave = chaveNomeItemCotacao(item);
+    if (!chave) {
+      semNome.push(item);
+      return;
+    }
+    const atual = porNome.get(chave);
+    if (!atual) {
+      porNome.set(chave, item);
+      return;
+    }
+    const escolhido = escolherItemCotacao(atual, item);
+    porNome.set(chave, garantirItemCotacao({
+      ...escolhido,
+      precos: { ...(atual.precos || {}), ...(item.precos || {}), ...(escolhido.precos || {}) }
+    }));
+  });
+  return [...porNome.values(), ...semNome];
 };
 
 export const normalizarItensCotacao = (itensSalvos: ItemCotacao[]) => mesclarItensCotacao(ITENS_COTACAO_OFICIAIS, itensSalvos);

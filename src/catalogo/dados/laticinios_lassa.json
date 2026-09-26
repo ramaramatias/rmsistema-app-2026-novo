@@ -7,7 +7,9 @@
     "secao": "Laticínios",
     "custo": "36.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "48.60"
   },
   {
     "id": "lat_lassa_4478",
@@ -17,7 +19,9 @@
     "secao": "Laticínios",
     "custo": "38.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "51.30"
   },
   {
     "id": "lat_lassa_6188",
@@ -27,7 +31,9 @@
     "secao": "Laticínios",
     "custo": "38.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "51.30"
   },
   {
     "id": "lat_lassa_100000",
@@ -37,7 +43,8 @@
     "secao": "Laticínios",
     "custo": "10.90",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.13"
   },
   {
     "id": "lat_lassa_4003735",
@@ -47,7 +54,8 @@
     "secao": "Laticínios",
     "custo": "20.50",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "35.98"
   },
   {
     "id": "lat_lassa_4003736",
@@ -57,7 +65,8 @@
     "secao": "Laticínios",
     "custo": "9.79",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.18"
   },
   {
     "id": "lat_lassa_4003738",
@@ -67,7 +76,8 @@
     "secao": "Laticínios",
     "custo": "4.40",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.72"
   },
   {
     "id": "lat_lassa_4003739",
@@ -77,7 +87,8 @@
     "secao": "Laticínios",
     "custo": "4.40",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.72"
   },
   {
     "id": "lat_lassa_4003742",
@@ -87,7 +98,8 @@
     "secao": "Laticínios",
     "custo": "4.40",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.72"
   },
   {
     "id": "lat_lassa_4003743",
@@ -97,7 +109,8 @@
     "secao": "Laticínios",
     "custo": "4.40",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.72"
   },
   {
     "id": "lat_lassa_4003744",
@@ -107,7 +120,8 @@
     "secao": "Laticínios",
     "custo": "3.87",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.79"
   },
   {
     "id": "lat_lassa_4003745",
@@ -117,7 +131,8 @@
     "secao": "Laticínios",
     "custo": "2.57",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.51"
   },
   {
     "id": "lat_lassa_4003748",
@@ -127,7 +142,8 @@
     "secao": "Laticínios",
     "custo": "2.55",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.48"
   },
   {
     "id": "lat_lassa_4003750",
@@ -137,7 +153,8 @@
     "secao": "Laticínios",
     "custo": "2.55",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "4.48"
   },
   {
     "id": "lat_lassa_4003753",
@@ -147,7 +164,9 @@
     "secao": "Laticínios",
     "custo": "6.50",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "8.78"
   },
   {
     "id": "lat_lassa_4003754",
@@ -157,7 +176,9 @@
     "secao": "Laticínios",
     "custo": "6.50",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "8.78"
   },
   {
     "id": "lat_lassa_4006838",
@@ -167,7 +188,8 @@
     "secao": "Laticínios",
     "custo": "6.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.53"
   },
   {
     "id": "lat_lassa_4006839",
@@ -177,7 +199,8 @@
     "secao": "Laticínios",
     "custo": "6.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.53"
   },
   {
     "id": "lat_lassa_4006840",
@@ -187,7 +210,8 @@
     "secao": "Laticínios",
     "custo": "6.00",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.53"
   },
   {
     "id": "lat_lassa_4007654",
@@ -197,7 +221,9 @@
     "secao": "Laticínios",
     "custo": "11.25",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.19"
   },
   {
     "id": "lat_lassa_4007763",
@@ -207,7 +233,9 @@
     "secao": "Laticínios",
     "custo": "11.25",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.19"
   },
   {
     "id": "lat_lassa_4007892",
@@ -217,7 +245,8 @@
     "secao": "Laticínios",
     "custo": "2.90",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.09"
   },
   {
     "id": "lat_lassa_4007893",
@@ -227,6 +256,7 @@
     "secao": "Laticínios",
     "custo": "2.90",
     "fornecedor": "LASSA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.09"
   }
 ]

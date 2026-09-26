@@ -9,7 +9,8 @@ export const permissoesPadraoNovoUsuario = (): Usuario['permissoes'] => ({
   relatorios: false,
   elieuda: false,
   manutencao: false,
-  dados: false
+  dados: false,
+  producao: false
 });
 
 export const rotuloPermissoes = (permissoes: Usuario['permissoes']) => {
@@ -31,7 +32,8 @@ export const normalizarUsuarioCadastrado = (usuario: Usuario): Usuario | null =>
       relatorios: Boolean(usuario.permissoes?.relatorios),
       elieuda: Boolean(usuario.permissoes?.elieuda),
       manutencao: Boolean(usuario.permissoes?.manutencao),
-      dados: Boolean(usuario.permissoes?.dados)
+      dados: Boolean(usuario.permissoes?.dados),
+      producao: Boolean(usuario.permissoes?.producao)
     }
   };
 };
@@ -47,6 +49,28 @@ export const unirUsuariosCadastrados = (...listas: Array<Usuario[] | undefined>)
     });
   });
   return [...USUARIOS_SISTEMA, ...Array.from(extrasPorId.values())];
+};
+
+export const lerUsuariosExtraDeletados = (): string[] => {
+  try {
+    const salvo = JSON.parse(localStorage.getItem('rm_usuarios_extra_deletados') || '[]');
+    return Array.isArray(salvo) ? salvo.map(id => String(id || '').trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const unirUsuariosExtraAtivos = (idsDeletados: string[] = [], ...listas: Array<Usuario[] | undefined>) => {
+  const removidos = new Set((idsDeletados || []).filter(Boolean));
+  return unirUsuariosCadastrados(...listas).filter(usuario =>
+    !USUARIOS_SISTEMA.some(oficial => oficial.id === usuario.id) && !removidos.has(usuario.id)
+  );
+};
+
+export const omitirIdsDoMapa = <T,>(mapa: { [id: string]: T } | undefined, idsDeletados: string[] = []) => {
+  const uniao = { ...(mapa || {}) };
+  (idsDeletados || []).forEach(id => { delete uniao[id]; });
+  return uniao;
 };
 
 export const unirPermissoesUsuarios = (...mapas: Array<{ [id: string]: Usuario['permissoes'] } | undefined>) => {

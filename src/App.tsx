@@ -9,9 +9,12 @@ import { AbaCompras } from './abas/compras/AbaCompras';
 import { AbaPendencias } from './abas/pendencias/AbaPendencias';
 import { AbaConferencia } from './abas/conferencia/AbaConferencia';
 import { AbaPagamentos } from './abas/pagamentos/AbaPagamentos';
+import { AbaReciboComprador } from './abas/recibo-comprador/AbaReciboComprador';
 import { AbaRelatorios } from './abas/relatorios/AbaRelatorios';
 import { AbaSeguranca } from './abas/seguranca/AbaSeguranca';
-import { montarItensLaticinios, PRODUTOS_POR_SECAO } from './catalogo/secoesDados';
+import { AbaProducao } from './abas/producao/AbaProducao';
+import { montarItensEmbalagens, montarItensLaticinios } from './catalogo/secoesDados';
+import { aplicarCustosRecebidos, aplicarMargemSecao, custosCatalogoVazio, lerCustosCatalogo, registrarCustosDoPedido, type CustosCatalogoState } from './catalogo/custosCatalogo';
 import { config } from '../config';
 import type {
   ArquivoConferencia,
@@ -19,6 +22,9 @@ import type {
   FornecedorCotacao,
   ItemCotacao,
   LotePagamentoHistorico,
+  LancamentoProducao,
+  LancamentoRota,
+  LancamentoDeposito,
   OrdemManutencao,
   PagamentosState,
   PedidoCompra,
@@ -27,6 +33,7 @@ import type {
   RegistroConferencia,
   RelatorioPedidoCotacao,
   SenhasUsuarios,
+  TipoDivergencia,
   Setor,
   StatusOrdemManutencao,
   StatusTarefa,
@@ -42,6 +49,8 @@ import {
   MOTIVOS_PAUSA_MANUTENCAO,
   PAGAMENTOS_PADRAO,
   PERMISSOES_OPCOES,
+  PRODUTOS_PADARIA_PADRAO,
+  CONTAS_DEPOSITO_PADRAO,
   SETORES_PADRAO,
   TIPOS_MANUTENCAO,
   USUARIOS_SISTEMA,
@@ -90,18 +99,26 @@ import {
   unirIds,
   unirLotesPagamento,
   unirOrdensManutencao,
+  identidadePagamento,
   unirPagamentosAbertos,
   unirPedidosCotacao,
+  unirLancamentosProducao,
+  unirLancamentosRota,
+  unirLancamentosDeposito,
+  unirNomesProdutosProducao,
   unirTarefasDeletadas
 } from './util/mesclar';
 import {
   aplicarPermissoesSalvas,
   hashSenha,
   lerSenhasLocais,
+  lerUsuariosExtraDeletados,
+  omitirIdsDoMapa,
   permissoesPadraoNovoUsuario,
   rotuloPermissoes,
   unirPermissoesUsuarios,
-  unirUsuariosCadastrados
+  unirUsuariosCadastrados,
+  unirUsuariosExtraAtivos
 } from './util/usuarios';
 import {
   gerarPdfPedidoFornecedor,
@@ -221,11 +238,12 @@ function App() {
   const [usuariosExtra, setUsuariosExtra] = useState<Usuario[]>(() => {
     try {
       const salvo = localStorage.getItem('rm_usuarios_extra');
-      return salvo ? unirUsuariosCadastrados(JSON.parse(salvo)).filter(u => !USUARIOS_SISTEMA.some(o => o.id === u.id)) : [];
+      return salvo ? unirUsuariosExtraAtivos(lerUsuariosExtraDeletados(), JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
   });
+  const [usuariosExtraDeletados, setUsuariosExtraDeletados] = useState<string[]>(() => lerUsuariosExtraDeletados());
   const [novoUsuarioNome, setNovoUsuarioNome] = useState('');
   const [novoUsuarioSenha, setNovoUsuarioSenha] = useState('');
   const [novoUsuarioPermissoes, setNovoUsuarioPermissoes] = useState<Usuario['permissoes']>(permissoesPadraoNovoUsuario);
@@ -241,12 +259,20 @@ function App() {
     }
   });
 
-  const [tabAtiva, setTabAtiva] = useState<'pendencias' | 'compras' | 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'elieuda' | 'conferencia' | 'relatorios' | 'seguranca' | 'manutencao' | 'dados'>('pendencias');
+  const [tabAtiva, setTabAtiva] = useState<'pendencias' | 'compras' | 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia' | 'relatorios' | 'seguranca' | 'manutencao' | 'dados' | 'producao'>('pendencias');
   const [ordensManutencao, setOrdensManutencao] = useState<OrdemManutencao[]>(() => {
     try {
       const salvo = resgatarBackupGeral('rm_ordens_manutencao', []);
       if (!Array.isArray(salvo)) return [];
-      return extrairFotosOrdens(salvo).semFotos;
+      const idsRemovidos = (() => {
+        try {
+          const salvoIds = localStorage.getItem('rm_ordens_manutencao_deletadas');
+          return salvoIds ? JSON.parse(salvoIds) : [];
+        } catch {
+          return [];
+        }
+      })();
+      return unirOrdensManutencao(idsRemovidos, extrairFotosOrdens(salvo).semFotos);
     } catch {
       return [];
     }
@@ -262,6 +288,99 @@ function App() {
   const [motivoPausaOutro, setMotivoPausaOutro] = useState('');
   const ordensManutencaoRef = useRef(ordensManutencao);
   ordensManutencaoRef.current = ordensManutencao;
+  const [ordensManutencaoDeletadas, setOrdensManutencaoDeletadas] = useState<string[]>(() => {
+    try {
+      const salvo = localStorage.getItem('rm_ordens_manutencao_deletadas');
+      return salvo ? JSON.parse(salvo) : [];
+    } catch {
+      return [];
+    }
+  });
+  const ordensManutencaoDeletadasRef = useRef(ordensManutencaoDeletadas);
+  ordensManutencaoDeletadasRef.current = ordensManutencaoDeletadas;
+
+  const [produtosProducao, setProdutosProducao] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_produtos_producao') || '[]');
+      return unirNomesProdutosProducao(PRODUTOS_PADARIA_PADRAO, Array.isArray(salvo) ? salvo : []);
+    } catch {
+      return [...PRODUTOS_PADARIA_PADRAO];
+    }
+  });
+  const [lancamentosProducao, setLancamentosProducao] = useState<LancamentoProducao[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_producao') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const [lancamentosProducaoDeletados, setLancamentosProducaoDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_producao_deletados') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const produtosProducaoRef = useRef(produtosProducao);
+  const lancamentosProducaoRef = useRef(lancamentosProducao);
+  const lancamentosProducaoDeletadosRef = useRef(lancamentosProducaoDeletados);
+  produtosProducaoRef.current = produtosProducao;
+  lancamentosProducaoRef.current = lancamentosProducao;
+  lancamentosProducaoDeletadosRef.current = lancamentosProducaoDeletados;
+
+  const [lancamentosRota, setLancamentosRota] = useState<LancamentoRota[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_rota') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const [lancamentosRotaDeletados, setLancamentosRotaDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_rota_deletados') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const lancamentosRotaRef = useRef(lancamentosRota);
+  const lancamentosRotaDeletadosRef = useRef(lancamentosRotaDeletados);
+  lancamentosRotaRef.current = lancamentosRota;
+  lancamentosRotaDeletadosRef.current = lancamentosRotaDeletados;
+
+  const [contasDeposito, setContasDeposito] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_contas_deposito') || '[]');
+      return unirNomesProdutosProducao(CONTAS_DEPOSITO_PADRAO, Array.isArray(salvo) ? salvo : []);
+    } catch {
+      return [...CONTAS_DEPOSITO_PADRAO];
+    }
+  });
+  const [lancamentosDeposito, setLancamentosDeposito] = useState<LancamentoDeposito[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_deposito') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const [lancamentosDepositoDeletados, setLancamentosDepositoDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_lancamentos_deposito_deletados') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const contasDepositoRef = useRef(contasDeposito);
+  const lancamentosDepositoRef = useRef(lancamentosDeposito);
+  const lancamentosDepositoDeletadosRef = useRef(lancamentosDepositoDeletados);
+  contasDepositoRef.current = contasDeposito;
+  lancamentosDepositoRef.current = lancamentosDeposito;
+  lancamentosDepositoDeletadosRef.current = lancamentosDepositoDeletados;
 
   const [setores, setSetores] = useState<Setor[]>(() => {
     try {
@@ -271,6 +390,17 @@ function App() {
     }
   });
   
+  const [pagamentosDeletados, setPagamentosDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = localStorage.getItem('rm_pagamentos_deletados');
+      return salvo ? JSON.parse(salvo) : [];
+    } catch {
+      return [];
+    }
+  });
+  const pagamentosDeletadosRef = useRef(pagamentosDeletados);
+  pagamentosDeletadosRef.current = pagamentosDeletados;
+
   // Carregar pagamentos do backup_completo.json se existir
   const carregarPagamentosBackup = () => {
     try {
@@ -281,7 +411,7 @@ function App() {
         Array.isArray(backup?.historicoPagamentos) ? backup.historicoPagamentos : [],
         resgatarBackupGeral('rm_historico_pagamentos', [])
       );
-      return unirPagamentosAbertos(direto && typeof direto === 'object' ? direto : PAGAMENTOS_PADRAO, backup?.pagamentos, lotes);
+      return unirPagamentosAbertos(direto && typeof direto === 'object' ? direto : PAGAMENTOS_PADRAO, backup?.pagamentos, lotes, pagamentosDeletadosRef.current);
     } catch (e) {
       console.error('Erro ao carregar backup de pagamentos:', e);
     }
@@ -311,6 +441,15 @@ function App() {
       return ITENS_COTACAO_OFICIAIS;
     }
   });
+  const [custosCatalogo, setCustosCatalogo] = useState<CustosCatalogoState>(() => {
+    try {
+      return lerCustosCatalogo(resgatarBackupGeral('rm_custos_catalogo', custosCatalogoVazio()));
+    } catch {
+      return custosCatalogoVazio();
+    }
+  });
+  const custosCatalogoRef = useRef(custosCatalogo);
+  custosCatalogoRef.current = custosCatalogo;
   const [quantidadesElieuda, setQuantidadesElieuda] = useState<QuantidadesElieuda>(() => {
     try {
       const salvo = resgatarBackupGeral('rm_elieuda', {});
@@ -322,16 +461,26 @@ function App() {
   
   // Carregar dados de conferência do backup
   const carregarDadosConferenciaBackup = () => {
+    let lista: RegistroConferencia[] = [];
     try {
       const backup = localStorage.getItem('rm_backup_conferencia');
       if (backup) {
         const dados = JSON.parse(backup);
-        return dados.conferencias || [];
+        lista = dados.conferencias || [];
       }
     } catch (e) {
       console.error('Erro ao carregar backup de conferência:', e);
     }
-    return resgatarBackupGeral('rm_conferencias', []);
+    if (!Array.isArray(lista) || lista.length === 0) {
+      lista = resgatarBackupGeral('rm_conferencias', []);
+    }
+    try {
+      const deletadas = JSON.parse(localStorage.getItem('rm_conferencias_deletadas') || '[]');
+      if (Array.isArray(deletadas) && deletadas.length) {
+        return (lista || []).filter((item: RegistroConferencia) => item?.id && !deletadas.includes(item.id));
+      }
+    } catch {}
+    return lista || [];
   };
   
   const [conferencias, setConferencias] = useState<RegistroConferencia[]>(carregarDadosConferenciaBackup);
@@ -377,12 +526,14 @@ function App() {
   }, [usuarioLogado]);
   const gravacaoFilaRef = useRef(Promise.resolve());
   const usuariosExtraRef = useRef(usuariosExtra);
+  const usuariosExtraDeletadosRef = useRef(usuariosExtraDeletados);
   const permissoesUsuariosRef = useRef(permissoesUsuarios);
   pagamentosRef.current = pagamentos;
   historicoPagamentosRef.current = historicoPagamentos;
   itensCotacaoRef.current = itensCotacao;
   setoresRef.current = setores;
   usuariosExtraRef.current = usuariosExtra;
+  usuariosExtraDeletadosRef.current = usuariosExtraDeletados;
   permissoesUsuariosRef.current = permissoesUsuarios;
   ordensManutencaoRef.current = ordensManutencao;
 
@@ -401,7 +552,7 @@ function App() {
   const [novoFornecedorNome, setNovoFornecedorNome] = useState('');
   const [buscaCotacao, setBuscaCotacao] = useState('');
   const [novoProdutoCadastro, setNovoProdutoCadastro] = useState({ nome: '', unidade: 'Kg' });
-  const [novoFornecedorCadastro, setNovoFornecedorCadastro] = useState({ razaoSocial: '', nomeFantasia: '', cnpj: '' });
+  const [novoFornecedorCadastro, setNovoFornecedorCadastro] = useState({ razaoSocial: '', nomeFantasia: '', cnpj: '', nomePessoaFisica: '', cpf: '', endereco: '', cidade: '' });
   const [mostrarRelatorioPedidos, setMostrarRelatorioPedidos] = useState(true);
   const [pedidoEmVisualizacao, setPedidoEmVisualizacao] = useState<{ fornecedor: FornecedorCotacao; itens: ItemCotacao[] } | null>(null);
   const [buscaProduto, setBuscaProduto] = useState('');
@@ -412,15 +563,15 @@ function App() {
   const [unidadePadraoImportacao, setUnidadePadraoImportacao] = useState('Kg');
 
   const [novaConf, setNovaConf] = useState({ conferente: '', valor: '', obs: '', divergencia: false });
-  const [novaConferencia, setNovaConferencia] = useState({ data: new Date().toISOString().split('T')[0], nomeConferente: '', valorRecebido: 0, houveDivergencia: false, tipoDivergencia: '' as 'valor' | 'kg' | 'quantidade' | '', observacoes: '' });
-  const [conferenciasPorPedido, setConferenciasPorPedido] = useState<{ [pedidoId: string]: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: 'valor' | 'kg' | 'quantidade' | '' } }>({});
+  const [novaConferencia, setNovaConferencia] = useState({ data: new Date().toISOString().split('T')[0], nomeConferente: '', fornecedor: '', valorRecebido: 0, houveDivergencia: false, tipoDivergencia: '' as TipoDivergencia, observacoes: '' });
+  const [conferenciasPorPedido, setConferenciasPorPedido] = useState<{ [pedidoId: string]: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia } }>({});
   const [pedidosConferidosLocais, setPedidosConferidosLocais] = useState<string[]>(() => {
     const lista = lerJsonLocal('rm_pedidos_conferidos', []);
     return Array.isArray(lista) ? lista : [];
   });
   const pedidosConferidosRef = useRef(pedidosConferidosLocais);
   pedidosConferidosRef.current = pedidosConferidosLocais;
-  const [abaConferencia, setAbaConferencia] = useState<'pedidos' | 'conferidos' | 'divergencias'>('pedidos');
+  const [abaConferencia, setAbaConferencia] = useState<'pedidos' | 'criar' | 'avulsa' | 'conferidos' | 'divergencias'>('pedidos');
   const [buscaFornecedorConferencia, setBuscaFornecedorConferencia] = useState('');
   const [sairTelaInteira, setSairTelaInteira] = useState(false);
 
@@ -674,8 +825,14 @@ function App() {
           const idsRemovidos = [...idsDeTarefasDeletadas(tarefasDeletadas), ...idsDeTarefasDeletadas(record.tarefasDeletadas)];
           setSetores(atuais => aplicarFotosNasTarefas(normalizarSetores(mesclarSetores(atuais, extraidos.semFotos, idsRemovidos)), fotosPendenciasRef.current));
         }
+        if (Array.isArray(record.usuariosExtraDeletados)) {
+          const deletados = unirIds(usuariosExtraDeletadosRef.current, record.usuariosExtraDeletados);
+          usuariosExtraDeletadosRef.current = deletados;
+          setUsuariosExtraDeletados(deletados);
+          localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(deletados));
+        }
         if (Array.isArray(record.usuariosExtra)) {
-          extrasAtuais = unirUsuariosCadastrados(usuariosExtra, record.usuariosExtra).filter(u => !USUARIOS_SISTEMA.some(o => o.id === u.id));
+          extrasAtuais = unirUsuariosExtraAtivos(usuariosExtraDeletadosRef.current, usuariosExtra, record.usuariosExtra);
           setUsuariosExtra(extrasAtuais);
           localStorage.setItem('rm_usuarios_extra', JSON.stringify(extrasAtuais));
         }
@@ -738,13 +895,14 @@ function App() {
         if (dados.pagamentos || Array.isArray(dados.historicoPagamentos)) {
           setHistoricoPagamentos(atuais => {
             const uniaoLotes = unirLotesPagamento(atuais, dados.historicoPagamentos);
-            setPagamentos(atuaisPag => unirPagamentosAbertos(atuaisPag, dados.pagamentos, uniaoLotes));
+            setPagamentos(atuaisPag => unirPagamentosAbertos(atuaisPag, dados.pagamentos, uniaoLotes, pagamentosDeletadosRef.current));
             return uniaoLotes;
           });
         }
         if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
         if (Array.isArray(dados.itensCotacao)) setItensCotacao(itensAtuais => mesclarItensCotacao(itensAtuais, dados.itensCotacao));
         if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
+        if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
         if (Array.isArray(dados.conferencias)) {
           setConferencias(atuais => unirConferencias(atuais, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id)));
         }
@@ -770,7 +928,7 @@ function App() {
         const uniaoLotes = unirLotesPagamento(atuais, registroNuvem.historicoPagamentos);
         localStorage.setItem('rm_historico_pagamentos', JSON.stringify(uniaoLotes));
         setPagamentos(atuaisPag => {
-          const uniaoPag = unirPagamentosAbertos(atuaisPag, registroNuvem.pagamentos, uniaoLotes);
+          const uniaoPag = unirPagamentosAbertos(atuaisPag, registroNuvem.pagamentos, uniaoLotes, pagamentosDeletadosRef.current);
           localStorage.setItem('rm_pagamentos', JSON.stringify(uniaoPag));
           return uniaoPag;
         });
@@ -880,17 +1038,19 @@ function App() {
   const removerUsuarioCadastrado = async (usuarioId: string) => {
     if (usuarioLogado?.tipo !== 'admin' || USUARIOS_SISTEMA.some(usuario => usuario.id === usuarioId)) return;
     if (!window.confirm('Remover este usuário do sistema?')) return;
-    const extrasAtualizados = usuariosExtra.filter(usuario => usuario.id !== usuarioId);
+    const deletados = unirIds(usuariosExtraDeletadosRef.current, [usuarioId]);
+    usuariosExtraDeletadosRef.current = deletados;
+    setUsuariosExtraDeletados(deletados);
+    localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(deletados));
+    const extrasAtualizados = unirUsuariosExtraAtivos(deletados, usuariosExtra);
     usuariosExtraRef.current = extrasAtualizados;
     setUsuariosExtra(extrasAtualizados);
     localStorage.setItem('rm_usuarios_extra', JSON.stringify(extrasAtualizados));
-    const permissoesAtualizadas = { ...permissoesUsuarios };
-    delete permissoesAtualizadas[usuarioId];
+    const permissoesAtualizadas = omitirIdsDoMapa(permissoesUsuarios, [usuarioId]);
     permissoesUsuariosRef.current = permissoesAtualizadas;
     setPermissoesUsuarios(permissoesAtualizadas);
     localStorage.setItem('rm_permissoes_usuarios', JSON.stringify(permissoesAtualizadas));
-    const senhasAtualizadas = { ...senhasUsuarios };
-    delete senhasAtualizadas[usuarioId];
+    const senhasAtualizadas = omitirIdsDoMapa(senhasUsuarios, [usuarioId]);
     setSenhasUsuarios(senhasAtualizadas);
     localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtualizadas));
     await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, senhasAtualizadas, usuarioId);
@@ -921,11 +1081,13 @@ function App() {
         cadastroProdutos: 'cotacao',
         cadastroFornecedores: 'cotacao',
         pagamentos: 'pagamentos',
+        reciboComprador: 'pagamentos',
         elieuda: 'elieuda',
         conferencia: 'conferencias',
         relatorios: 'relatorios',
         manutencao: 'manutencao',
-        dados: 'dados'
+        dados: 'dados',
+        producao: 'producao'
       };
       const permissaoDaAba = abaPorPermissao[tabAtiva];
     if (permissaoDaAba && !novasPermissoes[permissaoDaAba]) setTabAtiva('seguranca');
@@ -1001,12 +1163,18 @@ function App() {
             return uniao;
           });
         }
+        if (Array.isArray(dados.record.pagamentosDeletados)) {
+          const uniao = unirIds(pagamentosDeletadosRef.current, dados.record.pagamentosDeletados);
+          pagamentosDeletadosRef.current = uniao;
+          setPagamentosDeletados(uniao);
+          localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(uniao));
+        }
         if (dados.record.pagamentos || Array.isArray(dados.record.historicoPagamentos)) {
           setHistoricoPagamentos(atuais => {
             const uniaoLotes = unirLotesPagamento(atuais, dados.record.historicoPagamentos);
             localStorage.setItem('rm_historico_pagamentos', JSON.stringify(uniaoLotes));
             setPagamentos(atuaisPag => {
-              const uniaoPag = unirPagamentosAbertos(atuaisPag, dados.record.pagamentos, uniaoLotes);
+              const uniaoPag = unirPagamentosAbertos(atuaisPag, dados.record.pagamentos, uniaoLotes, pagamentosDeletadosRef.current);
               localStorage.setItem('rm_pagamentos', JSON.stringify(uniaoPag));
               return uniaoPag;
             });
@@ -1018,11 +1186,19 @@ function App() {
           setItensCotacao(itensAtuais => mesclarItensCotacao(itensAtuais, dados.record.itensCotacao));
         }
         if (dados.record.quantidadesElieuda) setQuantidadesElieuda(dados.record.quantidadesElieuda);
+        if (dados.record.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.record.custosCatalogo));
+        if (Array.isArray(dados.record.conferenciasDeletadas)) {
+          const uniao = unirIds(conferenciasDeletadasRef.current, dados.record.conferenciasDeletadas);
+          conferenciasDeletadasRef.current = uniao;
+          setConferenciasDeletadas(uniao);
+          localStorage.setItem('rm_conferencias_deletadas', JSON.stringify(uniao));
+        }
         if (Array.isArray(dados.record.conferencias)) {
           setConferencias(atuais => {
             const uniao = unirConferencias(atuais, dados.record.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
             localStorage.setItem('rm_conferencias', JSON.stringify(uniao));
             localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: uniao }));
+            conferenciasRef.current = uniao;
             return uniao;
           });
         }
@@ -1030,14 +1206,6 @@ function App() {
           setPedidosConferidosLocais(atuais => {
             const uniao = unirIds(atuais, dados.record.pedidosConferidos);
             localStorage.setItem('rm_pedidos_conferidos', JSON.stringify(uniao));
-            return uniao;
-          });
-        }
-        if (Array.isArray(dados.record.conferenciasDeletadas)) {
-          setConferenciasDeletadas(atuais => {
-            const uniao = unirIds(atuais, dados.record.conferenciasDeletadas);
-            conferenciasDeletadasRef.current = uniao;
-            localStorage.setItem('rm_conferencias_deletadas', JSON.stringify(uniao));
             return uniao;
           });
         }
@@ -1064,9 +1232,15 @@ function App() {
             return uniao;
           });
         }
+        if (Array.isArray(dados.record.usuariosExtraDeletados)) {
+          const uniaoDel = unirIds(usuariosExtraDeletadosRef.current, dados.record.usuariosExtraDeletados);
+          usuariosExtraDeletadosRef.current = uniaoDel;
+          setUsuariosExtraDeletados(uniaoDel);
+          localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(uniaoDel));
+        }
         if (Array.isArray(dados.record.usuariosExtra)) {
           setUsuariosExtra(atuais => {
-            const uniao = unirUsuariosCadastrados(atuais, dados.record.usuariosExtra).filter(u => !USUARIOS_SISTEMA.some(o => o.id === u.id));
+            const uniao = unirUsuariosExtraAtivos(usuariosExtraDeletadosRef.current, atuais, dados.record.usuariosExtra);
             localStorage.setItem('rm_usuarios_extra', JSON.stringify(uniao));
             return uniao;
           });
@@ -1078,16 +1252,79 @@ function App() {
             return uniao;
           });
         }
+        if (Array.isArray(dados.record.ordensManutencaoDeletadas)) {
+          const uniao = unirIds(ordensManutencaoDeletadasRef.current, dados.record.ordensManutencaoDeletadas);
+          ordensManutencaoDeletadasRef.current = uniao;
+          setOrdensManutencaoDeletadas(uniao);
+          localStorage.setItem('rm_ordens_manutencao_deletadas', JSON.stringify(uniao));
+        }
         if (Array.isArray(dados.record.ordensManutencao)) {
           const extraidos = extrairFotosOrdens(dados.record.ordensManutencao);
           const fotosNuvem = unirFotosPendencias(fotosPendenciasRef.current, dados.record.fotosPendencias, extraidos.fotos);
           fotosPendenciasRef.current = fotosNuvem;
           guardarFotosLocal(fotosNuvem);
           setOrdensManutencao(atuais => {
-            const uniao = aplicarFotosNasOrdens(unirOrdensManutencao(atuais, extraidos.semFotos), fotosNuvem);
+            const uniao = aplicarFotosNasOrdens(unirOrdensManutencao(ordensManutencaoDeletadasRef.current, atuais, extraidos.semFotos), fotosNuvem);
             gravarJsonLocal('rm_ordens_manutencao', ordensSemFotos(uniao));
             return uniao;
           });
+        }
+        if (Array.isArray(dados.record.producaoLancamentosDeletados)) {
+          const uniao = unirIds(lancamentosProducaoDeletadosRef.current, dados.record.producaoLancamentosDeletados);
+          lancamentosProducaoDeletadosRef.current = uniao;
+          setLancamentosProducaoDeletados(uniao);
+          localStorage.setItem('rm_lancamentos_producao_deletados', JSON.stringify(uniao));
+        }
+        if (dados.record.producaoPadaria) {
+          const produtos = unirNomesProdutosProducao(produtosProducaoRef.current, dados.record.producaoPadaria.produtos);
+          const lancamentos = unirLancamentosProducao(
+            lancamentosProducaoDeletadosRef.current,
+            lancamentosProducaoRef.current,
+            dados.record.producaoPadaria.lancamentos
+          );
+          produtosProducaoRef.current = produtos;
+          lancamentosProducaoRef.current = lancamentos;
+          setProdutosProducao(produtos);
+          setLancamentosProducao(lancamentos);
+          localStorage.setItem('rm_produtos_producao', JSON.stringify(produtos));
+          localStorage.setItem('rm_lancamentos_producao', JSON.stringify(lancamentos));
+        }
+        if (Array.isArray(dados.record.producaoRotaDeletados)) {
+          const uniao = unirIds(lancamentosRotaDeletadosRef.current, dados.record.producaoRotaDeletados);
+          lancamentosRotaDeletadosRef.current = uniao;
+          setLancamentosRotaDeletados(uniao);
+          localStorage.setItem('rm_lancamentos_rota_deletados', JSON.stringify(uniao));
+        }
+        if (dados.record.producaoPadaria?.lancamentosRota || Array.isArray(dados.record.lancamentosRota)) {
+          const lista = unirLancamentosRota(
+            lancamentosRotaDeletadosRef.current,
+            lancamentosRotaRef.current,
+            dados.record.producaoPadaria?.lancamentosRota,
+            dados.record.lancamentosRota
+          );
+          lancamentosRotaRef.current = lista;
+          setLancamentosRota(lista);
+          localStorage.setItem('rm_lancamentos_rota', JSON.stringify(lista));
+        }
+        if (Array.isArray(dados.record.producaoDepositoDeletados)) {
+          const uniao = unirIds(lancamentosDepositoDeletadosRef.current, dados.record.producaoDepositoDeletados);
+          lancamentosDepositoDeletadosRef.current = uniao;
+          setLancamentosDepositoDeletados(uniao);
+          localStorage.setItem('rm_lancamentos_deposito_deletados', JSON.stringify(uniao));
+        }
+        if (dados.record.producaoPadaria) {
+          const contas = unirNomesProdutosProducao(contasDepositoRef.current, dados.record.producaoPadaria.contasDeposito);
+          const depositos = unirLancamentosDeposito(
+            lancamentosDepositoDeletadosRef.current,
+            lancamentosDepositoRef.current,
+            dados.record.producaoPadaria.lancamentosDeposito
+          );
+          contasDepositoRef.current = contas;
+          lancamentosDepositoRef.current = depositos;
+          setContasDeposito(contas);
+          setLancamentosDeposito(depositos);
+          localStorage.setItem('rm_contas_deposito', JSON.stringify(contas));
+          localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(depositos));
         }
         setStatusNuvem('🟢 Nuvem');
         const idsFoto = [
@@ -1280,6 +1517,7 @@ function App() {
     if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
     if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
     if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
+    if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
     if (Array.isArray(dados.conferencias)) {
       const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
       setConferencias(uniao);
@@ -1367,6 +1605,7 @@ function App() {
         if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
         if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
         if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
+        if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
         if (Array.isArray(dados.conferencias)) {
           const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
           setConferencias(uniao);
@@ -1450,11 +1689,22 @@ function App() {
       let conferenciasParaNuvem = dadosConferencias;
       let conferidosParaNuvem = pedidosConferidosRef.current;
       let conferenciasDeletadasParaNuvem = conferenciasDeletadasRef.current;
+      let pagamentosDeletadosParaNuvem = pagamentosDeletadosRef.current;
       let pedidosCotacaoDeletadosParaNuvem = pedidosCotacaoDeletadosRef.current;
       let usuariosParaNuvem = usuariosExtraRef.current;
+      let usuariosDeletadosParaNuvem = usuariosExtraDeletadosRef.current;
       let permissoesParaNuvem = permissoesUsuariosRef.current;
       let ordensParaNuvem = ordensManutencaoRef.current;
+      let ordensDeletadasParaNuvem = ordensManutencaoDeletadasRef.current;
       let fotosPendenciasParaNuvem = fotosPendenciasRef.current;
+      let produtosProducaoParaNuvem = produtosProducaoRef.current;
+      let lancamentosProducaoParaNuvem = lancamentosProducaoRef.current;
+      let lancamentosProducaoDeletadosParaNuvem = lancamentosProducaoDeletadosRef.current;
+      let lancamentosRotaParaNuvem = lancamentosRotaRef.current;
+      let lancamentosRotaDeletadosParaNuvem = lancamentosRotaDeletadosRef.current;
+      let contasDepositoParaNuvem = contasDepositoRef.current;
+      let lancamentosDepositoParaNuvem = lancamentosDepositoRef.current;
+      let lancamentosDepositoDeletadosParaNuvem = lancamentosDepositoDeletadosRef.current;
       let conseguiuLerNuvem = false;
       try {
         const respostaAtual = await fetch('/api/nuvem', { cache: 'no-store' });
@@ -1462,6 +1712,11 @@ function App() {
         const dadosAtuais = { record: recordDoJsonBin(dadosAtuaisBrutos) };
         if (respostaAtual.ok && dadosAtuais.record) {
           conseguiuLerNuvem = true;
+          if (dadosAtuais.record.custosCatalogo) {
+            const uniaoCustos = aplicarCustosRecebidos(custosCatalogoRef.current, dadosAtuais.record.custosCatalogo);
+            custosCatalogoRef.current = uniaoCustos;
+            setCustosCatalogo(uniaoCustos);
+          }
           if (Array.isArray(dadosAtuais.record.setores)) {
             const extraidosNuvem = extrairFotosSetores(dadosAtuais.record.setores);
             const idsNuvem = idsDeTarefasDeletadas(dadosAtuais.record.tarefasDeletadas || []);
@@ -1478,25 +1733,33 @@ function App() {
             });
           }
           historicoParaNuvem = unirLotesPagamento(historicoPagamentosRef.current, dadosHistorico, dadosAtuais.record.historicoPagamentos);
+          pagamentosDeletadosParaNuvem = unirIds(pagamentosDeletadosRef.current, dadosAtuais.record.pagamentosDeletados);
+          pagamentosDeletadosRef.current = pagamentosDeletadosParaNuvem;
+          setPagamentosDeletados(pagamentosDeletadosParaNuvem);
+          localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(pagamentosDeletadosParaNuvem));
           pagamentosParaNuvem = unirPagamentosAbertos(
             pagamentosRef.current,
-            unirPagamentosAbertos(dadosPagamentos, dadosAtuais.record.pagamentos, historicoParaNuvem),
-            historicoParaNuvem
+            unirPagamentosAbertos(dadosPagamentos, dadosAtuais.record.pagamentos, historicoParaNuvem, pagamentosDeletadosParaNuvem),
+            historicoParaNuvem,
+            pagamentosDeletadosParaNuvem
           );
           pagamentosRef.current = pagamentosParaNuvem;
           historicoPagamentosRef.current = historicoParaNuvem;
           setHistoricoPagamentos(historicoParaNuvem);
-          setPagamentos(atuais => unirPagamentosAbertos(atuais, pagamentosParaNuvem, historicoParaNuvem));
+          setPagamentos(atuais => unirPagamentosAbertos(atuais, pagamentosParaNuvem, historicoParaNuvem, pagamentosDeletadosParaNuvem));
           localStorage.setItem('rm_historico_pagamentos', JSON.stringify(historicoParaNuvem));
           localStorage.setItem('rm_pagamentos', JSON.stringify(pagamentosParaNuvem));
           pedidosCotacaoDeletadosParaNuvem = unirIds(pedidosCotacaoDeletadosRef.current, dadosAtuais.record.pedidosCotacaoDeletados);
           pedidosCotacaoDeletadosRef.current = pedidosCotacaoDeletadosParaNuvem;
           setPedidosCotacaoDeletados(pedidosCotacaoDeletadosParaNuvem);
           localStorage.setItem('rm_pedidos_cotacao_deletados', JSON.stringify(pedidosCotacaoDeletadosParaNuvem));
-          pedidosParaNuvem = unirPedidosCotacao(pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosRef.current, dadosAtuais.record.relatoriosPedidosCotacao);
-          relatoriosPedidosRef.current = pedidosParaNuvem;
-          setRelatoriosPedidosCotacao(pedidosParaNuvem);
-          localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosParaNuvem));
+          setRelatoriosPedidosCotacao(atuais => {
+            const uniao = unirPedidosCotacao(pedidosCotacaoDeletadosParaNuvem, atuais, relatoriosPedidosRef.current, dadosAtuais.record.relatoriosPedidosCotacao);
+            relatoriosPedidosRef.current = uniao;
+            pedidosParaNuvem = uniao;
+            try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(uniao)); } catch { /* ignora cota */ }
+            return uniao;
+          });
           conferenciasDeletadasParaNuvem = unirIds(conferenciasDeletadasRef.current, dadosAtuais.record.conferenciasDeletadas);
           conferenciasDeletadasRef.current = conferenciasDeletadasParaNuvem;
           setConferenciasDeletadas(conferenciasDeletadasParaNuvem);
@@ -1513,30 +1776,99 @@ function App() {
           const senhasNuvem = dadosAtuais.record.senhasUsuarios && typeof dadosAtuais.record.senhasUsuarios === 'object'
             ? dadosAtuais.record.senhasUsuarios
             : {};
-          senhasParaNuvem = { ...senhasNuvem, ...dadosSenhas };
+          senhasParaNuvem = omitirIdsDoMapa({ ...senhasNuvem, ...dadosSenhas }, usuariosDeletadosParaNuvem);
           if (senhaRemovidaId) delete senhasParaNuvem[senhaRemovidaId];
           setSenhasUsuarios(senhasParaNuvem);
           localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasParaNuvem));
+          if (Array.isArray(dadosAtuais.record.usuariosExtraDeletados)) {
+            usuariosDeletadosParaNuvem = unirIds(usuariosExtraDeletadosRef.current, dadosAtuais.record.usuariosExtraDeletados);
+            usuariosExtraDeletadosRef.current = usuariosDeletadosParaNuvem;
+            setUsuariosExtraDeletados(usuariosDeletadosParaNuvem);
+            localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(usuariosDeletadosParaNuvem));
+          }
           if (Array.isArray(dadosAtuais.record.usuariosExtra)) {
-            usuariosParaNuvem = unirUsuariosCadastrados(usuariosExtraRef.current, dadosAtuais.record.usuariosExtra).filter(u => !USUARIOS_SISTEMA.some(o => o.id === u.id));
+            usuariosParaNuvem = unirUsuariosExtraAtivos(usuariosDeletadosParaNuvem, usuariosExtraRef.current, dadosAtuais.record.usuariosExtra);
             usuariosExtraRef.current = usuariosParaNuvem;
             setUsuariosExtra(usuariosParaNuvem);
             localStorage.setItem('rm_usuarios_extra', JSON.stringify(usuariosParaNuvem));
           }
           if (dadosAtuais.record.permissoesUsuarios && typeof dadosAtuais.record.permissoesUsuarios === 'object') {
-            permissoesParaNuvem = unirPermissoesUsuarios(dadosAtuais.record.permissoesUsuarios, permissoesUsuariosRef.current);
+            permissoesParaNuvem = omitirIdsDoMapa(unirPermissoesUsuarios(dadosAtuais.record.permissoesUsuarios, permissoesUsuariosRef.current), usuariosDeletadosParaNuvem);
             permissoesUsuariosRef.current = permissoesParaNuvem;
             setPermissoesUsuarios(permissoesParaNuvem);
             localStorage.setItem('rm_permissoes_usuarios', JSON.stringify(permissoesParaNuvem));
           }
+          if (Array.isArray(dadosAtuais.record.ordensManutencaoDeletadas)) {
+            ordensDeletadasParaNuvem = unirIds(ordensManutencaoDeletadasRef.current, dadosAtuais.record.ordensManutencaoDeletadas);
+            ordensManutencaoDeletadasRef.current = ordensDeletadasParaNuvem;
+            setOrdensManutencaoDeletadas(ordensDeletadasParaNuvem);
+            localStorage.setItem('rm_ordens_manutencao_deletadas', JSON.stringify(ordensDeletadasParaNuvem));
+          }
           if (Array.isArray(dadosAtuais.record.ordensManutencao)) {
             const extraidos = extrairFotosOrdens(dadosAtuais.record.ordensManutencao);
             fotosPendenciasParaNuvem = unirFotosPendencias(fotosPendenciasParaNuvem, extraidos.fotos);
-            ordensParaNuvem = unirOrdensManutencao(ordensManutencaoRef.current, extraidos.semFotos);
+            ordensParaNuvem = unirOrdensManutencao(ordensDeletadasParaNuvem, ordensManutencaoRef.current, extraidos.semFotos);
             const comFotos = aplicarFotosNasOrdens(ordensParaNuvem, fotosPendenciasParaNuvem);
             ordensManutencaoRef.current = ordensSemFotos(comFotos);
             setOrdensManutencao(comFotos);
             gravarJsonLocal('rm_ordens_manutencao', ordensSemFotos(comFotos));
+          }
+          if (Array.isArray(dadosAtuais.record.producaoLancamentosDeletados)) {
+            lancamentosProducaoDeletadosParaNuvem = unirIds(lancamentosProducaoDeletadosRef.current, dadosAtuais.record.producaoLancamentosDeletados);
+            lancamentosProducaoDeletadosRef.current = lancamentosProducaoDeletadosParaNuvem;
+            setLancamentosProducaoDeletados(lancamentosProducaoDeletadosParaNuvem);
+            localStorage.setItem('rm_lancamentos_producao_deletados', JSON.stringify(lancamentosProducaoDeletadosParaNuvem));
+          }
+          if (dadosAtuais.record.producaoPadaria) {
+            produtosProducaoParaNuvem = unirNomesProdutosProducao(produtosProducaoRef.current, dadosAtuais.record.producaoPadaria.produtos);
+            lancamentosProducaoParaNuvem = unirLancamentosProducao(
+              lancamentosProducaoDeletadosParaNuvem,
+              lancamentosProducaoRef.current,
+              dadosAtuais.record.producaoPadaria.lancamentos
+            );
+            produtosProducaoRef.current = produtosProducaoParaNuvem;
+            lancamentosProducaoRef.current = lancamentosProducaoParaNuvem;
+            setProdutosProducao(produtosProducaoParaNuvem);
+            setLancamentosProducao(lancamentosProducaoParaNuvem);
+            localStorage.setItem('rm_produtos_producao', JSON.stringify(produtosProducaoParaNuvem));
+            localStorage.setItem('rm_lancamentos_producao', JSON.stringify(lancamentosProducaoParaNuvem));
+          }
+          if (Array.isArray(dadosAtuais.record.producaoRotaDeletados)) {
+            lancamentosRotaDeletadosParaNuvem = unirIds(lancamentosRotaDeletadosRef.current, dadosAtuais.record.producaoRotaDeletados);
+            lancamentosRotaDeletadosRef.current = lancamentosRotaDeletadosParaNuvem;
+            setLancamentosRotaDeletados(lancamentosRotaDeletadosParaNuvem);
+            localStorage.setItem('rm_lancamentos_rota_deletados', JSON.stringify(lancamentosRotaDeletadosParaNuvem));
+          }
+          if (dadosAtuais.record.producaoPadaria?.lancamentosRota || Array.isArray(dadosAtuais.record.lancamentosRota)) {
+            lancamentosRotaParaNuvem = unirLancamentosRota(
+              lancamentosRotaDeletadosParaNuvem,
+              lancamentosRotaRef.current,
+              dadosAtuais.record.producaoPadaria?.lancamentosRota,
+              dadosAtuais.record.lancamentosRota
+            );
+            lancamentosRotaRef.current = lancamentosRotaParaNuvem;
+            setLancamentosRota(lancamentosRotaParaNuvem);
+            localStorage.setItem('rm_lancamentos_rota', JSON.stringify(lancamentosRotaParaNuvem));
+          }
+          if (Array.isArray(dadosAtuais.record.producaoDepositoDeletados)) {
+            lancamentosDepositoDeletadosParaNuvem = unirIds(lancamentosDepositoDeletadosRef.current, dadosAtuais.record.producaoDepositoDeletados);
+            lancamentosDepositoDeletadosRef.current = lancamentosDepositoDeletadosParaNuvem;
+            setLancamentosDepositoDeletados(lancamentosDepositoDeletadosParaNuvem);
+            localStorage.setItem('rm_lancamentos_deposito_deletados', JSON.stringify(lancamentosDepositoDeletadosParaNuvem));
+          }
+          if (dadosAtuais.record.producaoPadaria) {
+            contasDepositoParaNuvem = unirNomesProdutosProducao(contasDepositoRef.current, dadosAtuais.record.producaoPadaria.contasDeposito);
+            lancamentosDepositoParaNuvem = unirLancamentosDeposito(
+              lancamentosDepositoDeletadosParaNuvem,
+              lancamentosDepositoRef.current,
+              dadosAtuais.record.producaoPadaria.lancamentosDeposito
+            );
+            contasDepositoRef.current = contasDepositoParaNuvem;
+            lancamentosDepositoRef.current = lancamentosDepositoParaNuvem;
+            setContasDeposito(contasDepositoParaNuvem);
+            setLancamentosDeposito(lancamentosDepositoParaNuvem);
+            localStorage.setItem('rm_contas_deposito', JSON.stringify(contasDepositoParaNuvem));
+            localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(lancamentosDepositoParaNuvem));
           }
         }
       } catch {
@@ -1551,16 +1883,28 @@ function App() {
 
       setoresParaNuvem = setoresSemFotos(mesclarSetores(setoresRef.current, setoresParaNuvem, idsDeTarefasDeletadas(deletadasParaSalvar)));
       historicoParaNuvem = unirLotesPagamento(historicoPagamentosRef.current, historicoParaNuvem);
-      pagamentosParaNuvem = unirPagamentosAbertos(pagamentosRef.current, pagamentosParaNuvem, historicoParaNuvem);
+      pagamentosDeletadosParaNuvem = unirIds(pagamentosDeletadosRef.current, pagamentosDeletadosParaNuvem);
+      pagamentosParaNuvem = unirPagamentosAbertos(pagamentosRef.current, pagamentosParaNuvem, historicoParaNuvem, pagamentosDeletadosParaNuvem);
       pagamentosRef.current = pagamentosParaNuvem;
       historicoPagamentosRef.current = historicoParaNuvem;
       pedidosCotacaoDeletadosParaNuvem = unirIds(pedidosCotacaoDeletadosRef.current, pedidosCotacaoDeletadosParaNuvem);
       pedidosParaNuvem = unirPedidosCotacao(pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosRef.current, pedidosParaNuvem);
       conferenciasDeletadasParaNuvem = unirIds(conferenciasDeletadasRef.current, conferenciasDeletadasParaNuvem);
       conferenciasParaNuvem = unirConferencias(conferenciasRef.current, conferenciasParaNuvem).filter(item => !conferenciasDeletadasParaNuvem.includes(item.id));
+      ordensDeletadasParaNuvem = unirIds(ordensManutencaoDeletadasRef.current, ordensDeletadasParaNuvem);
+      ordensParaNuvem = unirOrdensManutencao(ordensDeletadasParaNuvem, ordensManutencaoRef.current, ordensParaNuvem);
       conferidosParaNuvem = unirIds(pedidosConferidosRef.current, conferidosParaNuvem);
-      usuariosParaNuvem = unirUsuariosCadastrados(usuariosExtraRef.current, usuariosParaNuvem).filter(u => !USUARIOS_SISTEMA.some(o => o.id === u.id));
-      permissoesParaNuvem = unirPermissoesUsuarios(permissoesParaNuvem, permissoesUsuariosRef.current);
+      usuariosDeletadosParaNuvem = unirIds(usuariosExtraDeletadosRef.current, usuariosDeletadosParaNuvem);
+      usuariosParaNuvem = unirUsuariosExtraAtivos(usuariosDeletadosParaNuvem, usuariosExtraRef.current, usuariosParaNuvem);
+      permissoesParaNuvem = omitirIdsDoMapa(unirPermissoesUsuarios(permissoesParaNuvem, permissoesUsuariosRef.current), usuariosDeletadosParaNuvem);
+      produtosProducaoParaNuvem = unirNomesProdutosProducao(produtosProducaoRef.current, produtosProducaoParaNuvem);
+      lancamentosProducaoDeletadosParaNuvem = unirIds(lancamentosProducaoDeletadosRef.current, lancamentosProducaoDeletadosParaNuvem);
+      lancamentosProducaoParaNuvem = unirLancamentosProducao(lancamentosProducaoDeletadosParaNuvem, lancamentosProducaoRef.current, lancamentosProducaoParaNuvem);
+      lancamentosRotaDeletadosParaNuvem = unirIds(lancamentosRotaDeletadosRef.current, lancamentosRotaDeletadosParaNuvem);
+      lancamentosRotaParaNuvem = unirLancamentosRota(lancamentosRotaDeletadosParaNuvem, lancamentosRotaRef.current, lancamentosRotaParaNuvem);
+      contasDepositoParaNuvem = unirNomesProdutosProducao(contasDepositoRef.current, contasDepositoParaNuvem);
+      lancamentosDepositoDeletadosParaNuvem = unirIds(lancamentosDepositoDeletadosRef.current, lancamentosDepositoDeletadosParaNuvem);
+      lancamentosDepositoParaNuvem = unirLancamentosDeposito(lancamentosDepositoDeletadosParaNuvem, lancamentosDepositoRef.current, lancamentosDepositoParaNuvem);
       fotosPendenciasParaNuvem = enxugarFotosNuvem(filtrarFotosUsadas(unirFotosPendencias(
         fotosPendenciasParaNuvem,
         fotosPendenciasRef.current,
@@ -1571,7 +1915,7 @@ function App() {
       guardarFotosLocal(fotosPendenciasParaNuvem);
       await Promise.all(Object.entries(fotosPendenciasParaNuvem).map(([id, foto]) => enviarFotoNuvem(id, foto)));
 
-      const registroNuvem = { setores: setoresSemFotos(setoresParaNuvem), pagamentos: pagamentosParaNuvem, historicoPagamentos: historicoParaNuvem, tarefasDeletadas: deletadasParaSalvar, fornecedoresCotacao: dadosFornCotacao, itensCotacao: dadosItensCotacao, quantidadesElieuda: dadosElieuda, conferencias: conferenciasParaNuvem, pedidosConferidos: conferidosParaNuvem, conferenciasDeletadas: conferenciasDeletadasParaNuvem, pedidosCotacaoDeletados: pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosCotacao: pedidosParaNuvem, senhasUsuarios: senhasParaNuvem, usuariosExtra: usuariosParaNuvem, permissoesUsuarios: permissoesParaNuvem, ordensManutencao: ordensSemFotos(ordensParaNuvem), fotosPendencias: fotosPendenciasParaNuvem, fotosPendenciaIds: Object.keys(fotosPendenciasParaNuvem), ultimaAtualizacao: agora };
+      const registroNuvem = { setores: setoresSemFotos(setoresParaNuvem), pagamentos: pagamentosParaNuvem, historicoPagamentos: historicoParaNuvem, tarefasDeletadas: deletadasParaSalvar, fornecedoresCotacao: dadosFornCotacao, itensCotacao: dadosItensCotacao, quantidadesElieuda: dadosElieuda, custosCatalogo: custosCatalogoRef.current, conferencias: conferenciasParaNuvem, pedidosConferidos: conferidosParaNuvem, conferenciasDeletadas: conferenciasDeletadasParaNuvem, pagamentosDeletados: pagamentosDeletadosParaNuvem, pedidosCotacaoDeletados: pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosCotacao: pedidosParaNuvem, senhasUsuarios: senhasParaNuvem, usuariosExtra: usuariosParaNuvem, usuariosExtraDeletados: usuariosDeletadosParaNuvem, permissoesUsuarios: permissoesParaNuvem, ordensManutencao: ordensSemFotos(ordensParaNuvem), ordensManutencaoDeletadas: ordensDeletadasParaNuvem, fotosPendencias: fotosPendenciasParaNuvem, fotosPendenciaIds: Object.keys(fotosPendenciasParaNuvem), producaoPadaria: { produtos: produtosProducaoParaNuvem, lancamentos: lancamentosProducaoParaNuvem, lancamentosRota: lancamentosRotaParaNuvem, contasDeposito: contasDepositoParaNuvem, lancamentosDeposito: lancamentosDepositoParaNuvem }, producaoLancamentosDeletados: lancamentosProducaoDeletadosParaNuvem, producaoRotaDeletados: lancamentosRotaDeletadosParaNuvem, producaoDepositoDeletados: lancamentosDepositoDeletadosParaNuvem, ultimaAtualizacao: agora };
       const respostaGravar = await enviarRegistroNuvem(registroNuvem);
       if (!respostaGravar.ok) {
         setStatusNuvem(respostaGravar.status === 503 ? '⚠️ Nuvem fora do ar — só neste aparelho' : '⚠️ Não gravou na nuvem');
@@ -1600,6 +1944,85 @@ function App() {
     return proxima;
   };
   gravarNaWebRef.current = gravarNaWeb;
+
+  const salvarProdutoProducao = (nome: string) => {
+    const produtos = unirNomesProdutosProducao(produtosProducaoRef.current, [nome]);
+    produtosProducaoRef.current = produtos;
+    setProdutosProducao(produtos);
+    localStorage.setItem('rm_produtos_producao', JSON.stringify(produtos));
+    void gravarNaWeb();
+  };
+
+  const adicionarLancamentoProducao = (item: Omit<LancamentoProducao, 'id'>) => {
+    const novo: LancamentoProducao = { ...item, id: String(Date.now()) };
+    const lista = unirLancamentosProducao(lancamentosProducaoDeletadosRef.current, lancamentosProducaoRef.current, [novo]);
+    lancamentosProducaoRef.current = lista;
+    setLancamentosProducao(lista);
+    localStorage.setItem('rm_lancamentos_producao', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const removerLancamentoProducao = (id: string) => {
+    const deletados = unirIds(lancamentosProducaoDeletadosRef.current, [id]);
+    lancamentosProducaoDeletadosRef.current = deletados;
+    setLancamentosProducaoDeletados(deletados);
+    localStorage.setItem('rm_lancamentos_producao_deletados', JSON.stringify(deletados));
+    const lista = unirLancamentosProducao(deletados, lancamentosProducaoRef.current);
+    lancamentosProducaoRef.current = lista;
+    setLancamentosProducao(lista);
+    localStorage.setItem('rm_lancamentos_producao', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const adicionarLancamentoRota = (item: Omit<LancamentoRota, 'id'>) => {
+    const novo: LancamentoRota = { ...item, id: String(Date.now()) };
+    const lista = unirLancamentosRota(lancamentosRotaDeletadosRef.current, lancamentosRotaRef.current, [novo]);
+    lancamentosRotaRef.current = lista;
+    setLancamentosRota(lista);
+    localStorage.setItem('rm_lancamentos_rota', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const removerLancamentoRota = (id: string) => {
+    const deletados = unirIds(lancamentosRotaDeletadosRef.current, [id]);
+    lancamentosRotaDeletadosRef.current = deletados;
+    setLancamentosRotaDeletados(deletados);
+    localStorage.setItem('rm_lancamentos_rota_deletados', JSON.stringify(deletados));
+    const lista = unirLancamentosRota(deletados, lancamentosRotaRef.current);
+    lancamentosRotaRef.current = lista;
+    setLancamentosRota(lista);
+    localStorage.setItem('rm_lancamentos_rota', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const salvarContaDeposito = (nome: string) => {
+    const contas = unirNomesProdutosProducao(contasDepositoRef.current, [nome]);
+    contasDepositoRef.current = contas;
+    setContasDeposito(contas);
+    localStorage.setItem('rm_contas_deposito', JSON.stringify(contas));
+    void gravarNaWeb();
+  };
+
+  const adicionarLancamentoDeposito = (item: Omit<LancamentoDeposito, 'id'>) => {
+    const novo: LancamentoDeposito = { ...item, id: String(Date.now()) };
+    const lista = unirLancamentosDeposito(lancamentosDepositoDeletadosRef.current, lancamentosDepositoRef.current, [novo]);
+    lancamentosDepositoRef.current = lista;
+    setLancamentosDeposito(lista);
+    localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const removerLancamentoDeposito = (id: string) => {
+    const deletados = unirIds(lancamentosDepositoDeletadosRef.current, [id]);
+    lancamentosDepositoDeletadosRef.current = deletados;
+    setLancamentosDepositoDeletados(deletados);
+    localStorage.setItem('rm_lancamentos_deposito_deletados', JSON.stringify(deletados));
+    const lista = unirLancamentosDeposito(deletados, lancamentosDepositoRef.current);
+    lancamentosDepositoRef.current = lista;
+    setLancamentosDeposito(lista);
+    localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
 
   const adicionarOrdemManutencao = () => {
     const descricao = novaOrdemDescricao.trim();
@@ -1728,7 +2151,11 @@ function App() {
       return;
     }
     if (!window.confirm('Excluir esta ordem de serviço?')) return;
-    const proximas = ordensManutencao.filter(ordem => ordem.id !== id);
+    const proximas = (ordensManutencaoRef.current || []).filter(ordem => ordem.id !== id);
+    const deletadas = unirIds(ordensManutencaoDeletadasRef.current, [id]);
+    ordensManutencaoDeletadasRef.current = deletadas;
+    setOrdensManutencaoDeletadas(deletadas);
+    localStorage.setItem('rm_ordens_manutencao_deletadas', JSON.stringify(deletadas));
     setOrdensManutencao(proximas);
     ordensManutencaoRef.current = proximas;
     gravarJsonLocal('rm_ordens_manutencao', ordensSemFotos(proximas));
@@ -2055,10 +2482,13 @@ function App() {
 
  // Funções de Pagamentos (Blindadas contra nulo / undefined)
   const obterListaSegura = (tipo: 'caixa' | 'cheque' | 'caben') => {
-    if (pagamentos && Array.isArray(pagamentos[tipo])) {
-      return pagamentos[tipo];
-    }
-    return [];
+    const origem = pagamentosRef.current && Array.isArray(pagamentosRef.current[tipo])
+      ? pagamentosRef.current[tipo]
+      : [];
+    const bloqueados = new Set(pagamentosDeletadosRef.current);
+    return origem
+      .map(item => (item?.id ? item : { ...item, id: identidadePagamento(item) }))
+      .filter(item => item?.id && !bloqueados.has(item.id));
   };
 
   const listaCaixaSegura = obterListaSegura('caixa');
@@ -2121,15 +2551,31 @@ function App() {
 
   const removerPagamento = (tipo: 'caixa' | 'cheque' | 'caben', id: string) => {
     if (!window.confirm('Confirma a remoção deste lançamento?')) return;
-    const listaAtual = obterListaSegura(tipo);
+    const atuais = pagamentosRef.current;
+    const listaAtual = Array.isArray(atuais[tipo]) ? atuais[tipo] : [];
+    const alvo = listaAtual.find(item => item.id === id)
+      || listaAtual.find(item => identidadePagamento(item) === id);
+    const aindaNaLista = listaAtual.filter(item => {
+      if (alvo) {
+        if (alvo.id && item.id === alvo.id) return false;
+        if (!item.id && identidadePagamento(item) === identidadePagamento(alvo)) return false;
+      }
+      return item.id !== id;
+    });
     const novosPagamentos: PagamentosState = {
-      caixa: tipo === 'caixa' ? listaAtual.filter(item => item.id !== id) : listaCaixaSegura,
-      cheque: tipo === 'cheque' ? listaAtual.filter(item => item.id !== id) : listaChequeSegura,
-      caben: tipo === 'caben' ? listaAtual.filter(item => item.id !== id) : listaCabenSegura
+      caixa: tipo === 'caixa' ? aindaNaLista : (atuais.caixa || []),
+      cheque: tipo === 'cheque' ? aindaNaLista : (atuais.cheque || []),
+      caben: tipo === 'caben' ? aindaNaLista : (atuais.caben || [])
     };
+    const marcas = [id, alvo?.id, alvo ? identidadePagamento(alvo) : ''].filter(Boolean);
+    const deletados = unirIds(pagamentosDeletadosRef.current, marcas);
+    pagamentosDeletadosRef.current = deletados;
+    setPagamentosDeletados(deletados);
+    localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(deletados));
     pagamentosRef.current = novosPagamentos;
     setPagamentos(novosPagamentos);
     localStorage.setItem('rm_pagamentos', JSON.stringify(novosPagamentos));
+    localStorage.setItem('rm_backup_completo', JSON.stringify({ pagamentos: novosPagamentos, historicoPagamentos: historicoPagamentosRef.current }));
     void gravarNaWeb(undefined, novosPagamentos);
   };
 
@@ -2185,9 +2631,10 @@ function App() {
       if (base.some(item => item.id === itemId)) {
         return base.map(item => item.id === itemId ? { ...item, [campo]: valor, atualizadoEm: agora } : item);
       }
-      const doCatalogo = montarItensLaticinios(base).find(item => item.id === itemId);
+      const doCatalogo = montarItensLaticinios(base).find(item => item.id === itemId)
+        || montarItensEmbalagens(base).find(item => item.id === itemId);
       if (!doCatalogo) return base;
-      return [...base, { ...doCatalogo, [campo]: valor, atualizadoEm: agora, secao: 'Laticínios' }];
+      return [...base, { ...doCatalogo, [campo]: valor, atualizadoEm: agora, secao: doCatalogo.secao || 'Laticínios' }];
     });
   };
 
@@ -2195,14 +2642,16 @@ function App() {
     const agora = new Date().toISOString();
     setItensCotacao(atuais => {
       const base = Array.isArray(atuais) ? atuais : [];
-      const itemAtual = base.find(item => item.id === itemId) || montarItensLaticinios(base).find(item => item.id === itemId);
+      const itemAtual = base.find(item => item.id === itemId)
+        || montarItensLaticinios(base).find(item => item.id === itemId)
+        || montarItensEmbalagens(base).find(item => item.id === itemId);
       if (!itemAtual) return base;
       const precosAtualizados = { ...(itemAtual.precos || {}), [fornecedorId]: valor };
       const custos = Object.values(precosAtualizados).map(preco => parseFloat(String(preco).replace(',', '.'))).filter(preco => !Number.isNaN(preco) && preco > 0);
       if (base.some(item => item.id === itemId)) {
         return base.map(item => item.id === itemId ? { ...item, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : item.menorCusto, atualizadoEm: agora } : item);
       }
-      return [...base, { ...itemAtual, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : undefined, atualizadoEm: agora, secao: 'Laticínios' }];
+      return [...base, { ...itemAtual, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : undefined, atualizadoEm: agora, secao: itemAtual.secao || 'Laticínios' }];
     });
   };
 
@@ -2221,10 +2670,11 @@ function App() {
       setAlerta({ tipo: 'erro', msg: '⚠️ Este produto já está cadastrado.' });
       return;
     }
-    const novoItem: ItemCotacao = { id: `cad_${Date.now()}`, produto: nome, unit: novoProdutoCadastro.unidade, estoqueAtual: '', qtdSugerida: '', qtdPedir: '', precos: {} };
+    const unidade = novoProdutoCadastro.unidade.trim() || 'Kg';
+    const novoItem: ItemCotacao = { id: `cad_${Date.now()}`, produto: nome, unit: unidade, estoqueAtual: '', qtdSugerida: '', qtdPedir: '', precos: {} };
     const novosItens = [...itensCotacao, novoItem];
     setItensCotacao(novosItens);
-    setNovoProdutoCadastro({ nome: '', unidade: novoProdutoCadastro.unidade });
+    setNovoProdutoCadastro({ nome: '', unidade });
     gravarNaWeb(undefined, undefined, undefined, undefined, novosItens);
     setAlerta({ tipo: 'sucesso', msg: '✓ Produto cadastrado na Cotação.' });
   };
@@ -2244,7 +2694,7 @@ function App() {
   };
   const adicionarFornecedorCotacao = () => {
     if (!novoFornecedorNome.trim()) return;
-    const novos = [...fornecedoresCotacao, { id: `f_${Date.now()}`, nome: novoFornecedorNome.trim().toUpperCase() }];
+    const novos = [...fornecedoresCotacao, { id: `f_${Date.now()}`, nome: novoFornecedorNome.trim().toUpperCase(), tipoPessoa: 'juridica' as const }];
     setFornecedoresCotacao(novos);
     setNovoFornecedorNome('');
     gravarNaWeb(undefined, undefined, undefined, novos);
@@ -2282,19 +2732,55 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     }
     setFornecedoresCotacao(prev => prev.filter((_, idx) => idx !== indiceColuna));
   };
-  const cadastrarFornecedor = () => {
-    const razaoSocial = novoFornecedorCadastro.razaoSocial.trim();
-    const nomeFantasia = novoFornecedorCadastro.nomeFantasia.trim();
-    const cnpj = novoFornecedorCadastro.cnpj.trim();
-    if (!razaoSocial || !nomeFantasia || !cnpj) return;
-    if (fornecedoresCotacao.some(fornecedor => fornecedor.cnpj === cnpj)) {
+  const cadastrarFornecedor = (dadosFormulario?: { tipoPessoa?: 'fisica' | 'juridica'; razaoSocial: string; nomeFantasia: string; cnpj: string; nomePessoaFisica: string; cpf: string; endereco: string; cidade: string }) => {
+    const origem = dadosFormulario || novoFornecedorCadastro;
+    const tipoPessoa = origem.tipoPessoa === 'fisica' ? 'fisica' : 'juridica';
+    const razaoSocial = (origem.razaoSocial || '').trim();
+    const nomeFantasia = (origem.nomeFantasia || '').trim();
+    const cnpj = (origem.cnpj || '').trim();
+    const nomePessoaFisica = (origem.nomePessoaFisica || '').trim();
+    const cpf = (origem.cpf || '').trim();
+    const endereco = (origem.endereco || '').trim();
+    const cidade = (origem.cidade || '').trim();
+    if (tipoPessoa === 'juridica' && (!razaoSocial || !nomeFantasia || !cnpj)) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Preencha razão social, nome fantasia e CNPJ.' });
+      return;
+    }
+    if (tipoPessoa === 'fisica' && (!nomePessoaFisica || !cpf)) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Preencha o nome da pessoa física e o CPF.' });
+      return;
+    }
+    if (cnpj && fornecedoresCotacao.some(fornecedor => fornecedor.cnpj === cnpj)) {
       setAlerta({ tipo: 'erro', msg: '⚠️ Este CNPJ já está cadastrado.' });
       return;
     }
-    const novoFornecedor: FornecedorCotacao = { id: `f_cad_${Date.now()}`, nome: nomeFantasia.toUpperCase(), razaoSocial, nomeFantasia, cnpj };
+    if (cpf && fornecedoresCotacao.some(fornecedor => fornecedor.cpf === cpf)) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Este CPF já está cadastrado.' });
+      return;
+    }
+    const novoFornecedor: FornecedorCotacao = tipoPessoa === 'fisica'
+      ? {
+          id: `f_cad_${Date.now()}`,
+          nome: nomePessoaFisica.toUpperCase(),
+          tipoPessoa,
+          nomePessoaFisica,
+          cpf,
+          endereco: endereco || undefined,
+          cidade: cidade || undefined
+        }
+      : {
+          id: `f_cad_${Date.now()}`,
+          nome: nomeFantasia.toUpperCase(),
+          tipoPessoa,
+          razaoSocial,
+          nomeFantasia,
+          cnpj,
+          endereco: endereco || undefined,
+          cidade: cidade || undefined
+        };
     const novos = [...fornecedoresCotacao, novoFornecedor];
     setFornecedoresCotacao(novos);
-    setNovoFornecedorCadastro({ razaoSocial: '', nomeFantasia: '', cnpj: '' });
+    setNovoFornecedorCadastro({ razaoSocial: '', nomeFantasia: '', cnpj: '', nomePessoaFisica: '', cpf: '', endereco: '', cidade: '' });
     gravarNaWeb(undefined, undefined, undefined, novos);
     setAlerta({ tipo: 'sucesso', msg: '✓ Fornecedor cadastrado.' });
   };
@@ -2364,32 +2850,40 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       const p = precos[id];
       if (p) { const v = parseFloat(String(p).replace(',', '.')); if (!isNaN(v) && v > 0 && v < menor) { menor = v; vencedorFornId = id; } }
     });
-    return { menorPreco: menor === Infinity ? null : menor, vencedorFornId };
+    if (menor !== Infinity) return { menorPreco: menor, vencedorFornId };
+    if (somenteFornecedores?.length) {
+      const ultimo = Number(item?.ultimoPrecoCompra);
+      if (Number.isFinite(ultimo) && ultimo > 0) {
+        return { menorPreco: ultimo, vencedorFornId: somenteFornecedores[0] };
+      }
+    }
+    return { menorPreco: null, vencedorFornId: '' };
   };
 
   const garantirEmbalagensNaCotacao = () => {
-    const catalogo = PRODUTOS_POR_SECAO.Embalagens || [];
-  const ids = new Set((Array.isArray(itensCotacao) ? itensCotacao : []).map(item => item.id));
-    const novos = catalogo
-      .filter(produto => produto.ativo !== false && !ids.has(produto.id))
-      .map(produto => {
-        const custo = parseFloat(String(produto.custo || '').replace(',', '.'));
+    setItensCotacao(atuais => {
+      const base = Array.isArray(atuais) ? atuais : [];
+      const montados = montarItensEmbalagens(base);
+      const porId = new Map(montados.map(item => [item.id, item]));
+      let mudou = false;
+      const atualizados = base.map(item => {
+        const catalogo = porId.get(item.id);
+        if (!catalogo) return item;
+        const precisaPreco = !(Number(item.ultimoPrecoCompra) > 0) && Number(catalogo.ultimoPrecoCompra) > 0;
+        const precisaSecao = item.secao !== 'Embalagens';
+        if (!precisaPreco && !precisaSecao) return item;
+        mudou = true;
         return {
-          id: produto.id,
-          produto: produto.nome,
-          unit: produto.unidade || 'un',
-          estoqueAtual: '',
-          qtdSugerida: '',
-          qtdPedir: '',
-          precos: {},
+          ...item,
           secao: 'Embalagens',
-          ultimoPrecoCompra: Number.isFinite(custo) && custo > 0 ? custo : undefined
-        } as ItemCotacao;
+          ultimoPrecoCompra: precisaPreco ? catalogo.ultimoPrecoCompra : item.ultimoPrecoCompra
+        };
       });
-    if (!novos.length) return;
-    const mesclados = [...itensCotacao, ...novos];
-    setItensCotacao(mesclados);
-    gravarNaWeb(undefined, undefined, undefined, undefined, mesclados);
+      const ids = new Set(atualizados.map(item => item.id));
+      const novos = montados.filter(item => !ids.has(item.id));
+      if (!novos.length && !mudou) return base;
+      return [...atualizados, ...novos];
+    });
   };
 
   const garantirLaticiniosNaCotacao = () => {
@@ -2403,6 +2897,27 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       });
     } catch {
       /* a aba abre mesmo se a gravação atrasar */
+    }
+  };
+
+  const gravarCustosCatalogo = (proximo: CustosCatalogoState) => {
+    custosCatalogoRef.current = proximo;
+    setCustosCatalogo(proximo);
+    localStorage.setItem('rm_custos_catalogo', JSON.stringify(proximo));
+  };
+
+  const registrarCustosPedido = (linhas: Array<{ id?: string; produto?: string; nome?: string; valorUnitario?: number }>) => {
+    const resultado = registrarCustosDoPedido(custosCatalogoRef.current, linhas);
+    if (resultado.alterados) gravarCustosCatalogo(resultado.estado);
+    return resultado.alterados;
+  };
+
+  const atualizarVendaSecao = (secao: string, porcentagem: number) => {
+    const resultado = aplicarMargemSecao(custosCatalogoRef.current, secao, porcentagem);
+    if (resultado.atualizados) {
+      gravarCustosCatalogo(resultado.estado);
+      gravarNaWeb();
+      setAlerta({ tipo: 'sucesso', msg: `✓ ${resultado.atualizados} produto${resultado.atualizados > 1 ? 's' : ''} de ${secao} com preço de venda atualizado.` });
     }
   };
 
@@ -2426,13 +2941,24 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
 
   const totalGeralCompraCotacao = totaisPorFornecedor.reduce((a, b) => a + b.totalR$, 0);
 
-  const salvarRelatorioPedidoCotacao = () => {
-    const relatoriosNovos = fornecedoresCotacao.map(fornecedor => {
-      const itensFornecedor = itensCotacao.filter(item => {
+  const salvarRelatorioPedidoCotacao = (escopo?: {
+    itens?: ItemCotacao[];
+    fornecedores?: FornecedorCotacao[];
+    somenteFornecedores?: string[];
+    enviarConferencia?: boolean;
+  }) => {
+    const itensFonte = Array.isArray(escopo?.itens) ? escopo.itens : itensCotacao;
+    const fornecedoresFonte = Array.isArray(escopo?.fornecedores) && escopo.fornecedores.length
+      ? escopo.fornecedores
+      : fornecedoresCotacao;
+    const idsForn = escopo?.somenteFornecedores;
+    const enviarConferencia = Boolean(escopo?.enviarConferencia);
+    const relatoriosNovos = fornecedoresFonte.map(fornecedor => {
+      const itensFornecedor = itensFonte.filter(item => {
         const quantidade = qtdPedirNumero(item);
-        return quantidade > 0 && calcularMenorPrecoItem(item).vencedorFornId === fornecedor.id;
+        return quantidade > 0 && calcularMenorPrecoItem(item, idsForn).vencedorFornId === fornecedor.id;
       }).map(item => {
-        const { menorPreco } = calcularMenorPrecoItem(item);
+        const { menorPreco } = calcularMenorPrecoItem(item, idsForn);
         const quantidade = qtdPedirNumero(item);
         return {
           produto: item.produto,
@@ -2440,7 +2966,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
           quantidade: item.qtdPedir,
           valorUnitario: menorPreco || 0,
           valorTotal: (menorPreco || 0) * quantidade,
-          fornecedor: fornecedor.nome
+          fornecedor: fornecedor.nomeFantasia || fornecedor.nome || fornecedor.razaoSocial || 'Fornecedor'
         };
       });
       if (itensFornecedor.length === 0) return null;
@@ -2449,22 +2975,32 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
         data: new Date().toLocaleString('pt-BR'),
         itens: itensFornecedor,
         totalGeral: itensFornecedor.reduce((total, item) => total + item.valorTotal, 0),
-        enviadoConferencia: false
+        enviadoConferencia
       } as RelatorioPedidoCotacao;
     }).filter((relatorio): relatorio is RelatorioPedidoCotacao => relatorio !== null);
     if (relatoriosNovos.length === 0) return false;
+    registrarCustosPedido(relatoriosNovos.flatMap(relatorio => relatorio.itens.map(item => ({
+      produto: item.produto,
+      valorUnitario: item.valorUnitario
+    }))));
     const idsSalvos = new Set(
-      itensCotacao.filter(item => qtdPedirNumero(item) > 0 && calcularMenorPrecoItem(item).vencedorFornId).map(item => item.id)
+      itensFonte.filter(item => qtdPedirNumero(item) > 0 && calcularMenorPrecoItem(item, idsForn).vencedorFornId).map(item => item.id)
     );
     const itensLimpos = itensCotacao.map(item => idsSalvos.has(item.id) ? { ...item, qtdPedir: '' } : item);
-    setItensCotacao(itensLimpos);
-    localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensLimpos));
-    const atualizados = [...relatoriosNovos, ...relatoriosPedidosCotacao].slice(0, 50);
+    const atualizados = [...relatoriosNovos, ...(Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [])].slice(0, 50);
     relatoriosPedidosRef.current = atualizados;
     setRelatoriosPedidosCotacao(atualizados);
-    localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados));
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados)); } catch { /* ignora cota */ }
+    itensCotacaoRef.current = itensLimpos;
+    setItensCotacao(itensLimpos);
+    localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensLimpos));
     gravarNaWeb(undefined, undefined, undefined, undefined, itensLimpos);
-    setMostrarRelatoriosCotacao(true);
+    if (enviarConferencia) {
+      setMostrarRelatoriosCotacao(false);
+      setTabAtiva('conferencia');
+    } else {
+      setMostrarRelatoriosCotacao(true);
+    }
     return true;
   };
 
@@ -2481,15 +3017,20 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     setAlerta({ tipo: 'sucesso', msg: '✓ Pedido saiu da lista da Cotação e ficou salvo na Conferência. A tela não mudou.' });
   };
 
-  const salvarPedidoFornecedor = (fornecedor: FornecedorCotacao, itensFornecedor: ItemCotacao[]) => {
+  const salvarPedidoFornecedor = (
+    fornecedor: FornecedorCotacao,
+    itensFornecedor: ItemCotacao[],
+    escopo?: { somenteFornecedores?: string[]; enviarConferencia?: boolean }
+  ) => {
+    try {
+    const idsForn = escopo?.somenteFornecedores;
+    const enviarConferencia = Boolean(escopo?.enviarConferencia);
     const idsItens = new Set(itensFornecedor.map(item => item.id));
     const itensAtualizados = itensCotacao.map(item => idsItens.has(item.id)
-      ? { ...item, ultimoPrecoCompra: calcularMenorPrecoItem(item).menorPreco || item.ultimoPrecoCompra, qtdPedir: '' }
+      ? { ...item, ultimoPrecoCompra: calcularMenorPrecoItem(item, idsForn).menorPreco || item.ultimoPrecoCompra, qtdPedir: '' }
       : item);
-    setItensCotacao(itensAtualizados);
-    localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensAtualizados));
     const itens = itensFornecedor.map(item => {
-      const { menorPreco } = calcularMenorPrecoItem(item);
+      const { menorPreco } = calcularMenorPrecoItem(item, idsForn);
       const quantidade = qtdPedirNumero(item);
       return {
         produto: item.produto,
@@ -2497,7 +3038,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
         quantidade: item.qtdPedir,
         valorUnitario: menorPreco || 0,
         valorTotal: (menorPreco || 0) * quantidade,
-        fornecedor: fornecedor.nome
+        fornecedor: fornecedor.nomeFantasia || fornecedor.nome || fornecedor.razaoSocial || 'Fornecedor'
       };
     });
     const novoRelatorio: RelatorioPedidoCotacao = {
@@ -2505,15 +3046,35 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       data: new Date().toLocaleString('pt-BR'),
       itens,
       totalGeral: itens.reduce((total, item) => total + item.valorTotal, 0),
-      enviadoConferencia: false
+      enviadoConferencia: enviarConferencia ? true : false
     };
-    const atualizados = [novoRelatorio, ...relatoriosPedidosCotacao].slice(0, 50);
+    const atualizados = [novoRelatorio, ...(Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [])].slice(0, 50);
     relatoriosPedidosRef.current = atualizados;
     setRelatoriosPedidosCotacao(atualizados);
-    localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados));
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados)); } catch { /* ignora cota */ }
+    itensCotacaoRef.current = itensAtualizados;
+    setItensCotacao(itensAtualizados);
+    localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensAtualizados));
+    registrarCustosPedido(itensFornecedor.map(item => ({
+      id: item.id,
+      produto: item.produto,
+      valorUnitario: calcularMenorPrecoItem(item, idsForn).menorPreco || 0
+    })));
     gravarNaWeb(undefined, undefined, undefined, undefined, itensAtualizados);
+    if (enviarConferencia) {
+      setMostrarRelatoriosCotacao(false);
+      setTabAtiva('conferencia');
+      setAlerta({ tipo: 'sucesso', msg: `✓ Pedido de ${fornecedor.nome} enviado para a Conferência.` });
+      return true;
+    }
     setMostrarRelatoriosCotacao(true);
-    setAlerta({ tipo: 'sucesso', msg: `✓ Pedido de ${fornecedor.nome} salvo. Saiu da lista em aberto e ficou em Pedidos salvos.` });
+    setAlerta({ tipo: 'sucesso', msg: `✓ Pedido de ${fornecedor.nome} salvo. Ficou em Pedidos salvos. A tela não mudou.` });
+    return true;
+    } catch (erro) {
+      console.error(erro);
+      setAlerta({ tipo: 'erro', msg: '⚠️ Não foi possível salvar o pedido. Tente de novo.' });
+      return false;
+    }
   };
 
   const anexarPdfFornecedor = (relatorio: RelatorioPedidoCotacao) => {
@@ -2535,6 +3096,53 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       leitor.readAsDataURL(arquivo);
     };
     input.click();
+  };
+
+  const criarPedidoNaConferencia = (dados: {
+    fornecedor: string;
+    data: string;
+    itens: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number }[];
+    pdf?: { nome: string; conteudo: string };
+  }) => {
+    const fornecedor = dados.fornecedor.trim();
+    if (!fornecedor) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe o nome do fornecedor.' });
+      return false;
+    }
+    const itensValidos = (dados.itens || []).filter(item => item.produto.trim());
+    if (itensValidos.length === 0 && !dados.pdf) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Adicione pelo menos um produto ou anexe um PDF.' });
+      return false;
+    }
+    const itens = (itensValidos.length
+      ? itensValidos
+      : [{ produto: 'Pedido em PDF anexado', unit: '-', quantidade: '-', valorUnitario: 0, valorTotal: 0 }]
+    ).map(item => ({
+      produto: item.produto.trim(),
+      unit: (item.unit || 'Und').trim() || 'Und',
+      quantidade: item.quantidade || '1',
+      valorUnitario: Number(item.valorUnitario) || 0,
+      valorTotal: Number(item.valorTotal) || 0,
+      fornecedor
+    }));
+    const novoRelatorio: RelatorioPedidoCotacao = {
+      id: `pedido_avulso_${Date.now()}`,
+      data: dados.data || new Date().toLocaleString('pt-BR'),
+      itens,
+      totalGeral: itens.reduce((total, item) => total + (Number(item.valorTotal) || 0), 0),
+      enviadoConferencia: true,
+      pdfFornecedor: dados.pdf
+        ? { nome: dados.pdf.nome, conteudo: dados.pdf.conteudo, anexadoEm: new Date().toLocaleString('pt-BR') }
+        : undefined
+    };
+    const atualizados = [novoRelatorio, ...relatoriosPedidosRef.current].slice(0, 50);
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados));
+    gravarNaWeb();
+    setAbaConferencia('pedidos');
+    setAlerta({ tipo: 'sucesso', msg: `✓ Pedido de ${fornecedor} criado e enviado para Pedidos Pendentes.` });
+    return true;
   };
 
   const anexarPedidoFornecedorExterno = () => {
@@ -2582,10 +3190,14 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   };
 
   const atualizarConferenciaPedido = (pedidoId: string, campo: 'conferente' | 'valor' | 'obs' | 'divergencia' | 'tipoDivergencia', valor: string | boolean) => {
-    setConferenciasPorPedido(prev => ({ ...prev, [pedidoId]: { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '', ...prev[pedidoId], [campo]: valor } }));
+    setConferenciasPorPedido(prev => {
+      const atual = { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as TipoDivergencia, ...prev[pedidoId], [campo]: valor };
+      if (campo === 'tipoDivergencia') atual.divergencia = Boolean(valor);
+      return { ...prev, [pedidoId]: atual };
+    });
   };
 
-  const salvarConferenciaPedido = (relatorio: RelatorioPedidoCotacao, formularioInformado?: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: 'valor' | 'kg' | 'quantidade' | '' }) => {
+  const salvarConferenciaPedido = (relatorio: RelatorioPedidoCotacao, formularioInformado?: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia }) => {
     const formulario = formularioInformado || conferenciasPorPedido[relatorio.id] || { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as const };
     const valorRecebido = formulario.valor.trim() ? parseFloat(formulario.valor.replace(',', '.')) : 0;
     if (!formulario.conferente.trim() || Number.isNaN(valorRecebido)) {
@@ -2615,7 +3227,6 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     localStorage.setItem('rm_conferencias', JSON.stringify(novaLista));
     localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: novaLista }));
     gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, novaLista);
-    if (tabAtiva === 'conferencia') setAbaConferencia('conferidos');
     setAlerta({ tipo: 'sucesso', msg: '✓ Mercadoria e conferência registradas com sucesso!' });
   };
 
@@ -2691,10 +3302,43 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     setTimeout(() => setAlerta(null), 3000);
   };
 
-  const visualizarPdfFornecedor = (relatorio: RelatorioPedidoCotacao) => {
-    if (relatorio.pdfFornecedor) {
-      setPdfFornecedorVisualizacao({ nome: relatorio.pdfFornecedor.nome, conteudo: relatorio.pdfFornecedor.conteudo });
+  const urlPdfParaVisualizar = (conteudo: string) => {
+    if (!conteudo) return '';
+    if (conteudo.startsWith('blob:')) return conteudo;
+    if (!conteudo.startsWith('data:')) return conteudo;
+    try {
+      const [meta, data] = conteudo.split(',');
+      const binario = atob(data || '');
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i += 1) bytes[i] = binario.charCodeAt(i);
+      const tipo = /data:([^;]+)/.exec(meta || '')?.[1] || 'application/pdf';
+      return URL.createObjectURL(new Blob([bytes], { type: tipo }));
+    } catch {
+      return conteudo;
     }
+  };
+
+  const visualizarPdfFornecedor = (relatorio: RelatorioPedidoCotacao) => {
+    if (!relatorio.pdfFornecedor) return;
+    setPdfFornecedorVisualizacao({
+      nome: relatorio.pdfFornecedor.nome,
+      conteudo: urlPdfParaVisualizar(relatorio.pdfFornecedor.conteudo)
+    });
+  };
+
+  const visualizarPedidoLancadoPdf = (relatorio: RelatorioPedidoCotacao) => {
+    const itens = Array.isArray(relatorio.itens) ? relatorio.itens : [];
+    const linhas = itens.map(item => ({
+      produto: item.produto,
+      unit: item.unit,
+      quantidade: String(item.quantidade ?? ''),
+      valorUnitario: Number(item.valorUnitario) || 0,
+      valorTotal: Number(item.valorTotal) || 0
+    }));
+    const fornecedor = itens[0]?.fornecedor || 'Fornecedor';
+    const blob = gerarPdfPedidoFornecedor(fornecedor, linhas, Number(relatorio.totalGeral) || 0, relatorio.data);
+    const url = URL.createObjectURL(blob);
+    setPdfFornecedorVisualizacao({ nome: `Pedido ${fornecedor}.pdf`, conteudo: url });
   };
 
   const imprimirRelatorioCotacao = () => {
@@ -2712,7 +3356,6 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   };
 
   const imprimirRelatorioPedidosPorVendedor = () => {
-    salvarRelatorioPedidoCotacao();
     const pedidosPorVendedor = fornecedoresCotacao.map(fornecedor => ({
       fornecedor,
       itens: itensCotacao.filter(item => {
@@ -2754,8 +3397,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     }
   };
 
-  const imprimirPedidoIndividual = (fornecedor: FornecedorCotacao) => {
-    const itensDoFornecedor = itensCotacao.filter(item => {
+  const imprimirPedidoIndividual = (fornecedor: FornecedorCotacao, itensInformados?: ItemCotacao[]) => {
+    const itensDoFornecedor = Array.isArray(itensInformados) ? itensInformados : itensCotacao.filter(item => {
       const quantidade = qtdPedirNumero(item);
       return quantidade > 0 && calcularMenorPrecoItem(item).vencedorFornId === fornecedor.id;
     });
@@ -2960,6 +3603,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       id: Date.now().toString(),
       data: novaConferencia.data,
       nomeConferente: novaConferencia.nomeConferente,
+      fornecedor: novaConferencia.fornecedor.trim() || undefined,
       valorRecebido: parseFloat(novaConferencia.valorRecebido.toString()) || 0,
       observacoes: novaConferencia.observacoes,
       houveDivergencia: novaConferencia.houveDivergencia,
@@ -2975,7 +3619,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     // Resetar formulário
     setNovaConferencia({ 
       data: new Date().toISOString().split('T')[0], 
-      nomeConferente: '', 
+      nomeConferente: '',
+      fornecedor: '',
       valorRecebido: 0, 
       houveDivergencia: false, 
       tipoDivergencia: '', 
@@ -3001,13 +3646,19 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       setAlerta({ tipo: 'erro', msg: '⚠️ Só a Ramara pode excluir pedido na Conferência.' });
       return;
     }
-    if (window.confirm('Tem certeza que deseja excluir esta conferência?')) {
-      const novasConferencias = conferencias.filter(conf => conf.id !== id);
-      setConferencias(novasConferencias);
-      gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, novasConferencias);
-      setAlerta({ tipo: 'sucesso', msg: '✓ Conferência excluída!' });
-      setTimeout(() => setAlerta(null), 3000);
-    }
+    if (!window.confirm('Tem certeza que deseja excluir esta conferência?')) return;
+    const novasConferencias = (conferenciasRef.current || []).filter(conf => conf.id !== id);
+    const deletadas = unirIds(conferenciasDeletadasRef.current, [id]);
+    conferenciasDeletadasRef.current = deletadas;
+    setConferenciasDeletadas(deletadas);
+    localStorage.setItem('rm_conferencias_deletadas', JSON.stringify(deletadas));
+    conferenciasRef.current = novasConferencias;
+    setConferencias(novasConferencias);
+    localStorage.setItem('rm_conferencias', JSON.stringify(novasConferencias));
+    localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: novasConferencias }));
+    gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, novasConferencias);
+    setAlerta({ tipo: 'sucesso', msg: '✓ Conferência excluída!' });
+    setTimeout(() => setAlerta(null), 3000);
   };
 
   const gerarPdfElieuda = () => {
@@ -3114,8 +3765,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     if (/sabonete|shampoo|rexona|absorvente|pasta colgate|pasta sorriso|barbeador|gilete|aerosol/.test(nome)) return 'Higiene pessoal';
     return 'Outros produtos';
   };
-  const telaInteiraAtiva = ['conferencia', 'cotacao', 'pagamentos', 'elieuda', 'relatorios', 'seguranca', 'manutencao'].includes(tabAtiva) || (tabAtiva === 'pendencias' && sairTelaInteira);
-  const ordensLista = Array.isArray(ordensManutencao) ? ordensManutencao : [];
+  const telaInteiraAtiva = ['conferencia', 'cotacao', 'pagamentos', 'elieuda', 'relatorios', 'seguranca', 'manutencao', 'producao'].includes(tabAtiva) || (tabAtiva === 'pendencias' && sairTelaInteira);
+  const ordensLista = (Array.isArray(ordensManutencao) ? ordensManutencao : []).filter(ordem => !ordensManutencaoDeletadasRef.current.includes(ordem.id));
   const ordensPendenteQtd = ordensLista.filter(ordem => statusOrdemNormalizado(ordem.status) === 'pendente').length;
   const ordensAndamentoQtd = ordensLista.filter(ordem => statusOrdemNormalizado(ordem.status) === 'andamento').length;
   const ordensPausadaQtd = ordensLista.filter(ordem => statusOrdemNormalizado(ordem.status) === 'pausada').length;
@@ -3128,8 +3779,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   const corPrioridadeOrdem = (prioridade: OrdemManutencao['prioridade']) =>
     prioridade === 'urgente' ? 'bg-rose-100 text-rose-800' : prioridade === 'alta' ? 'bg-orange-100 text-orange-800' : prioridade === 'baixa' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-800';
   const usuariosDoSistema = unirUsuariosCadastrados(usuariosExtra).map(usuario => aplicarPermissoesSalvas(usuario, permissoesUsuarios));
-  const conferenciasLista = Array.isArray(conferencias) ? conferencias : [];
-  const relatoriosPedidosLista = Array.isArray(relatoriosPedidosCotacao) ? relatoriosPedidosCotacao : [];
+  const conferenciasLista = (Array.isArray(conferencias) ? conferencias : []).filter(conf => !conferenciasDeletadasRef.current.includes(conf.id));
+  const relatoriosPedidosLista = (Array.isArray(relatoriosPedidosCotacao) ? relatoriosPedidosCotacao : []).filter(relatorio => !pedidosCotacaoDeletadosRef.current.includes(relatorio.id));
   const pedidosConferidosIds = new Set([...pedidosConferidosLocais, ...conferenciasLista.filter(conferencia => conferencia.pedidoId).map(conferencia => conferencia.pedidoId)]);
   const pedidosAindaNaCotacao = relatoriosPedidosLista.filter(relatorio => relatorio.enviadoConferencia !== true);
   const pedidosPendentesConferencia = relatoriosPedidosLista.filter(relatorio => relatorio.enviadoConferencia !== false && !pedidosConferidosIds.has(relatorio.id));
@@ -3225,7 +3876,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       {(usuarioLogado?.permissoes.cotacao || usuarioLogado?.permissoes.pagamentos || usuarioLogado?.permissoes.elieuda || usuarioLogado?.permissoes.conferencias) && (
         <button
           onClick={() => setTabAtiva('compras')}
-          className={classeAba(['compras', 'cotacao', 'cadastroProdutos', 'cadastroFornecedores', 'pagamentos', 'elieuda', 'conferencia'].includes(tabAtiva))}
+          className={classeAba(['compras', 'cotacao', 'cadastroProdutos', 'cadastroFornecedores', 'pagamentos', 'reciboComprador', 'elieuda', 'conferencia'].includes(tabAtiva))}
         >
           Compras
         </button>
@@ -3239,6 +3890,9 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             </span>
           )}
         </button>
+      )}
+      {usuarioLogado?.permissoes.producao && (
+        <button onClick={() => setTabAtiva('producao')} className={classeAba(tabAtiva === 'producao')}>Produção</button>
       )}
       {usuarioLogado?.permissoes.relatorios && (
         <button onClick={() => setTabAtiva('relatorios')} className={classeAba(tabAtiva === 'relatorios')}>Relatórios</button>
@@ -3389,7 +4043,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             <AbaDados
               carregarTudo={carregarTudo}
               gravarNaWeb={gravarNaWeb}
-              conferencias={conferencias}
+              conferencias={conferenciasLista}
               fornecedoresCotacao={fornecedoresCotacao}
               historicoBackupsUsuario={historicoBackupsUsuario}
               historicoPagamentos={historicoPagamentos}
@@ -3477,7 +4131,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               ordensAndamentoQtd={ordensAndamentoQtd}
               ordensConcluidasQtd={ordensConcluidasQtd}
               ordensFiltradas={ordensFiltradas}
-              ordensManutencao={ordensManutencao}
+              ordensManutencao={ordensLista}
               ordensNaoRealizadaQtd={ordensNaoRealizadaQtd}
               ordensPausadaQtd={ordensPausadaQtd}
               ordensPendenteQtd={ordensPendenteQtd}
@@ -3496,6 +4150,24 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               setOrdemPausaId={setOrdemPausaId}
               setTabAtiva={setTabAtiva}
               statusOrdemNormalizado={statusOrdemNormalizado}
+            />
+          )}
+
+          {tabAtiva === 'producao' && usuarioLogado?.permissoes.producao && (
+            <AbaProducao
+              produtos={produtosProducao}
+              lancamentos={lancamentosProducao}
+              lancamentosRota={lancamentosRota}
+              salvarProduto={salvarProdutoProducao}
+              adicionarLancamento={adicionarLancamentoProducao}
+              removerLancamento={removerLancamentoProducao}
+              adicionarRota={adicionarLancamentoRota}
+              removerRota={removerLancamentoRota}
+              contasDeposito={contasDeposito}
+              lancamentosDeposito={lancamentosDeposito}
+              salvarContaDeposito={salvarContaDeposito}
+              adicionarDeposito={adicionarLancamentoDeposito}
+              removerDeposito={removerLancamentoDeposito}
             />
           )}
 
@@ -3552,6 +4224,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               setNovoProdutoCadastro={setNovoProdutoCadastro}
               cadastrarProduto={cadastrarProduto}
               excluirProdutoCadastrado={excluirProdutoCadastrado}
+              custosCatalogo={custosCatalogo}
+              aplicarMargemSecao={atualizarVendaSecao}
             />
           )}
 
@@ -3597,6 +4271,10 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             />
           )}
 
+          {tabAtiva === 'reciboComprador' && usuarioLogado?.permissoes.pagamentos && (
+            <AbaReciboComprador setTabAtiva={setTabAtiva} fornecedoresCotacao={fornecedoresCotacao} itensCotacao={itensCotacao} />
+          )}
+
           {tabAtiva === 'elieuda' && (
             <AbaElieuda
               atualizarQtdElieuda={atualizarQtdElieuda}
@@ -3616,10 +4294,12 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               arquivoConferencia={arquivoConferencia}
               atualizarConferenciaPedido={atualizarConferenciaPedido}
               buscaFornecedorConferencia={buscaFornecedorConferencia}
-              conferencias={conferencias}
+              conferencias={conferenciasLista}
               conferenciasFiltradas={conferenciasFiltradas}
               conferenciasPorPedido={conferenciasPorPedido}
+              criarPedidoNaConferencia={criarPedidoNaConferencia}
               divergenciasFiltradas={divergenciasFiltradas}
+              fornecedoresCotacao={fornecedoresCotacao}
               enviarPdfConferenciaCompartilhado={enviarPdfConferenciaCompartilhado}
               excluirConferencia={excluirConferencia}
               excluirPedidoNaConferencia={excluirPedidoNaConferencia}
@@ -3639,35 +4319,36 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               setNovaConferencia={setNovaConferencia}
               setPdfFornecedorVisualizacao={setPdfFornecedorVisualizacao}
               setTabAtiva={setTabAtiva}
+              visualizarPedidoLancadoPdf={visualizarPedidoLancadoPdf}
               visualizarPdfFornecedor={visualizarPdfFornecedor}
             />
           )}
 
           {pdfFornecedorVisualizacao && (
-            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.85)', zIndex: 999999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-              <div style={{ width: '100%', maxWidth: '900px', backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', maxHeight: '92vh' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', gap: '10px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ fontSize: '22px' }}>📄</div>
+            <div className="fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-slate-900/85 p-2">
+              <div className="flex h-[96vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">📄</span>
                     <div>
-                      <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>{pdfFornecedorVisualizacao.nome}</strong>
-                      <span style={{ fontSize: '10px', color: '#64748b' }}>Visualização do PDF</span>
+                      <strong className="block text-sm text-slate-900">{pdfFornecedorVisualizacao.nome}</strong>
+                      <span className="text-[10px] text-slate-500">Pedido completo em PDF. Role para ver todas as páginas.</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    <a href={pdfFornecedorVisualizacao.conteudo} download={pdfFornecedorVisualizacao.nome} style={{ backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'none' }}>
-                      ⬇️ Baixar
+                  <div className="flex flex-wrap gap-1.5">
+                    <a href={pdfFornecedorVisualizacao.conteudo} download={pdfFornecedorVisualizacao.nome} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-teal-600">
+                      Baixar
                     </a>
-                    <button onClick={() => window.open(pdfFornecedorVisualizacao.conteudo, '_blank')} style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '4px', padding: '6px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      ↗️ Abrir nova aba
+                    <button type="button" onClick={() => window.open(pdfFornecedorVisualizacao.conteudo, '_blank')} className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+                      Abrir nova aba
                     </button>
-                    <button onClick={() => setPdfFornecedorVisualizacao(null)} style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '4px', padding: '6px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                      ✕ Fechar
+                    <button type="button" onClick={() => setPdfFornecedorVisualizacao(null)} className="cursor-pointer rounded-lg bg-rose-50 px-3 py-1.5 text-[11px] font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100">
+                      Fechar
                     </button>
                   </div>
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden', backgroundColor: '#000000' }}>
-                  <iframe src={pdfFornecedorVisualizacao.conteudo} title="PDF do fornecedor" style={{ width: '100%', height: '100%', minHeight: '70vh', border: 'none' }} />
+                <div className="min-h-0 flex-1 bg-slate-700">
+                  <iframe src={`${pdfFornecedorVisualizacao.conteudo}#view=FitH&toolbar=1`} title="PDF do pedido" className="h-full w-full border-0" />
                 </div>
               </div>
             </div>
@@ -3676,7 +4357,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       {tabAtiva === 'relatorios' && (
         <AbaRelatorios
           calcularMenorPrecoItem={calcularMenorPrecoItem}
-          conferencias={conferencias}
+          conferencias={conferenciasLista}
           dataSelecionada={dataSelecionada}
           enviarPedidoWhatsAppPdf={enviarPedidoWhatsAppPdf}
           fornecedoresCotacao={fornecedoresCotacao}

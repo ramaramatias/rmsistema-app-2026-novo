@@ -5,6 +5,9 @@ import type {
   PagamentosState,
   RegistroConferencia,
   RelatorioPedidoCotacao,
+  LancamentoProducao,
+  LancamentoRota,
+  LancamentoDeposito,
   Setor,
   StatusTarefa,
   Tarefa,
@@ -164,25 +167,36 @@ export const idsItensDeLotes = (lotes: LotePagamentoHistorico[]) => {
   return ids;
 };
 
-export const garantirIdPagamento = (item: ItemPagamento, indice: number) => {
+export const identidadePagamento = (item: Pick<ItemPagamento, 'descricao' | 'valor'> | undefined) =>
+  `pag-${String(item?.descricao || 'item').trim().toLowerCase().replace(/\s+/g, '-')}-${Number(item?.valor) || 0}`;
+
+export const garantirIdPagamento = (item: ItemPagamento) => {
   if (item?.id) return item;
-  return {
-    ...item,
-    id: `pag-${String(item?.descricao || 'item').toLowerCase().replace(/\s+/g, '-')}-${Number(item?.valor) || 0}-${indice}`
-  };
+  return { ...item, id: identidadePagamento(item) };
 };
 
 export const unirListaPagamento = (a: ItemPagamento[] = [], b: ItemPagamento[] = [], idsFechados: Set<string>) => {
   const porId = new Map<string, ItemPagamento>();
-  [...a, ...b].map(garantirIdPagamento).forEach(item => {
-    if (!item?.id || idsFechados.has(item.id) || porId.has(item.id)) return;
+  [...a, ...b].forEach(bruto => {
+    if (!bruto) return;
+    const identidade = identidadePagamento(bruto);
+    const item = garantirIdPagamento(bruto);
+    if (bruto.id && idsFechados.has(bruto.id)) return;
+    if (!bruto.id && idsFechados.has(identidade)) return;
+    if (idsFechados.has(item.id) || porId.has(item.id)) return;
     porId.set(item.id, item);
   });
   return Array.from(porId.values());
 };
 
-export const unirPagamentosAbertos = (a: PagamentosState | undefined, b: PagamentosState | undefined, lotes: LotePagamentoHistorico[]) => {
+export const unirPagamentosAbertos = (
+  a: PagamentosState | undefined,
+  b: PagamentosState | undefined,
+  lotes: LotePagamentoHistorico[],
+  idsDeletados: string[] = []
+) => {
   const idsFechados = idsItensDeLotes(lotes);
+  idsDeletados.forEach(id => { if (id) idsFechados.add(id); });
   return {
     caixa: unirListaPagamento(a?.caixa, b?.caixa, idsFechados),
     cheque: unirListaPagamento(a?.cheque, b?.cheque, idsFechados),
@@ -190,11 +204,12 @@ export const unirPagamentosAbertos = (a: PagamentosState | undefined, b: Pagamen
   };
 };
 
-export const unirOrdensManutencao = (...listas: Array<OrdemManutencao[] | undefined>) => {
+export const unirOrdensManutencao = (idsDeletados: string[] = [], ...listas: Array<OrdemManutencao[] | undefined>) => {
+  const bloqueados = new Set((idsDeletados || []).filter(Boolean));
   const porId = new Map<string, OrdemManutencao>();
   listas.forEach(lista => {
     (lista || []).forEach(ordem => {
-      if (!ordem?.id) return;
+      if (!ordem?.id || bloqueados.has(ordem.id)) return;
       const atual = porId.get(ordem.id);
       if (!atual || avancaoStatusOrdem(ordem.status) > avancaoStatusOrdem(atual.status) || (ordem.atualizadoEm || '') > (atual.atualizadoEm || '')) {
         porId.set(ordem.id, { ...atual, ...ordem, foto: ordem.foto || atual?.foto });
@@ -202,4 +217,56 @@ export const unirOrdensManutencao = (...listas: Array<OrdemManutencao[] | undefi
     });
   });
   return Array.from(porId.values()).sort((a, b) => Number(b.id) - Number(a.id));
+};
+
+export const unirNomesProdutosProducao = (...listas: Array<string[] | undefined>) => {
+  const vistos = new Set<string>();
+  const nomes: string[] = [];
+  listas.forEach(lista => {
+    (lista || []).forEach(nome => {
+      const limpo = String(nome || '').trim();
+      if (!limpo) return;
+      const chave = limpo.toLowerCase();
+      if (vistos.has(chave)) return;
+      vistos.add(chave);
+      nomes.push(limpo);
+    });
+  });
+  return nomes;
+};
+
+export const unirLancamentosProducao = (idsDeletados: string[] = [], ...listas: Array<LancamentoProducao[] | undefined>) => {
+  const bloqueados = new Set((idsDeletados || []).filter(Boolean));
+  const porId = new Map<string, LancamentoProducao>();
+  listas.forEach(lista => {
+    (lista || []).forEach(item => {
+      if (!item?.id || bloqueados.has(item.id)) return;
+      porId.set(item.id, item);
+    });
+  });
+  return Array.from(porId.values());
+};
+
+export const unirLancamentosRota = (idsDeletados: string[] = [], ...listas: Array<LancamentoRota[] | undefined>) => {
+  const bloqueados = new Set((idsDeletados || []).filter(Boolean));
+  const porId = new Map<string, LancamentoRota>();
+  listas.forEach(lista => {
+    (lista || []).forEach(item => {
+      if (!item?.id || bloqueados.has(item.id)) return;
+      porId.set(item.id, item);
+    });
+  });
+  return Array.from(porId.values());
+};
+
+export const unirLancamentosDeposito = (idsDeletados: string[] = [], ...listas: Array<LancamentoDeposito[] | undefined>) => {
+  const bloqueados = new Set((idsDeletados || []).filter(Boolean));
+  const porId = new Map<string, LancamentoDeposito>();
+  listas.forEach(lista => {
+    (lista || []).forEach(item => {
+      if (!item?.id || bloqueados.has(item.id)) return;
+      porId.set(item.id, item);
+    });
+  });
+  return Array.from(porId.values());
 };

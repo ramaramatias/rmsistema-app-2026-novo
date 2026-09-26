@@ -7,7 +7,8 @@
     "secao": "Laticínios",
     "custo": "1.42",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "2.49"
   },
   {
     "id": "lat_delta_4000143",
@@ -17,7 +18,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_delta_4000144",
@@ -27,7 +29,8 @@
     "secao": "Laticínios",
     "custo": "6.00",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.53"
   },
   {
     "id": "lat_delta_4000501",
@@ -37,7 +40,8 @@
     "secao": "Laticínios",
     "custo": "2.14",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "3.76"
   },
   {
     "id": "lat_delta_4000543",
@@ -47,7 +51,8 @@
     "secao": "Laticínios",
     "custo": "4.20",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.37"
   },
   {
     "id": "lat_delta_4000544",
@@ -57,7 +62,8 @@
     "secao": "Laticínios",
     "custo": "4.20",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.37"
   },
   {
     "id": "lat_delta_4000545",
@@ -67,7 +73,8 @@
     "secao": "Laticínios",
     "custo": "4.20",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.37"
   },
   {
     "id": "lat_delta_4000546",
@@ -77,7 +84,8 @@
     "secao": "Laticínios",
     "custo": "4.20",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.37"
   },
   {
     "id": "lat_delta_4000573",
@@ -87,7 +95,9 @@
     "secao": "Laticínios",
     "custo": "11.15",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.05"
   },
   {
     "id": "lat_delta_4000574",
@@ -97,7 +107,9 @@
     "secao": "Laticínios",
     "custo": "11.15",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "15.05"
   },
   {
     "id": "lat_delta_4000596",
@@ -107,7 +119,8 @@
     "secao": "Laticínios",
     "custo": "14.85",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "26.06"
   },
   {
     "id": "lat_delta_4000621",
@@ -117,7 +130,8 @@
     "secao": "Laticínios",
     "custo": "3.90",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.84"
   },
   {
     "id": "lat_delta_4000622",
@@ -127,7 +141,8 @@
     "secao": "Laticínios",
     "custo": "3.90",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.84"
   },
   {
     "id": "lat_delta_4000628",
@@ -137,7 +152,8 @@
     "secao": "Laticínios",
     "custo": "12.40",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "21.76"
   },
   {
     "id": "lat_delta_4000688",
@@ -147,7 +163,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_delta_4000690",
@@ -157,7 +174,8 @@
     "secao": "Laticínios",
     "custo": "11.37",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.95"
   },
   {
     "id": "lat_delta_4000704",
@@ -167,7 +185,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_delta_4000705",
@@ -177,7 +196,8 @@
     "secao": "Laticínios",
     "custo": "13.05",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "22.90"
   },
   {
     "id": "lat_delta_4000731",
@@ -187,7 +207,8 @@
     "secao": "Laticínios",
     "custo": "3.33",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.84"
   },
   {
     "id": "lat_delta_4000746",
@@ -197,7 +218,8 @@
     "secao": "Laticínios",
     "custo": "4.34",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.62"
   },
   {
     "id": "lat_delta_4000751",
@@ -207,7 +229,8 @@
     "secao": "Laticínios",
     "custo": "3.59",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.30"
   },
   {
     "id": "lat_delta_4000752",
@@ -217,7 +240,8 @@
     "secao": "Laticínios",
     "custo": "14.32",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "25.13"
   },
   {
     "id": "lat_delta_4000753",
@@ -227,7 +251,8 @@
     "secao": "Laticínios",
     "custo": "14.99",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "26.31"
   },
   {
     "id": "lat_delta_4000754",
@@ -237,7 +262,8 @@
     "secao": "Laticínios",
     "custo": "1.58",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "2.77"
   },
   {
     "id": "lat_delta_4000755",
@@ -247,7 +273,8 @@
     "secao": "Laticínios",
     "custo": "4.34",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.62"
   },
   {
     "id": "lat_delta_4000756",
@@ -257,7 +284,8 @@
     "secao": "Laticínios",
     "custo": "3.62",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.35"
   },
   {
     "id": "lat_delta_4000788",
@@ -267,7 +295,8 @@
     "secao": "Laticínios",
     "custo": "13.87",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "24.34"
   },
   {
     "id": "lat_delta_4000789",
@@ -277,7 +306,8 @@
     "secao": "Laticínios",
     "custo": "3.44",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.04"
   },
   {
     "id": "lat_delta_4000809",
@@ -287,7 +317,8 @@
     "secao": "Laticínios",
     "custo": "13.87",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "24.34"
   },
   {
     "id": "lat_delta_4000811",
@@ -297,7 +328,8 @@
     "secao": "Laticínios",
     "custo": "3.44",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.04"
   },
   {
     "id": "lat_delta_4000820",
@@ -307,7 +339,8 @@
     "secao": "Laticínios",
     "custo": "3.67",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.44"
   },
   {
     "id": "lat_delta_4000837",
@@ -317,7 +350,8 @@
     "secao": "Laticínios",
     "custo": "8.66",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "15.20"
   },
   {
     "id": "lat_delta_4000838",
@@ -327,7 +361,8 @@
     "secao": "Laticínios",
     "custo": "14.49",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "25.43"
   },
   {
     "id": "lat_delta_4000841",
@@ -337,7 +372,8 @@
     "secao": "Laticínios",
     "custo": "3.15",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.53"
   },
   {
     "id": "lat_delta_4000856",
@@ -347,7 +383,8 @@
     "secao": "Laticínios",
     "custo": "8.13",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "14.27"
   },
   {
     "id": "lat_delta_4000860",
@@ -357,7 +394,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_delta_4001581",
@@ -367,7 +405,9 @@
     "secao": "Laticínios",
     "custo": "10.80",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "14.58"
   },
   {
     "id": "lat_delta_4001582",
@@ -377,7 +417,9 @@
     "secao": "Laticínios",
     "custo": "10.80",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "14.58"
   },
   {
     "id": "lat_delta_4005730",
@@ -387,7 +429,8 @@
     "secao": "Laticínios",
     "custo": "3.67",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.44"
   },
   {
     "id": "lat_delta_4006042",
@@ -397,7 +440,8 @@
     "secao": "Laticínios",
     "custo": "8.55",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "15.01"
   },
   {
     "id": "lat_delta_4006071",
@@ -407,7 +451,8 @@
     "secao": "Laticínios",
     "custo": "6.00",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "10.53"
   },
   {
     "id": "lat_delta_4006518",
@@ -417,7 +462,8 @@
     "secao": "Laticínios",
     "custo": "3.66",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.42"
   },
   {
     "id": "lat_delta_4007099",
@@ -427,7 +473,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_delta_4007100",
@@ -437,7 +484,8 @@
     "secao": "Laticínios",
     "custo": "3.37",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.91"
   },
   {
     "id": "lat_delta_4007366",
@@ -447,7 +495,8 @@
     "secao": "Laticínios",
     "custo": "4.49",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.88"
   },
   {
     "id": "lat_delta_4007471",
@@ -457,7 +506,8 @@
     "secao": "Laticínios",
     "custo": "3.44",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.04"
   },
   {
     "id": "lat_delta_4007599",
@@ -467,7 +517,8 @@
     "secao": "Laticínios",
     "custo": "11.66",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "20.46"
   },
   {
     "id": "lat_delta_4007600",
@@ -477,7 +528,8 @@
     "secao": "Laticínios",
     "custo": "11.66",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "20.46"
   },
   {
     "id": "lat_delta_4007602",
@@ -487,7 +539,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_delta_4007603",
@@ -497,7 +550,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_delta_4007707",
@@ -507,7 +561,8 @@
     "secao": "Laticínios",
     "custo": "14.54",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "25.52"
   },
   {
     "id": "lat_delta_4007722",
@@ -517,7 +572,8 @@
     "secao": "Laticínios",
     "custo": "4.49",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "7.88"
   },
   {
     "id": "lat_delta_4007744",
@@ -527,7 +583,8 @@
     "secao": "Laticínios",
     "custo": "16.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "28.41"
   },
   {
     "id": "lat_delta_4007797",
@@ -537,7 +594,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_delta_4007890",
@@ -547,6 +605,7 @@
     "secao": "Laticínios",
     "custo": "15.75",
     "fornecedor": "DELTA",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "27.64"
   }
 ]

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FORNECEDORES_LATICINIOS, montarItensLaticinios } from '../../catalogo/secoesDados';
+import { FORNECEDORES_LATICINIOS, montarItensEmbalagens, montarItensLaticinios } from '../../catalogo/secoesDados';
+import { tipoPessoaFornecedor } from '../../tipos';
+import { chaveNomeItemCotacao } from '../../util/cotacao';
 
 export function AbaCotacao(p: {
   adicionarFornecedorCotacao: any;
@@ -99,6 +101,9 @@ export function AbaCotacao(p: {
   const itemEhLaticinio = (item: any) => item?.secao === 'Laticínios' || String(item?.id || '').startsWith('lat_');
   const listaSecao = listaCotacao !== 'geral';
   useEffect(() => {
+    try { sessionStorage.setItem('rm_cotacao_aba', abaPedido); } catch { /* ignora */ }
+  }, [abaPedido]);
+  useEffect(() => {
     if (listaCotacao === 'embalagens') garantirEmbalagensNaCotacao?.();
   }, [listaCotacao]);
   useEffect(() => {
@@ -115,37 +120,91 @@ export function AbaCotacao(p: {
     if (!fornecedoresEmb[0] || !fornecedoresEmb[1]) return;
     localStorage.setItem('rm_cotacao_embalagens_fornecedores', JSON.stringify(fornecedoresEmb));
   }, [fornecedoresEmb]);
+  const nomeFornecedor = (f: any) => f?.nomeFantasia || f?.nome || f?.razaoSocial || 'Fornecedor';
+  const fornecedoresJuridicos = (fornecedoresCotacao || []).filter((f: any) => tipoPessoaFornecedor(f) === 'juridica');
+  const precoNumero = (valor: any) => {
+    const n = parseFloat(String(valor ?? '').replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
   const itensDaLista = useMemo(() => {
     const lista = Array.isArray(itensCotacao) ? itensCotacao : [];
-    if (listaCotacao === 'embalagens') return lista.filter(itemEhEmbalagem);
+    if (listaCotacao === 'embalagens') return montarItensEmbalagens(lista);
     if (listaCotacao === 'laticinios') {
       const laticinios = montarItensLaticinios(lista);
       if (fornecedorLaticinio === 'todos') return laticinios;
       return laticinios.filter(item => item.fornecedorId === fornecedorLaticinio);
     }
-    return lista.filter((item: any) => !itemEhEmbalagem(item) && !itemEhLaticinio(item));
+    const geral = lista.filter((item: any) => !itemEhEmbalagem(item) && !itemEhLaticinio(item));
+    const vistos = new Set<string>();
+    return geral.filter((item: any) => {
+      const chave = chaveNomeItemCotacao(item) || String(item?.id || '');
+      if (!chave || vistos.has(chave)) return false;
+      vistos.add(chave);
+      return true;
+    });
   }, [itensCotacao, listaCotacao, fornecedorLaticinio]);
-  const itensFiltrados = useMemo(() => {
-    const termo = String(buscaCotacao || '').toLowerCase().trim();
-    if (!termo) return itensDaLista;
-    return itensDaLista.filter((item: any) => String(item?.produto || '').toLowerCase().includes(termo));
-  }, [itensDaLista, buscaCotacao]);
+  const idsCadastro = (fornecedoresCotacao || []).map((f: any) => f?.id).filter(Boolean);
+  const idEmbA = idsCadastro.includes(fornecedoresEmb[0]) ? fornecedoresEmb[0] : (idsCadastro[0] || '');
+  const idEmbB = idsCadastro.includes(fornecedoresEmb[1]) && fornecedoresEmb[1] !== idEmbA
+    ? fornecedoresEmb[1]
+    : (idsCadastro.find((id: string) => id !== idEmbA) || idEmbA);
   const fornecedoresVisiveis = listaCotacao === 'embalagens'
-    ? fornecedoresEmb.map(id => (fornecedoresCotacao || []).find((f: any) => f?.id === id)).filter(Boolean)
+    ? [idEmbA, idEmbB].map(id => (fornecedoresCotacao || []).find((f: any) => f?.id === id)).filter(Boolean)
     : listaCotacao === 'laticinios'
       ? (fornecedorLaticinio === 'todos' ? FORNECEDORES_LATICINIOS : FORNECEDORES_LATICINIOS.filter(f => f.id === fornecedorLaticinio))
-      : (fornecedoresCotacao || []);
+      : (fornecedoresJuridicos || []);
   const idsFornecedoresVisiveis = fornecedoresVisiveis.map((f: any) => f.id);
-  const menorItem = (item: any) => calcularMenorPrecoItem(item, listaSecao ? idsFornecedoresVisiveis : undefined);
+  const itensComPreco = useMemo(() => {
+    if (listaCotacao !== 'embalagens') return itensDaLista;
+    return itensDaLista.map((item: any) => {
+      if (qtdPedirNumero(item) <= 0) return item;
+      const ultimo = precoNumero(item?.ultimoPrecoCompra);
+      if (!ultimo || !idsFornecedoresVisiveis.length) return item;
+      const precos = { ...(item.precos || {}) };
+      let mudou = false;
+      idsFornecedoresVisiveis.forEach((id: string) => {
+        if (!precoNumero(precos[id])) {
+          precos[id] = ultimo.toFixed(2);
+          mudou = true;
+        }
+      });
+      return mudou ? { ...item, precos } : item;
+    });
+  }, [itensDaLista, listaCotacao, idEmbA, idEmbB]);
+  const itensFiltrados = useMemo(() => {
+    const termo = String(buscaCotacao || '').toLowerCase().trim();
+    if (!termo) return itensComPreco;
+    return itensComPreco.filter((item: any) => String(item?.produto || '').toLowerCase().includes(termo));
+  }, [itensComPreco, buscaCotacao]);
+  const menorItem = (item: any) => calcularMenorPrecoItem(item, idsFornecedoresVisiveis);
   const totaisVisiveis = fornecedoresVisiveis.map((f: any) => {
     let totalR$ = 0;
-    itensDaLista.forEach((item: any) => {
+    itensComPreco.forEach((item: any) => {
+      const quantidade = qtdPedirNumero(item);
+      if (quantidade <= 0) return;
+      if (listaCotacao === 'embalagens') {
+        totalR$ += precoNumero((item.precos || {})[f.id]) * quantidade;
+        return;
+      }
       const { menorPreco, vencedorFornId } = menorItem(item);
-      if (vencedorFornId === f.id && menorPreco != null) totalR$ += menorPreco * qtdPedirNumero(item);
+      if (vencedorFornId === f.id && menorPreco != null) totalR$ += menorPreco * quantidade;
     });
     return { fornecedor: f, totalR$ };
   });
-  const totalVisivel = totaisVisiveis.reduce((a: number, b: any) => a + b.totalR$, 0);
+  const totalVisivel = listaCotacao === 'embalagens'
+    ? itensComPreco.reduce((total: number, item: any) => {
+        const quantidade = qtdPedirNumero(item);
+        if (quantidade <= 0) return total;
+        const { menorPreco } = menorItem(item);
+        return total + (menorPreco || 0) * quantidade;
+      }, 0)
+    : totaisVisiveis.reduce((a: number, b: any) => a + b.totalR$, 0);
+  const escopoSalvarPedido = {
+    itens: itensComPreco,
+    fornecedores: fornecedoresVisiveis,
+    somenteFornecedores: idsFornecedoresVisiveis,
+    enviarConferencia: listaCotacao === 'embalagens'
+  };
   const escolherFornecedorEmb = (indice: 0 | 1, id: string) => {
     setFornecedoresEmb(atuais => {
       const proximo: [string, string] = [...atuais] as [string, string];
@@ -214,7 +273,7 @@ export function AbaCotacao(p: {
                 </label>
                 <label className="flex w-20 flex-col gap-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
                   Un
-                  <input placeholder="Kg" value={novoProdutoCadastro?.unidade || 'Kg'} onChange={event => setNovoProdutoCadastro({ ...novoProdutoCadastro, unidade: event.target.value })} className={`${campo} text-center`} />
+                  <input placeholder="Kg" value={novoProdutoCadastro?.unidade ?? ''} onChange={event => setNovoProdutoCadastro({ ...novoProdutoCadastro, unidade: event.target.value })} className={`${campo} text-center`} />
                 </label>
                 <button type="button" onClick={cadastrarProduto} className="cursor-pointer rounded-lg bg-teal-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-teal-600">Adicionar produto</button>
               </div>
@@ -234,7 +293,7 @@ export function AbaCotacao(p: {
                     <label key={indice} className="flex flex-col gap-1 rounded-2xl bg-white p-4 text-[11px] font-bold uppercase tracking-wide text-slate-500 ring-1 ring-slate-200">
                       Fornecedor {indice + 1}
                       <select
-                        value={fornecedoresEmb[indice as 0 | 1]}
+                        value={indice === 0 ? idEmbA : idEmbB}
                         onChange={e => escolherFornecedorEmb(indice as 0 | 1, e.target.value)}
                         className={campo}
                       >
@@ -256,9 +315,9 @@ export function AbaCotacao(p: {
                   <div className="text-[10px] font-bold uppercase tracking-wide text-teal-100">Total geral</div>
                   <div className="text-lg font-black">R$ {Number(totalVisivel || 0).toFixed(2)}</div>
                 </div>
-                {totaisVisiveis.map((t: any) => (
-                  <div key={t.fornecedor.id} className="rounded-xl bg-slate-50 px-3.5 py-2.5 ring-1 ring-slate-200">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{t.fornecedor.nome}</div>
+                {totaisVisiveis.map((t: any, indice: number) => (
+                  <div key={`${t.fornecedor.id}-${indice}`} className="rounded-xl bg-slate-50 px-3.5 py-2.5 ring-1 ring-slate-200">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{nomeFornecedor(t.fornecedor)}</div>
                     <div className="text-sm font-black text-slate-900">R$ {(t.totalR$ || 0).toFixed(2)}</div>
                   </div>
                 ))}
@@ -294,18 +353,20 @@ export function AbaCotacao(p: {
                                 value={f?.id || ''}
                                 onChange={(e) => {
                                   const novoId = e.target.value;
-                                  const novoForn = (fornecedoresCotacao || []).find((item: any) => item?.id === novoId);
+                                  const novoForn = fornecedoresJuridicos.find((item: any) => item?.id === novoId);
                                   if (!novoForn) return;
                                   setFornecedoresCotacao((prev: any[]) => {
                                     const novos = [...prev];
-                                    novos[colIdx] = novoForn;
+                                    const indiceReal = (prev || []).findIndex((item: any) => item?.id === f?.id);
+                                    if (indiceReal < 0) return prev;
+                                    novos[indiceReal] = novoForn;
                                     return novos;
                                   });
                                 }}
                                 className="max-w-[110px] cursor-pointer rounded-md border border-slate-600 bg-slate-800 px-1.5 py-1 text-center text-[11px] font-bold text-teal-200 outline-none focus:ring-2 focus:ring-teal-500/40"
                                 title="Clique para trocar o fornecedor desta coluna"
                               >
-                                {(fornecedoresCotacao || []).map((forn: any) => (
+                                {(fornecedoresJuridicos || []).map((forn: any) => (
                                   <option key={forn?.id} value={forn?.id}>
                                     {forn?.nomeFantasia || forn?.nome || forn?.razaoSocial || 'Sem nome'}
                                   </option>
@@ -315,11 +376,11 @@ export function AbaCotacao(p: {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (fornecedoresCotacao.length <= 1) {
+                                  if (fornecedoresJuridicos.length <= 1) {
                                     alert("A cotação precisa de ao menos um fornecedor.");
                                     return;
                                   }
-                                  setFornecedoresCotacao((prev: any[]) => prev.filter((_, idx) => idx !== colIdx));
+                                  setFornecedoresCotacao((prev: any[]) => prev.filter((item: any) => item?.id !== f?.id));
                                 }}
                                 className="cursor-pointer border-0 bg-transparent px-0.5 text-[11px] font-bold text-rose-400 hover:text-rose-300"
                                 title="Remover esta coluna"
@@ -380,8 +441,20 @@ export function AbaCotacao(p: {
                   </tbody>
                 </table>
               </div>
-              <div className="flex justify-end rounded-2xl bg-teal-50 px-4 py-3 text-base font-black text-teal-900 ring-1 ring-teal-100">
-                Total geral: R$ {Number(totalVisivel || 0).toFixed(2)}
+              <div className="flex flex-wrap items-center justify-end gap-3 rounded-2xl bg-teal-50 px-4 py-3 text-base font-black text-teal-900 ring-1 ring-teal-100">
+                <span>Total geral: R$ {Number(totalVisivel || 0).toFixed(2)}</span>
+                {listaCotacao === 'embalagens' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (salvarRelatorioPedidoCotacao(escopoSalvarPedido)) setAlerta({ tipo: 'sucesso', msg: '✓ Pedido enviado para a Conferência.' });
+                      else setAlerta({ tipo: 'erro', msg: '⚠️ Preencha uma quantidade em Pedir antes de salvar.' });
+                    }}
+                    className="cursor-pointer rounded-lg bg-teal-700 px-3 py-2 text-xs font-bold text-white hover:bg-teal-600"
+                  >
+                    Salvar e enviar para Conferência
+                  </button>
+                )}
               </div>
               </div>
               )}
@@ -391,24 +464,30 @@ export function AbaCotacao(p: {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
                     <div>
                       <h3 style={{ margin: '0 0 4px', color: '#0f172a' }}>Registro de pedidos por fornecedor</h3>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Lista em aberto. Ao salvar, o pedido sai daqui e fica só em Pedidos salvos — não vai para a Conferência.</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>{listaCotacao === 'embalagens' ? 'Ao salvar a lista de embalagens, o pedido vai direto para a Conferência.' : 'Ao salvar, o pedido sai daqui e fica em Pedidos salvos. A tela não muda.'}</p>
                     </div>
                     <button onClick={imprimirRelatorioPedidosPorVendedor} style={{ backgroundColor: '#475569', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Imprimir relatório</button>
                   </div>
                   <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '16px' }}>
-                    {fornecedoresVisiveis.map((fornecedor: any) => {
-                      const itensDoFornecedor = itensDaLista.filter((item: any) => {
+                    {fornecedoresVisiveis.map((fornecedor: any, indice: number) => {
+                      const itensDoFornecedor = itensComPreco.filter((item: any) => {
                         const quantidade = qtdPedirNumero(item);
                         return quantidade > 0 && menorItem(item).vencedorFornId === fornecedor.id;
                       });
                       if (itensDoFornecedor.length === 0) return null;
+                      const totalPedido = itensDoFornecedor.reduce((total: number, item: any) => {
+                        const { menorPreco } = menorItem(item);
+                        return total + (menorPreco || 0) * qtdPedirNumero(item);
+                      }, 0);
                       return (
-                        <div key={fornecedor.id} style={{ marginBottom: '16px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div key={`${fornecedor.id}-${indice}`} style={{ marginBottom: '16px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', padding: '8px 12px', backgroundColor: '#0f172a' }}>
-                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '13px' }}>{fornecedor.nome}</h4>
+                            <h4 style={{ margin: 0, color: '#ffffff', fontSize: '13px' }}>{nomeFornecedor(fornecedor)} • R$ {totalPedido.toFixed(2)}</h4>
                             <div style={{ display: 'flex', gap: '5px' }}>
-                              <button onClick={() => salvarPedidoFornecedor(fornecedor, itensDoFornecedor)} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>💾 Salvar pedido</button>
-                              <button onClick={() => imprimirPedidoIndividual(fornecedor)} style={{ backgroundColor: '#ffffff', color: '#0f172a', border: 'none', borderRadius: '4px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Imprimir pedido</button>
+                              <button type="button" onClick={() => {
+                                salvarPedidoFornecedor(fornecedor, itensDoFornecedor, { somenteFornecedores: idsFornecedoresVisiveis, enviarConferencia: listaCotacao === 'embalagens' });
+                              }} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>💾 Salvar pedido</button>
+                              <button onClick={() => imprimirPedidoIndividual(fornecedor, itensDoFornecedor)} style={{ backgroundColor: '#ffffff', color: '#0f172a', border: 'none', borderRadius: '4px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Imprimir pedido</button>
                               <button onClick={() => enviarPedidoWhatsAppPdf(fornecedor, itensDoFornecedor)} style={{ backgroundColor: '#25d366', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 9px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>WhatsApp PDF</button>
                             </div>
                           </div>
@@ -424,7 +503,7 @@ export function AbaCotacao(p: {
                     })}
                   </div>
                   {(() => {
-                    const itensAguardandoPreco = itensDaLista.filter((item: any) => qtdPedirNumero(item) > 0 && !menorItem(item).vencedorFornId);
+                    const itensAguardandoPreco = itensComPreco.filter((item: any) => qtdPedirNumero(item) > 0 && !menorItem(item).vencedorFornId);
                     return itensAguardandoPreco.length > 0 ? (
                       <div style={{ marginBottom: '16px', backgroundColor: '#ffffff', border: '1px solid #fed7aa', borderRadius: '6px', overflow: 'hidden' }}>
                         <div style={{ padding: '9px 12px', backgroundColor: '#fff7ed', color: '#9a3412', fontWeight: 'bold', fontSize: '13px' }}>Aguardando definição do menor preço</div>
@@ -438,7 +517,7 @@ export function AbaCotacao(p: {
                       </div>
                     ) : null;
                   })()}
-                  { fornecedoresVisiveis.every((fornecedor: any) => !itensDaLista.some((item: any) => qtdPedirNumero(item) > 0 && menorItem(item).vencedorFornId === fornecedor.id)) && itensDaLista.every((item: any) => qtdPedirNumero(item) <= 0) && (
+                  { fornecedoresVisiveis.every((fornecedor: any) => !itensComPreco.some((item: any) => qtdPedirNumero(item) > 0 && menorItem(item).vencedorFornId === fornecedor.id)) && itensComPreco.every((item: any) => qtdPedirNumero(item) <= 0) && (
                     <div style={{ padding: '12px', backgroundColor: '#f1f5f9', borderRadius: '6px', fontSize: '12px', color: '#475569' }}>
                       Nenhum produto possui quantidade preenchida na coluna Pedir.
                     </div>
@@ -454,13 +533,46 @@ export function AbaCotacao(p: {
                     <span style={{ fontSize: '11px', color: '#64748b' }}>{(pedidosAindaNaCotacao || []).length} pedido(s) na Cotação. Use “Salvo na conferência” para tirar da lista, sem abrir a tela.</span>
                   </div>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={() => { if (salvarRelatorioPedidoCotacao()) setAlerta({ tipo: 'sucesso', msg: '✓ Pedidos salvos. Saíram da lista em aberto.' }); else setAlerta({ tipo: 'erro', msg: '⚠️ Preencha uma quantidade em Pedir antes de salvar.' }); }} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>💾 Salvar pedido</button>
+                    <button onClick={() => { if (salvarRelatorioPedidoCotacao(escopoSalvarPedido)) { setAlerta({ tipo: 'sucesso', msg: listaCotacao === 'embalagens' ? '✓ Pedido enviado para a Conferência.' : '✓ Pedidos salvos. A tela não mudou.' }); } else setAlerta({ tipo: 'erro', msg: '⚠️ Preencha uma quantidade em Pedir antes de salvar.' }); }} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>💾 Salvar pedido</button>
                   </div>
                 </div>
 
                 <div style={{ width: '100%', marginTop: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    
-                    {/* DASHBOARD DE RECEBIMENTO DO DIA */}
+
+        {(pedidosAindaNaCotacao || []).length === 0 ? (
+          <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhum pedido salvo na Cotação. Os que foram para a Conferência já saíram desta lista.</span>
+        ) : (
+          (pedidosAindaNaCotacao || []).map(relatorio => (
+            <section key={relatorio.id} style={{ width: '100%', boxSizing: 'border-box', border: '2px solid #2563eb', borderRadius: '6px', padding: '14px', backgroundColor: '#ffffff', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe', margin: '-14px -14px 10px', padding: '10px 14px' }}>
+                <div>
+                  <strong style={{ display: 'block', fontSize: '14px', color: '#1e3a8a' }}>Pedido: {relatorio.itens[0]?.fornecedor || 'Fornecedor não informado'}</strong>
+                  <span style={{ fontSize: '11px', color: '#475569' }}>{relatorio.data} • {relatorio.itens.length} item(ns) • Total: R$ {relatorio.totalGeral.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <button onClick={() => marcarPedidoSalvoNaConferencia(relatorio)} style={{ backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Salvo na conferência</button>
+                  <button onClick={() => excluirRelatorioPedidoCotacao(relatorio.id)} style={{ color: '#0f766e', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Excluir pedido</button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '7px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {Object.entries(relatorio.itens.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]: [string, any]) => (
+                  <div key={`${relatorio.id}-${fornecedor}`} style={{ borderTop: '1px solid #cbd5e1', paddingTop: '5px' }}>
+                    <strong style={{ display: 'block', fontSize: '10px', color: '#334155' }}>{fornecedor}</strong>
+                    {itensFornecedor.map((item, indice) => (
+                      <div key={`${relatorio.id}-${fornecedor}-${indice}`} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 90px', gap: '6px', fontSize: '10px', borderTop: '1px solid #f1f5f9', paddingTop: '4px' }}>
+                   <span>{item.produto}</span>
+                        <strong>{item.quantidade} {item.unit}</strong>
+                        <span style={{ textAlign: 'right' }}>R$ {item.valorTotal.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+
                     {(() => {
                       const diaAtual = getDiaSemanaAtual();
                       const fornecedoresPrevistosHoje = (fornecedoresCotacao || []).filter(f => verificaEntregaHoje(f.diasEntrega));
@@ -523,41 +635,6 @@ export function AbaCotacao(p: {
                         </div>
                       );
                     })()}
-
-           {/* LISTAGEM DOS PEDIDOS SALVOS */}
-        {(pedidosAindaNaCotacao || []).length === 0 ? (
-          <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhum pedido salvo na Cotação. Os que foram para a Conferência já saíram desta lista.</span>
-        ) : (
-          (pedidosAindaNaCotacao || []).map(relatorio => (
-            <section key={relatorio.id} style={{ width: '100%', boxSizing: 'border-box', border: '2px solid #2563eb', borderRadius: '6px', padding: '14px', backgroundColor: '#ffffff', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe', margin: '-14px -14px 10px', padding: '10px 14px' }}>
-                <div>
-                  <strong style={{ display: 'block', fontSize: '14px', color: '#1e3a8a' }}>Pedido: {relatorio.itens[0]?.fornecedor || 'Fornecedor não informado'}</strong>
-                  <span style={{ fontSize: '11px', color: '#475569' }}>{relatorio.data} • {relatorio.itens.length} item(ns) • Total: R$ {relatorio.totalGeral.toFixed(2)}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  <button onClick={() => marcarPedidoSalvoNaConferencia(relatorio)} style={{ backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Salvo na conferência</button>
-                  <button onClick={() => excluirRelatorioPedidoCotacao(relatorio.id)} style={{ color: '#0f766e', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Excluir pedido</button>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '7px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {Object.entries(relatorio.itens.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]: [string, any]) => (
-                  <div key={`${relatorio.id}-${fornecedor}`} style={{ borderTop: '1px solid #cbd5e1', paddingTop: '5px' }}>
-                    <strong style={{ display: 'block', fontSize: '10px', color: '#334155' }}>{fornecedor}</strong>
-                    {itensFornecedor.map((item, indice) => (
-                      <div key={`${relatorio.id}-${fornecedor}-${indice}`} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 90px', gap: '6px', fontSize: '10px', borderTop: '1px solid #f1f5f9', paddingTop: '4px' }}>
-                   <span>{item.produto}</span>
-                        <strong>{item.quantidade} {item.unit}</strong>
-                        <span style={{ textAlign: 'right' }}>R$ {item.valorTotal.toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))
-        )}
                 </div>
               </div>
               )}

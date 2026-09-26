@@ -9,40 +9,77 @@ export const textoPdf = (valor: string) =>
     .replace(/\(/g, '\\(')
     .replace(/\)/g, '\\)');
 
-export const gerarPdfPedidoFornecedor = (fornecedorNome: string, linhas: LinhaPedidoPdf[], totalGeral: number) => {
+const quebrarTextoPdf = (texto: string, max = 52) => {
+  const limpo = textoPdf(texto).trim();
+  const partes: string[] = [];
+  let resto = limpo;
+  while (resto.length > max) {
+    let corte = resto.lastIndexOf(' ', max);
+    if (corte < Math.floor(max / 2)) corte = max;
+    partes.push(resto.slice(0, corte).trim());
+    resto = resto.slice(corte).trim();
+  }
+  if (resto || !partes.length) partes.push(resto || '-');
+  return partes;
+};
+
+export const gerarPdfPedidoFornecedor = (fornecedorNome: string, linhas: LinhaPedidoPdf[], totalGeral: number, dataPedido?: string) => {
   const largura = 595;
   const altura = 842;
-  const linhasPorPagina = 28;
-  const paginas: LinhaPedidoPdf[][] = [];
-  for (let i = 0; i < Math.max(linhas.length, 1); i += linhasPorPagina) {
-    paginas.push(linhas.slice(i, i + linhasPorPagina));
-  }
+  const yCabecalho = altura - 152;
+  const yMinimo = 70;
+  const itensPreparados = (linhas.length ? linhas : [{ produto: 'Nenhum item no pedido', unit: '-', quantidade: '-', valorUnitario: 0, valorTotal: 0 }]).map(item => ({
+    item,
+    partes: quebrarTextoPdf(item.produto, 50)
+  }));
+  const paginas: typeof itensPreparados[] = [];
+  let atual: typeof itensPreparados = [];
+  let yLivre = yCabecalho - 22;
+  itensPreparados.forEach(linha => {
+    const alturaLinha = Math.max(16, linha.partes.length * 11 + 6);
+    if (atual.length && yLivre - alturaLinha < yMinimo) {
+      paginas.push(atual);
+      atual = [];
+      yLivre = yCabecalho - 22;
+    }
+    atual.push(linha);
+    yLivre -= alturaLinha;
+  });
+  if (atual.length) paginas.push(atual);
 
-  const desenharPagina = (itensPagina: LinhaPedidoPdf[], numero: number, totalPaginas: number) => {
-    const comandos: string[] = ['BT', '/F1 16 Tf', '0.06 0.46 0.43 rg', `50 ${altura - 50} Td`, `(RM SISTEMA-GESTAO) Tj`, '0 g', '/F1 11 Tf', '0 -22 Td', `(Pedido de compra) Tj`, '0 -16 Td', `(Fornecedor: ${textoPdf(fornecedorNome)}) Tj`, '0 -14 Td', `(Data: ${textoPdf(new Date().toLocaleString('pt-BR'))}${totalPaginas > 1 ? `  |  Pagina ${numero}/${totalPaginas}` : ''}) Tj`, 'ET'];
-    let y = altura - 130;
+  const desenharPagina = (itensPagina: typeof itensPreparados, numero: number, totalPaginas: number) => {
+    const dataRotulo = textoPdf(dataPedido || new Date().toLocaleString('pt-BR'));
+    const comandos: string[] = ['BT', '/F1 16 Tf', '0.06 0.46 0.43 rg', `50 ${altura - 50} Td`, `(RM SISTEMA-GESTAO) Tj`, '0 g', '/F1 11 Tf', '0 -22 Td', `(Pedido de compra) Tj`, '0 -16 Td', `(Fornecedor: ${textoPdf(fornecedorNome)}) Tj`, '0 -14 Td', `(Data: ${dataRotulo}${totalPaginas > 1 ? `  |  Pagina ${numero}/${totalPaginas}` : ''}) Tj`, '0 -14 Td', `(Itens: ${linhas.length}) Tj`, 'ET'];
+    let y = yCabecalho;
     const cabecalho = [
-      { x: 50, t: 'Produto', w: 220 },
-      { x: 270, t: 'Unid', w: 50 },
-      { x: 320, t: 'Qtd', w: 50 },
-      { x: 380, t: 'Vl unit.', w: 80 },
-      { x: 470, t: 'Total', w: 75 }
+      { x: 50, t: 'Produto' },
+      { x: 270, t: 'Unid' },
+      { x: 320, t: 'Qtd' },
+      { x: 380, t: 'Vl unit.' },
+      { x: 470, t: 'Total' }
     ];
-    comandos.push('0.06 0.09 0.16 rg', `50 ${y - 4} ${495} 18 re`, 'f', '1 1 1 rg', 'BT', '/F1 9 Tf');
-    cabecalho.forEach((col, i) => {
-      comandos.push(i === 0 ? `1 0 0 1 ${col.x} ${y + 2} Tm` : `1 0 0 1 ${col.x} ${y + 2} Tm`, `(${col.t}) Tj`);
+    comandos.push('0.06 0.09 0.16 rg', `50 ${y - 4} 495 18 re`, 'f', '1 1 1 rg', 'BT', '/F1 9 Tf');
+    cabecalho.forEach(col => {
+      comandos.push(`1 0 0 1 ${col.x} ${y + 2} Tm`, `(${col.t}) Tj`);
     });
     comandos.push('ET', '0 g');
     y -= 22;
-    itensPagina.forEach((item, indice) => {
+    itensPagina.forEach((linha, indice) => {
+      const alturaLinha = Math.max(16, linha.partes.length * 11 + 6);
       if (indice % 2 === 1) {
-        comandos.push('0.97 0.98 0.99 rg', `50 ${y - 4} 495 16 re`, 'f', '0 g');
+        comandos.push('0.97 0.98 0.99 rg', `50 ${y - 4} 495 ${alturaLinha} re`, 'f', '0 g');
       }
-      const produto = textoPdf(item.produto).slice(0, 42);
-      const unitario = item.valorUnitario ? `R$ ${item.valorUnitario.toFixed(2)}` : '-';
-      const total = item.valorTotal ? `R$ ${item.valorTotal.toFixed(2)}` : '-';
-      comandos.push('BT', '/F1 8 Tf', `1 0 0 1 52 ${y} Tm`, `(${produto}) Tj`, `1 0 0 1 270 ${y} Tm`, `(${textoPdf(item.unit)}) Tj`, `1 0 0 1 320 ${y} Tm`, `(${textoPdf(item.quantidade)}) Tj`, `1 0 0 1 380 ${y} Tm`, `(${unitario}) Tj`, `1 0 0 1 470 ${y} Tm`, `(${total}) Tj`, 'ET');
-      y -= 16;
+      const unitario = linha.item.valorUnitario !== undefined && linha.item.valorUnitario !== null ? `R$ ${linha.item.valorUnitario.toFixed(2)}` : '-';
+      const total = linha.item.valorTotal !== undefined && linha.item.valorTotal !== null ? `R$ ${linha.item.valorTotal.toFixed(2)}` : '-';
+      linha.partes.forEach((parte, i) => {
+        const yTexto = y - i * 11;
+        comandos.push('BT', '/F1 8 Tf', `1 0 0 1 52 ${yTexto} Tm`, `(${parte}) Tj`);
+        if (i === 0) {
+          comandos.push(`1 0 0 1 270 ${yTexto} Tm`, `(${textoPdf(linha.item.unit)}) Tj`, `1 0 0 1 320 ${yTexto} Tm`, `(${textoPdf(String(linha.item.quantidade))}) Tj`, `1 0 0 1 380 ${yTexto} Tm`, `(${unitario}) Tj`, `1 0 0 1 470 ${yTexto} Tm`, `(${total}) Tj`);
+        }
+        comandos.push('ET');
+      });
+      y -= alturaLinha;
     });
     if (numero === totalPaginas) {
       comandos.push('BT', '/F1 12 Tf', `1 0 0 1 320 ${Math.max(y - 10, 40)} Tm`, `(Total geral: R$ ${totalGeral.toFixed(2)}) Tj`, 'ET');

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "emb_pap_6011",
+    "codigo": "6011",
+    "nome": "ETIQUETA MANUAL PERSONALIZADA PAO DA VIDA SAO LUIS",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_6014",
+    "codigo": "6014",
+    "nome": "FITA GOMADA 3M TARTAM PCT C/5 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "16.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_7910",
+    "codigo": "7910",
+    "nome": "CANETA COMPAC (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "0.72",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_8226",
+    "codigo": "8226",
+    "nome": "BOBINA IMPRESSORA TERMICA PERSONALIZADA PV 79X40 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4001695",
+    "codigo": "4001695",
+    "nome": "PAPEL A4 CHAMEX PCT C/500FLS (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "25.86",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4002010",
+    "codigo": "4002010",
+    "nome": "BOBINA IMPRESSORA TERMICA 80X40 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "0.38",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4003194",
+    "codigo": "4003194",
+    "nome": "CORRETIVO MERCUR (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "5.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4003197",
+    "codigo": "4003197",
+    "nome": "LIGA ELASTICA MERCUR PCT C/200UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "10.69",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4003766",
+    "codigo": "4003766",
+    "nome": "PINCEL MARCADOR PERMANENTE PILOT AZUL",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "6.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4005906",
+    "codigo": "4005906",
+    "nome": "LIGA ELASTICA MERCUR PCT C/100UN (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "8.99",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4006517",
+    "codigo": "4006517",
+    "nome": "ETIQUETA TERMICA 40X60 PERSONALIZADA PV(UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "7.98",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4006594",
+    "codigo": "4006594",
+    "nome": "ETIQUETA ANVISA DE ALIMENTO 60X40 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "35.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4006734",
+    "codigo": "4006734",
+    "nome": "ESTILETE LARGO MASTERPRINT MP451",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007455",
+    "codigo": "4007455",
+    "nome": "GRAMPO DUBLIN 26/6 C/5000 (UN)",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "7.99",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007564",
+    "codigo": "4007564",
+    "nome": "ESTILETE ESTREITO MASTERPRINT MP450",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.00",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007565",
+    "codigo": "4007565",
+    "nome": "COLA ISOPOR 90G FORTFIX 5099",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "4.90",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007566",
+    "codigo": "4007566",
+    "nome": "LAMINA ESTILETE ESTREITO C/10 UN",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "3.50",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007567",
+    "codigo": "4007567",
+    "nome": "MP301 GRAMPEADOR DE METAL MEDIO 13,5CM ATE 20 FOL",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "19.64",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007675",
+    "codigo": "4007675",
+    "nome": "CADERNETA 1/16 FLEX 40FLS BOLSO TERRA DO SOL.",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.50",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007676",
+    "codigo": "4007676",
+    "nome": "CADERNETA 1/8 ESP. 48FLS CUTE CAPA FLEX",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "2.50",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  },
+  {
+    "id": "emb_pap_4007895",
+    "codigo": "4007895",
+    "nome": "FITA DUREX ADELBRAS PP 12 X 30 PEQUENA",
+    "unidade": "un",
+    "secao": "Embalagens",
+    "custo": "1.50",
+    "fornecedor": "Papelaria",
+    "ativo": true
+  }
+]

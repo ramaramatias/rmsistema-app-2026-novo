@@ -7,7 +7,9 @@
     "secao": "Laticínios",
     "custo": "39.00",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "52.65"
   },
   {
     "id": "lat_bv_2678",
@@ -17,7 +19,9 @@
     "secao": "Laticínios",
     "custo": "61.89",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "tributacao": "100%",
+    "precoVenda": "83.55"
   },
   {
     "id": "lat_bv_4003909",
@@ -27,7 +31,8 @@
     "secao": "Laticínios",
     "custo": "5.61",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.85"
   },
   {
     "id": "lat_bv_4003910",
@@ -37,7 +42,8 @@
     "secao": "Laticínios",
     "custo": "2.91",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.11"
   },
   {
     "id": "lat_bv_4003912",
@@ -47,7 +53,8 @@
     "secao": "Laticínios",
     "custo": "5.61",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.85"
   },
   {
     "id": "lat_bv_4003914",
@@ -57,7 +64,8 @@
     "secao": "Laticínios",
     "custo": "2.91",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.11"
   },
   {
     "id": "lat_bv_4003916",
@@ -67,7 +75,8 @@
     "secao": "Laticínios",
     "custo": "2.91",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.11"
   },
   {
     "id": "lat_bv_4003917",
@@ -77,7 +86,8 @@
     "secao": "Laticínios",
     "custo": "5.44",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.55"
   },
   {
     "id": "lat_bv_4003921",
@@ -87,7 +97,8 @@
     "secao": "Laticínios",
     "custo": "5.61",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.85"
   },
   {
     "id": "lat_bv_4003924",
@@ -97,7 +108,8 @@
     "secao": "Laticínios",
     "custo": "9.93",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.43"
   },
   {
     "id": "lat_bv_4003925",
@@ -107,7 +119,8 @@
     "secao": "Laticínios",
     "custo": "2.98",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.23"
   },
   {
     "id": "lat_bv_4003926",
@@ -117,7 +130,8 @@
     "secao": "Laticínios",
     "custo": "2.98",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.23"
   },
   {
     "id": "lat_bv_4003927",
@@ -127,7 +141,8 @@
     "secao": "Laticínios",
     "custo": "3.75",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "6.58"
   },
   {
     "id": "lat_bv_4003930",
@@ -137,7 +152,8 @@
     "secao": "Laticínios",
     "custo": "4.93",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "8.65"
   },
   {
     "id": "lat_bv_4003938",
@@ -147,7 +163,8 @@
     "secao": "Laticínios",
     "custo": "5.48",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "9.62"
   },
   {
     "id": "lat_bv_4003946",
@@ -157,7 +174,8 @@
     "secao": "Laticínios",
     "custo": "9.93",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.43"
   },
   {
     "id": "lat_bv_4003947",
@@ -167,7 +185,8 @@
     "secao": "Laticínios",
     "custo": "9.93",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.43"
   },
   {
     "id": "lat_bv_4003952",
@@ -177,7 +196,8 @@
     "secao": "Laticínios",
     "custo": "7.89",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "13.85"
   },
   {
     "id": "lat_bv_4003953",
@@ -187,7 +207,8 @@
     "secao": "Laticínios",
     "custo": "4.94",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "8.67"
   },
   {
     "id": "lat_bv_4003955",
@@ -197,7 +218,8 @@
     "secao": "Laticínios",
     "custo": "9.93",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "17.43"
   },
   {
     "id": "lat_bv_4003958",
@@ -207,7 +229,8 @@
     "secao": "Laticínios",
     "custo": "11.31",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "19.85"
   },
   {
     "id": "lat_bv_4003960",
@@ -217,7 +240,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_bv_4003961",
@@ -227,7 +251,8 @@
     "secao": "Laticínios",
     "custo": "3.19",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "5.60"
   },
   {
     "id": "lat_bv_4003972",
@@ -237,6 +262,7 @@
     "secao": "Laticínios",
     "custo": "8.72",
     "fornecedor": "Laticínio Belo Vale",
-    "ativo": true
+    "ativo": true,
+    "precoVenda": "15.30"
   }
 ]

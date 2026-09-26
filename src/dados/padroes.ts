@@ -3,6 +3,7 @@ import type {
   ItemCotacao,
   PagamentosState,
   ProdutoElieuda,
+  ProdutoRota,
   Setor,
   Usuario
 } from '../tipos';
@@ -294,7 +295,6 @@ export const ITENS_COTACAO_OFICIAIS: ItemCotacao[] = [
   { id: 'c277', produto: 'Cereja', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c278', produto: 'Granulado em escamas', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c279', produto: 'Chocolate gota 2,5kg', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c280', produto: 'Creme de avelã', unit: 'Kg', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c281', produto: 'Pasta Colgate', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c282', produto: 'Pasta Sorriso', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c283', produto: 'Veja desengordurante', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
@@ -315,7 +315,6 @@ export const ITENS_COTACAO_OFICIAIS: ItemCotacao[] = [
   { id: 'c298', produto: 'Detergente neutro', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c299', produto: 'Desinfetante Juá', unit: 'L', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c300', produto: 'Flanela 38x48', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c301', produto: 'Lustra móveis', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c302', produto: 'Lâmpada para forno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c303', produto: 'Rexona', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c304', produto: 'Aerosol Dove', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
@@ -340,13 +339,10 @@ export const ITENS_COTACAO_OFICIAIS: ItemCotacao[] = [
   { id: 'c323', produto: 'Absorvente Conto Baby', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c324', produto: 'Quentinha de isopor 750ml', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c325', produto: 'Gilete para forno', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c326', produto: 'Bom Ar', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c327', produto: 'Bandete', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c328', produto: 'Bloco delivery', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c329', produto: 'Bloco de pedido P', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c330', produto: 'Bloco de almoxarifado grande', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c331', produto: 'Bloco de recibo', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
-  { id: 'c332', produto: 'Papel seda', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c333', produto: 'Cesta de cipó Fortaleza', unit: 'Und', estoqueAtual: '', qtdPedir: '', precos: {} },
   { id: 'c334', produto: 'Laço 50mm Fortaleza', unit: 'Pct', estoqueAtual: '', qtdPedir: '', precos: {} }
 ];
@@ -379,7 +375,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: true,
       elieuda: true,
       manutencao: true,
-      dados: true
+      dados: true,
+      producao: true
     }
   },
   {
@@ -394,7 +391,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: true,
       manutencao: false,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
   {
@@ -409,7 +407,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: false,
       manutencao: false,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
   {
@@ -424,7 +423,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: false,
       manutencao: false,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
   {
@@ -439,7 +439,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: false,
       manutencao: false,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
   {
@@ -454,7 +455,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: false,
       manutencao: false,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
   {
@@ -469,7 +471,8 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       relatorios: false,
       elieuda: false,
       manutencao: true,
-      dados: false
+      dados: false,
+      producao: false
     }
   },
 ];
@@ -482,7 +485,58 @@ export const PERMISSOES_OPCOES: { chave: keyof Usuario['permissoes']; nome: stri
   { chave: 'elieuda', nome: 'Pedido Elieuda', detalhe: 'Pedido de hortifrúti' },
   { chave: 'relatorios', nome: 'Relatórios', detalhe: 'Estatísticas do sistema' },
   { chave: 'manutencao', nome: 'Manutenção', detalhe: 'Ordens de serviço e reparos' },
-  { chave: 'dados', nome: 'Dados', detalhe: 'Nuvem, backup e gerenciamento' }
+  { chave: 'dados', nome: 'Dados', detalhe: 'Nuvem, backup e gerenciamento' },
+  { chave: 'producao', nome: 'Produção', detalhe: 'Lançamentos da padaria por turno' }
+];
+
+export const PRODUTOS_PADARIA_PADRAO = [
+  'Massa Salgada',
+  'Pão Amanteigado',
+  'Massa Sovada',
+  'Massa Doce',
+  'Pão Bola com Gergelim',
+  'Pão Ciabatta',
+  'Pão de Forma',
+  'Pão de Batata'
+];
+
+export const CLIENTES_ROTA_CIDADE = [
+  '872 - FRIG CARNEIRO', '917 - ALANDA', '797 - SÃO TOMÉ', '801 - ONOFRE',
+  '860 - SUP.BARATO G', '659 - FAGNER', '993 - MÁRIO', '1077 - SUP.BARATO P', '1201 - ONOFRE 3'
+];
+
+export const PRODUTOS_ROTA_CIDADE: ProdutoRota[] = [
+  { nome: 'FORMA', preco: 6.16 },
+  { nome: 'HAMB', preco: 5.52 },
+  { nome: 'HOT', preco: 5.52 },
+  { nome: 'INTG', preco: 6.56 },
+  { nome: '1055 - BOLO LARAN', preco: 9.00 },
+  { nome: '1048 - BOLO MESCL', preco: 9.00 },
+  { nome: '1044 - BOLO FOMIGE', preco: 9.00 },
+  { nome: '1043 - BOLO FOFO', preco: 9.00 },
+  { nome: '1054 - BOLO CEREJA', preco: 9.00 },
+  { nome: '1067 - BOLO COCO', preco: 9.00 },
+  { nome: '1035 - BOLO CHOC', preco: 9.00 },
+  { nome: '1179 - ROSCA QUEIJO', preco: 7.80 }
+];
+
+export const CLIENTES_ROTA_SITIO = ['Cliente Sítio Geral', 'Mercado do Sítio'];
+
+export const PRODUTOS_ROTA_SITIO: ProdutoRota[] = [
+  { nome: 'PÃO FORMA', preco: 6.16 },
+  { nome: 'PÃO HAMBÚRGUER', preco: 5.52 },
+  { nome: 'PÃO HOT DOG', preco: 5.52 },
+  { nome: 'PÃO INTEGRAL', preco: 6.56 },
+  { nome: 'PÃO VIÇOSA', preco: 0.48 },
+  { nome: 'PÃO SEMANA SANTA', preco: 19.99 },
+  { nome: 'BOLO FOFO', preco: 9.00 },
+  { nome: 'PÃO GERGELIM', preco: 1.25 },
+  { nome: 'ROSCA QUEIJO', preco: 7.80 }
+];
+
+export const CONTAS_DEPOSITO_PADRAO = [
+  'Centro Espírita o Pobre de Deus (Filial) - CNPJ 86.732.443/0003-54',
+  'Centro Espírita o Pobre de Deus (Matriz) - CNPJ 86.732.443/0001-92'
 ];
 
 export const PAGAMENTOS_PADRAO: PagamentosState = { caixa: [], cheque: [], caben: [] };

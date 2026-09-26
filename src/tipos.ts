@@ -10,8 +10,39 @@ export interface QuantidadeDia { terca?: string; quinta?: string; sabado?: strin
 export interface QuantidadesElieuda { [produto: string]: QuantidadeDia; }
 export interface ProdutoElieuda { produto: string; unit: string; }
 export interface ItemCotacao { id: string; produto: string; unit: string; estoqueAtual: string; qtdSugerida?: string; qtdPedir: string; menorCusto?: number; ultimoPrecoCompra?: number; precos: { [fornecedorId: string]: string }; atualizadoEm?: string; secao?: string; fornecedorId?: string; }
-export interface FornecedorCotacao { id: string; nome: string; razaoSocial?: string; nomeFantasia?: string; cnpj?: string; diasEntrega?: string; }
-export interface RegistroConferencia { id: string; data: string; nomeConferente: string; valorRecebido: number; observacoes: string; houveDivergencia: boolean; tipoDivergencia?: 'valor' | 'kg' | 'quantidade' | ''; pedidoId?: string; fornecedor?: string; valorEsperado?: number; itensConferidos?: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; conferentePor?: string; dataPreenchimento?: string; }
+export type TipoPessoaFornecedor = 'fisica' | 'juridica';
+export interface FornecedorCotacao { id: string; nome: string; tipoPessoa?: TipoPessoaFornecedor; razaoSocial?: string; nomeFantasia?: string; cnpj?: string; nomePessoaFisica?: string; cpf?: string; endereco?: string; cidade?: string; diasEntrega?: string; }
+export const tipoPessoaFornecedor = (fornecedor: Pick<FornecedorCotacao, 'tipoPessoa' | 'cpf' | 'cnpj'>): TipoPessoaFornecedor => {
+  if (fornecedor.tipoPessoa === 'fisica' || fornecedor.tipoPessoa === 'juridica') return fornecedor.tipoPessoa;
+  if (fornecedor.cpf && !fornecedor.cnpj) return 'fisica';
+  return 'juridica';
+};
+export type TipoDivergencia = 'valor' | 'produto' | 'envio_indevido' | 'kg' | 'kg_mais' | 'kg_menos' | 'valor_mais' | 'valor_menos' | 'quantidade' | '';
+export const rotuloTipoDivergencia = (tipo?: string) => {
+  const mapa: Record<string, string> = {
+    valor: 'Produto',
+    produto: 'Produto',
+    envio_indevido: 'Envio indevido',
+    kg: 'Quilo',
+    kg_mais: 'Quilo a mais',
+    kg_menos: 'Quilo a menos',
+    valor_mais: 'Valor a mais',
+    valor_menos: 'Valor a menos',
+    quantidade: 'Quantidade'
+  };
+  return mapa[tipo || ''] || tipo || '';
+};
+
+export function diferencaValorConferencia(recebido?: number, esperado?: number) {
+  if (esperado === undefined || esperado === null || Number.isNaN(Number(esperado)) || Number(esperado) <= 0) return null;
+  const cents = Math.round((Number(recebido || 0) - Number(esperado)) * 100);
+  const valor = Math.abs(cents) / 100;
+  const texto = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (cents === 0) return { tipo: 'igual' as const, valor: 0, rotulo: 'Valores iguais', detalhe: 'O recebido bateu com o valor que comprei.' };
+  if (cents > 0) return { tipo: 'mais' as const, valor, rotulo: `Valor a mais: R$ ${texto}`, detalhe: `Recebido ficou R$ ${texto} acima do valor que comprei.` };
+  return { tipo: 'menos' as const, valor, rotulo: `Valor a menos: R$ ${texto}`, detalhe: `Recebido ficou R$ ${texto} abaixo do valor que comprei.` };
+}
+export interface RegistroConferencia { id: string; data: string; nomeConferente: string; valorRecebido: number; observacoes: string; houveDivergencia: boolean; tipoDivergencia?: TipoDivergencia; pedidoId?: string; fornecedor?: string; valorEsperado?: number; itensConferidos?: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; conferentePor?: string; dataPreenchimento?: string; }
 export interface ArquivoConferencia { id: string; nome: string; dataUpload: string; uploadPor: string; conteudo: string; }
 export interface DadosConferenciaFornecedor { fornecedorId: string; fornecedorNome: string; valorNota: number; valorRecebido: number; divergencia: boolean; conferentePor: string; dataPreenchimento: string; }
 export interface PedidoCompra { id: string; data: string; fornecedorId: string; fornecedorNome: string; itens: { produtoId: string; produto: string; quantidade: number; precoUnitario: number; total: number }[]; totalGeral: number; status: 'pendente' | 'enviado' | 'recebido'; }
@@ -42,7 +73,47 @@ export interface OrdemManutencao {
   autorizadoPor?: string;
   assinaturaAutorizacao?: string;
 }
-export interface Usuario { id: string; nome: string; tipo: TipoUsuario; permissoes: { pendencias: boolean; conferencias: boolean; cotacao: boolean; pagamentos: boolean; relatorios: boolean; elieuda: boolean; manutencao: boolean; dados: boolean; }; }
+export type TurnoProducao = 'Manhã' | 'Tarde';
+export type TipoLancamentoProducao = 'Produção' | 'Encomenda';
+export type RotaRevenda = 'Cidade' | 'Sítio';
+export interface LancamentoProducao {
+  id: string;
+  data: string;
+  turno: TurnoProducao;
+  tipo: TipoLancamentoProducao;
+  produto: string;
+  telas: string;
+  unidTela: string;
+  totalUnid: string;
+  peso: string;
+}
+export interface ProdutoRota { nome: string; preco: number; }
+export interface LancamentoRota {
+  id: string;
+  rota: RotaRevenda;
+  data: string;
+  vendedor: string;
+  cliente: string;
+  produto: string;
+  levou: string;
+  devBom: string;
+  devRuim: string;
+  vendeu: number;
+  valUnit: number;
+  subtotal: number;
+  pago: number;
+}
+export type OrigemDeposito = 'Sítio' | 'Cidade';
+export interface LancamentoDeposito {
+  id: string;
+  data: string;
+  origem: OrigemDeposito;
+  destino: string;
+  forma: string;
+  valor: number;
+  obs: string;
+}
+export interface Usuario { id: string; nome: string; tipo: TipoUsuario; permissoes: { pendencias: boolean; conferencias: boolean; cotacao: boolean; pagamentos: boolean; relatorios: boolean; elieuda: boolean; manutencao: boolean; dados: boolean; producao: boolean; }; }
 export type SenhasUsuarios = { [usuarioId: string]: string };
 export type LinhaPedidoPdf = { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number };
 export type LinhaPdfPagamento = { tipo: 'secao' | 'item'; rotulo: string; valor?: string };
