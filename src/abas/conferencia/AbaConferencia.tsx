@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { diferencaValorConferencia, rotuloTipoDivergencia } from '../../tipos';
 
+const conferenciaBonificada = (conf: any) => conf?.veioBonificacao === true || conf?.notaBonificada === true || (conf?.itensConferidos || []).some((item: any) => item?.bonificado);
+
 const campo = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15';
 const botaoPrimario = 'cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-teal-600';
 const botaoSecundario = 'cursor-pointer rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50';
@@ -33,6 +35,19 @@ function SeloDiferencaValor({ recebido, esperado, destaque = false }: { recebido
   );
 }
 
+const CATEGORIAS_ITEM = [
+  'Bebidas',
+  'Laticínios',
+  'Matéria prima',
+  'Embalagens',
+  'Artesanato',
+  'Mercearia',
+  'Bomboniere',
+  'Sorvete'
+] as const;
+
+const CATEGORIAS_NAO_LANCADO = [...CATEGORIAS_ITEM, 'Bonificada'] as const;
+
 const opcoesDivergencia = (
   <>
     <option value="">Sem divergência</option>
@@ -50,6 +65,7 @@ export function AbaConferencia(p: {
   abaConferencia: any;
   adicionarConferencia: any;
   anexarPdfFornecedor: any;
+  baixarPdfFornecedor: any;
   arquivoConferencia: any;
   atualizarConferenciaPedido: any;
   buscaFornecedorConferencia: any;
@@ -57,6 +73,8 @@ export function AbaConferencia(p: {
   conferenciasFiltradas: any;
   conferenciasPorPedido: any;
   criarPedidoNaConferencia: any;
+  lancarMercadoriaConferidaSemPedido: any;
+  nomeConferentePadrao: any;
   divergenciasFiltradas: any;
   enviarPdfConferenciaCompartilhado: any;
   excluirConferencia: any;
@@ -67,12 +85,14 @@ export function AbaConferencia(p: {
   novaConferencia: any;
   pedidosPendentesConferencia: any;
   pedidosPendentesFiltrados: any;
+  pedidosBonificacaoPendentesFiltrados: any;
   pedidosPendentesTotal: any;
   pedidosRealizadosTotal: any;
   podeExcluirPedidoConferencia: any;
   relatoriosPedidosCotacao: any;
   removerPdfConferenciaCompartilhado: any;
   salvarConferenciaPedido: any;
+  salvarBonificacaoPedido: any;
   setAbaConferencia: any;
   setBuscaFornecedorConferencia: any;
   setNovaConferencia: any;
@@ -85,6 +105,7 @@ export function AbaConferencia(p: {
     abaConferencia,
     adicionarConferencia,
     anexarPdfFornecedor,
+    baixarPdfFornecedor,
     arquivoConferencia,
     atualizarConferenciaPedido,
     buscaFornecedorConferencia,
@@ -92,6 +113,8 @@ export function AbaConferencia(p: {
     conferenciasFiltradas,
     conferenciasPorPedido,
     criarPedidoNaConferencia,
+    lancarMercadoriaConferidaSemPedido,
+    nomeConferentePadrao,
     divergenciasFiltradas,
     enviarPdfConferenciaCompartilhado,
     excluirConferencia,
@@ -102,12 +125,14 @@ export function AbaConferencia(p: {
     novaConferencia,
     pedidosPendentesConferencia,
     pedidosPendentesFiltrados,
+    pedidosBonificacaoPendentesFiltrados,
     pedidosPendentesTotal,
     pedidosRealizadosTotal,
     podeExcluirPedidoConferencia,
     relatoriosPedidosCotacao,
     removerPdfConferenciaCompartilhado,
     salvarConferenciaPedido,
+    salvarBonificacaoPedido,
     setAbaConferencia,
     setBuscaFornecedorConferencia,
     setNovaConferencia,
@@ -122,6 +147,12 @@ export function AbaConferencia(p: {
     itens: [itemPedidoVazio()]
   });
   const [pdfPedidoAvulso, setPdfPedidoAvulso] = useState<{ nome: string; conteudo: string } | null>(null);
+  const [lancamentoNaoLancado, setLancamentoNaoLancado] = useState({
+    fornecedor: '',
+    categoria: '',
+    valorTotal: '',
+    conferente: String(nomeConferentePadrao || '')
+  });
 
   const atualizarItemPedido = (id: string, campoNome: keyof ItemPedidoAvulso, valor: string) => {
     setPedidoAvulso(atual => ({
@@ -157,6 +188,11 @@ export function AbaConferencia(p: {
 
   const lerPdfPedido = (arquivo?: File) => {
     if (!arquivo) return;
+    if (arquivo.size > 3500000) {
+      setPdfPedidoAvulso(null);
+      window.alert('O PDF precisa ter até 3 MB para o conferente baixar em outro computador.');
+      return;
+    }
     const leitor = new FileReader();
     leitor.onload = () => setPdfPedidoAvulso({ nome: arquivo.name, conteudo: String(leitor.result || '') });
     leitor.readAsDataURL(arquivo);
@@ -168,6 +204,7 @@ export function AbaConferencia(p: {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
         <h2 className="m-0 text-lg font-black uppercase tracking-tight text-slate-900">Conferência de Pedidos</h2>
+        {abaConferencia !== 'pedidos' && (
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={enviarPdfConferenciaCompartilhado} className={arquivoConferencia ? botaoPrimario : 'cursor-pointer rounded-lg bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100'}>
             {arquivoConferencia ? 'Meu PDF enviado' : 'Enviar meu PDF'}
@@ -176,12 +213,49 @@ export function AbaConferencia(p: {
             Importar Backup
             <input type="file" accept=".json" onChange={importarBackupConferencia} className="hidden" />
           </label>
+          {abaConferencia !== 'menu' && (
+            <button type="button" onClick={() => setAbaConferencia('menu')} className={botaoSecundario}>
+              Escolher outra tela
+            </button>
+          )}
           <button type="button" onClick={imprimirRelatorioConferencia} className="cursor-pointer rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-slate-800">
             Imprimir Relatório
           </button>
         </div>
+        )}
       </div>
 
+      {abaConferencia === 'menu' && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { id: 'pedidos' as const, titulo: 'Pedidos pendentes', detalhe: 'Mercadoria que chegou e ainda precisa ser conferida.', conta: buscaFornecedorConferencia.trim() ? pedidosPendentesFiltrados.length : pedidosPendentesTotal },
+            { id: 'criar' as const, titulo: 'Criar pedidos', detalhe: 'Lançar um pedido na conferência quando não veio da Cotação.', conta: null },
+            { id: 'avulsa' as const, titulo: 'Pedidos não lançados', detalhe: 'Registrar mercadoria conferida sem pedido prévio.', conta: null },
+            { id: 'conferidos' as const, titulo: 'Conferidos', detalhe: 'Pedidos já conferidos e salvos.', conta: (buscaFornecedorConferencia.trim() ? conferenciasFiltradas : conferencias).filter((c: any) => !conferenciaBonificada(c)).length },
+            { id: 'bonificados' as const, titulo: 'Pedidos bonificados', detalhe: 'Pedidos concluídos em que a bonificação veio.', conta: (buscaFornecedorConferencia.trim() ? conferenciasFiltradas : conferencias).filter((c: any) => conferenciaBonificada(c)).length },
+            { id: 'divergencias' as const, titulo: 'Divergências', detalhe: 'Conferências com valor, produto ou quantidade diferente.', conta: buscaFornecedorConferencia.trim() ? divergenciasFiltradas.length : conferencias.filter((c: any) => c.houveDivergencia).length },
+            { id: 'notas' as const, titulo: 'Notas conferidas', detalhe: 'Consultar notas recebidas, totais e ranking de fornecedores.', conta: conferencias.filter((c: any) => !conferenciaBonificada(c)).length }
+          ].map(opcao => (
+            <button
+              key={opcao.id}
+              type="button"
+              onClick={() => (opcao.id === 'notas' ? setTabAtiva('notasConferidas') : setAbaConferencia(opcao.id))}
+              className="cursor-pointer rounded-2xl border-0 bg-slate-50 p-4 text-left ring-1 ring-slate-200 transition hover:bg-teal-50 hover:ring-teal-200"
+            >
+              <span className="flex items-center justify-between gap-2">
+                <strong className="text-sm font-black text-slate-900">{opcao.titulo}</strong>
+                {opcao.conta !== null && (
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-teal-800 ring-1 ring-teal-100">{opcao.conta}</span>
+                )}
+              </span>
+              <span className="mt-1 block text-[12px] font-medium text-slate-500">{opcao.detalhe}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {abaConferencia !== 'menu' && (
+      <div>
       <div className="mb-4 rounded-2xl bg-slate-50 p-3.5 ring-1 ring-slate-200">
         <label className="mb-1.5 block text-[11px] font-bold text-slate-600">Pesquisar fornecedor</label>
         <input
@@ -218,27 +292,8 @@ export function AbaConferencia(p: {
         </div>
       )}
 
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl bg-sky-50 px-4 py-3 ring-1 ring-sky-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-sky-800">Pedidos gerados</div>
-          <div className="mt-1 text-[22px] font-black text-sky-950">{pedidosRealizadosTotal}</div>
-        </div>
-        <div className="rounded-2xl bg-amber-50 px-4 py-3 ring-1 ring-amber-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-amber-800">Aguardando conferência</div>
-          <div className="mt-1 text-[22px] font-black text-amber-950">{pedidosPendentesTotal}</div>
-        </div>
-        <div className="rounded-2xl bg-teal-50 px-4 py-3 ring-1 ring-teal-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-teal-800">Conferidos</div>
-          <div className="mt-1 text-[22px] font-black text-teal-950">{conferencias.length}</div>
-        </div>
-        <div className="rounded-2xl bg-rose-50 px-4 py-3 ring-1 ring-rose-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-rose-800">Com divergência</div>
-          <div className="mt-1 text-[22px] font-black text-rose-950">{conferencias.filter((c: any) => c.houveDivergencia).length}</div>
-        </div>
-      </div>
-
       <div className="mb-4 flex flex-wrap gap-2">
-        {(['pedidos', 'criar', 'avulsa', 'conferidos', 'divergencias'] as const).map(aba => (
+        {(['pedidos', 'criar', 'avulsa', 'conferidos', 'bonificados', 'divergencias'] as const).map(aba => (
           <button
             key={aba}
             type="button"
@@ -249,8 +304,9 @@ export function AbaConferencia(p: {
           >
             {aba === 'pedidos' && `Pedidos Pendentes (${buscaFornecedorConferencia.trim() ? pedidosPendentesFiltrados.length : pedidosPendentesTotal})`}
             {aba === 'criar' && 'Criar pedidos'}
-            {aba === 'avulsa' && 'Conferência avulsa'}
-            {aba === 'conferidos' && `Conferidos (${buscaFornecedorConferencia.trim() ? conferenciasFiltradas.length : conferencias.length})`}
+            {aba === 'avulsa' && 'Não lançados'}
+            {aba === 'conferidos' && `Conferidos (${(buscaFornecedorConferencia.trim() ? conferenciasFiltradas : conferencias).filter((c: any) => !conferenciaBonificada(c)).length})`}
+            {aba === 'bonificados' && `Pedidos bonificados (${(buscaFornecedorConferencia.trim() ? conferenciasFiltradas : conferencias).filter((c: any) => conferenciaBonificada(c)).length})`}
             {aba === 'divergencias' && `Divergências (${buscaFornecedorConferencia.trim() ? divergenciasFiltradas.length : conferencias.filter((c: any) => c.houveDivergencia).length})`}
           </button>
         ))}
@@ -335,7 +391,7 @@ export function AbaConferencia(p: {
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-teal-50 px-3 py-3 ring-1 ring-teal-100">
               <label className={botaoSecundario}>
-                {pdfPedidoAvulso ? pdfPedidoAvulso.nome : 'Anexar PDF (opcional)'}
+                {pdfPedidoAvulso ? pdfPedidoAvulso.nome : 'Anexar PDF do aparelho (até 3 MB)'}
                 <input type="file" accept="application/pdf,.pdf" className="hidden" onChange={e => lerPdfPedido(e.target.files?.[0])} />
               </label>
               {pdfPedidoAvulso && (
@@ -354,79 +410,117 @@ export function AbaConferencia(p: {
       {abaConferencia === 'avulsa' && (
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
           <div className="bg-slate-900 px-4 py-3 text-white">
-            <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Sem pedido lançado</p>
-            <p className="m-0 text-base font-black">Conferência avulsa</p>
-            <p className="m-0 text-[11px] font-semibold text-slate-300">Use quando a mercadoria chegou sem estar na lista de Pedidos Pendentes.</p>
+            <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Conferido sem pedido prévio</p>
+            <p className="m-0 text-base font-black">Mercadoria não lançada</p>
+            <p className="m-0 text-[11px] font-semibold text-slate-300">Use quando a mercadoria foi conferida, mas não estava lançada no sistema. O lançamento é criado já como conferido.</p>
           </div>
           <div className="border-t border-slate-100 bg-teal-50/60 px-4 py-4">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Data</span>
-                <input type="date" value={novaConferencia.data} onChange={e => setNovaConferencia({ ...novaConferencia, data: e.target.value })} className={campo} />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Razão social / Fornecedor</span>
+                <input
+                  type="text"
+                  list="fornecedores-nao-lancados"
+                  placeholder="Nome da razão social..."
+                  value={lancamentoNaoLancado.fornecedor}
+                  onChange={e => setLancamentoNaoLancado({ ...lancamentoNaoLancado, fornecedor: e.target.value })}
+                  className={campo}
+                />
+                <datalist id="fornecedores-nao-lancados">
+                  {(fornecedoresCotacao || []).map((fornecedor: any) => (
+                    <option key={fornecedor.id || fornecedor.nome} value={fornecedor.razaoSocial || fornecedor.nomeFantasia || fornecedor.nome} />
+                  ))}
+                </datalist>
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Nome do conferente</span>
-                <input type="text" placeholder="Seu nome..." value={novaConferencia.nomeConferente} onChange={e => setNovaConferencia({ ...novaConferencia, nomeConferente: e.target.value })} className={campo} />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Fornecedor</span>
-                <input type="text" placeholder="Nome da empresa..." value={novaConferencia.fornecedor} onChange={e => setNovaConferencia({ ...novaConferencia, fornecedor: e.target.value })} className={campo} />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Valor recebido (R$)</span>
-                <input type="text" placeholder="0,00" value={novaConferencia.valorRecebido} onChange={e => setNovaConferencia({ ...novaConferencia, valorRecebido: e.target.value })} className={campo} />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Tipo de divergência</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Categoria do item</span>
                 <select
-                  value={novaConferencia.tipoDivergencia || ''}
-                  onChange={e => {
-                    const tipo = e.target.value;
-                    setNovaConferencia({ ...novaConferencia, tipoDivergencia: tipo, houveDivergencia: Boolean(tipo) });
-                  }}
+                  value={lancamentoNaoLancado.categoria}
+                  onChange={e => setLancamentoNaoLancado({ ...lancamentoNaoLancado, categoria: e.target.value })}
                   className={campo}
                 >
-                  {opcoesDivergencia}
+                  <option value="">Selecione a categoria...</option>
+                  {CATEGORIAS_NAO_LANCADO.map(categoria => (
+                    <option key={categoria} value={categoria}>{categoria}</option>
+                  ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Observações</span>
-                <input type="text" placeholder="Detalhes da conferência..." value={novaConferencia.observacoes} onChange={e => setNovaConferencia({ ...novaConferencia, observacoes: e.target.value })} className={campo} />
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Valor total (R$)</span>
+                <input
+                  type="text"
+                  placeholder="0,00"
+                  value={lancamentoNaoLancado.valorTotal}
+                  onChange={e => setLancamentoNaoLancado({ ...lancamentoNaoLancado, valorTotal: e.target.value })}
+                  className={campo}
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-teal-800">Conferente</span>
+                <input
+                  type="text"
+                  placeholder="Nome de quem conferiu"
+                  value={lancamentoNaoLancado.conferente}
+                  onChange={e => setLancamentoNaoLancado({ ...lancamentoNaoLancado, conferente: e.target.value })}
+                  className={campo}
+                />
               </label>
             </div>
-            <button type="button" onClick={adicionarConferencia} className="mt-3 cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-600">
-              Registrar conferência avulsa
+            <button
+              type="button"
+              onClick={() => {
+                const ok = lancarMercadoriaConferidaSemPedido({
+                  fornecedor: lancamentoNaoLancado.fornecedor,
+                  categoria: lancamentoNaoLancado.categoria,
+                  valorTotal: lancamentoNaoLancado.valorTotal,
+                  conferente: lancamentoNaoLancado.conferente || nomeConferentePadrao
+                });
+                if (ok) {
+                  setLancamentoNaoLancado({
+                    fornecedor: '',
+                    categoria: '',
+                    valorTotal: '',
+                    conferente: String(nomeConferentePadrao || '')
+                  });
+                }
+              }}
+              className="mt-3 cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-600"
+            >
+              Salvar e marcar como conferido
             </button>
           </div>
         </section>
       )}
 
-      {abaConferencia === 'pedidos' && (
-        <div>
-          {pedidosPendentesConferencia.length === 0 ? (
+      {abaConferencia === 'pedidos' && (() => {
+        const compras = pedidosPendentesFiltrados || [];
+        const bonificacoes = pedidosBonificacaoPendentesFiltrados || [];
+        if (compras.length === 0 && bonificacoes.length === 0) {
+          return (
             <div className="rounded-2xl bg-slate-50 px-5 py-10 text-center text-sm text-slate-500 ring-1 ring-slate-200">
-              <div className="mb-2 text-4xl">🎉</div>
-              <strong className="block text-sm font-black text-slate-900">Nenhum pedido pendente!</strong>
-              Todos os pedidos já foram conferidos. Crie um novo na aba Criar pedidos ou na Cotação.
+              <div className="mb-2 text-4xl">{buscaFornecedorConferencia.trim() ? '🔎' : '🎉'}</div>
+              <strong className="block text-sm font-black text-slate-900">
+                {buscaFornecedorConferencia.trim() ? `Nenhum pedido aberto deste fornecedor` : 'Nenhum pedido pendente!'}
+              </strong>
+              {buscaFornecedorConferencia.trim()
+                ? `Não achei “${buscaFornecedorConferencia.trim()}” nos Pedidos Pendentes. Confira o nome ou limpe a pesquisa.`
+                : 'Todos os pedidos já foram conferidos. Crie um novo na aba Criar pedidos ou na Cotação.'}
             </div>
-          ) : pedidosPendentesFiltrados.length === 0 ? (
-            <div className="rounded-2xl bg-orange-50 px-5 py-10 text-center text-sm text-orange-800 ring-1 ring-orange-200">
-              <strong className="mb-1 block text-sm font-black text-orange-950">Nenhum pedido aberto deste fornecedor</strong>
-              Não achei “{buscaFornecedorConferencia.trim()}” nos Pedidos Pendentes. Confira o nome ou limpe a pesquisa.
-            </div>
-          ) : (
+          );
+        }
+        return (
             <div className="flex flex-col gap-4">
-              {pedidosPendentesFiltrados.map((relatorio: any) => {
+              {compras.map((relatorio: any) => {
                 const nomeFornecedor = relatorio.itens[0]?.fornecedor || 'Fornecedor não informado';
                 const valorComprado = Number(relatorio.totalGeral || 0);
-                const qtdItens = (relatorio.itens || []).length;
+                const itensComprados = (relatorio.itens || []).filter((item: any) => !item.bonificado);
                 return (
                   <section key={relatorio.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
                     <div className="grid gap-3 bg-slate-900 px-4 py-3 text-white sm:grid-cols-3 sm:items-center">
                       <div>
-                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Fornecedor</p>
+                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Pedido comprado</p>
                         <p className="m-0 truncate text-base font-black">{nomeFornecedor}</p>
-                        <p className="m-0 text-[11px] font-semibold text-slate-300">{qtdItens} item(ns)</p>
+                        <p className="m-0 text-[11px] font-semibold text-slate-300">{itensComprados.length} item(ns)</p>
                       </div>
                       <div>
                         <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Data</p>
@@ -449,15 +543,17 @@ export function AbaConferencia(p: {
                         </button>
                       ) : (
                         <>
-                          <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800 ring-1 ring-amber-200">{relatorio.pdfFornecedor.nome}</span>
-                          <button type="button" onClick={() => visualizarPdfFornecedor(relatorio)} className={botaoSecundario}>Ver anexo</button>
-                          <a href={relatorio.pdfFornecedor.conteudo} download={relatorio.pdfFornecedor.nome} className="cursor-pointer rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-slate-800">Baixar</a>
+                          <button type="button" onClick={() => visualizarPdfFornecedor(relatorio)} className="cursor-pointer rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800 underline decoration-amber-400 underline-offset-2 ring-1 ring-amber-200 hover:bg-amber-100">
+                            📄 {relatorio.pdfFornecedor.nome}
+                          </button>
+                          <button type="button" onClick={() => visualizarPdfFornecedor(relatorio)} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-teal-600">Abrir PDF</button>
+                          <button type="button" onClick={() => baixarPdfFornecedor(relatorio)} className="cursor-pointer rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-slate-800">Baixar em Downloads</button>
                         </>
                       )}
                     </div>
 
                     <div className="max-h-[420px] overflow-y-auto px-4 py-3">
-                      {Object.entries<any[]>(relatorio.itens.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]) => (
+                      {Object.entries<any[]>(itensComprados.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]) => (
                         <div key={`${relatorio.id}-${fornecedor}`} className="flex flex-col">
                           {itensFornecedor.map((item, indice) => (
                             <div key={`${relatorio.id}-${fornecedor}-${indice}`} className={`grid grid-cols-[1fr_80px_96px] gap-2 py-2 text-[12px] ${indice > 0 ? 'border-t border-slate-100' : ''}`}>
@@ -496,26 +592,105 @@ export function AbaConferencia(p: {
                   </section>
                 );
               })}
+              {bonificacoes.map((relatorio: any) => {
+                const itensBonificados = (relatorio.itens || []).filter((item: any) => item.bonificado);
+                const nomeFornecedor = itensBonificados[0]?.fornecedor || relatorio.itens[0]?.fornecedor || 'Fornecedor não informado';
+                const valorBonificacao = itensBonificados.reduce((total: number, item: any) => total + (Number(item.valorTotal) || 0), 0);
+                return (
+                  <section key={`bonif-${relatorio.id}`} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-amber-200">
+                    <div className="grid gap-3 bg-amber-900 px-4 py-3 text-white sm:grid-cols-3 sm:items-center">
+                      <div>
+                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-200">Pedido bonificado</p>
+                        <p className="m-0 truncate text-base font-black">{nomeFornecedor}</p>
+                        <p className="m-0 text-[11px] font-semibold text-amber-100">{itensBonificados.length} item(ns) de brinde</p>
+                      </div>
+                      <div>
+                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-200">Data da compra</p>
+                        <p className="m-0 text-sm font-bold">{relatorio.data}</p>
+                      </div>
+                      <div className="sm:text-right">
+                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-200">Valor</p>
+                        <p className="m-0 text-xl font-black text-amber-100">R$ {valorBonificacao.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="px-4 py-3">
+                      {itensBonificados.map((item: any, indice: number) => (
+                        <div key={`${relatorio.id}-bonus-${indice}`} className={`grid grid-cols-[1fr_80px_96px] gap-2 py-1.5 text-[12px] ${indice > 0 ? 'border-t border-amber-100' : ''}`}>
+                          <span className="font-semibold text-amber-950">{item.produto}</span>
+                          <strong className="text-amber-950">{item.quantidade} {item.unit}</strong>
+                          <span className="text-right font-bold text-amber-800">R$ {Number(item.valorTotal || 0).toFixed(2)}</span>
+                        </div>
+                      ))}
+                      <div className="mt-3 rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200">
+                        <p className="m-0 mb-2 text-[11px] font-black uppercase tracking-wide text-amber-950">Veio a bonificação?</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(['sim', 'nao'] as const).map(opcao => {
+                            const marcada = conferenciasPorPedido[`${relatorio.id}__bonif`]?.veioBonificacao === opcao;
+                            return (
+                              <button
+                                key={opcao}
+                                type="button"
+                                onClick={() => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'veioBonificacao', opcao)}
+                                className={`cursor-pointer rounded-lg px-4 py-2 text-xs font-bold ${marcada ? (opcao === 'sim' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-white') : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}`}
+                              >
+                                {opcao === 'sim' ? 'Sim' : 'Não'}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {conferenciasPorPedido[`${relatorio.id}__bonif`]?.veioBonificacao === 'sim' && (
+                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            <input placeholder="Quem recebeu" value={conferenciasPorPedido[`${relatorio.id}__bonif`]?.conferente || ''} onChange={event => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'conferente', event.target.value)} className={campo} />
+                            <select value={conferenciasPorPedido[`${relatorio.id}__bonif`]?.categoria || ''} onChange={event => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'categoria', event.target.value)} className={campo}>
+                              <option value="">Categoria</option>
+                              {CATEGORIAS_ITEM.map(categoria => (
+                                <option key={categoria} value={categoria}>{categoria}</option>
+                              ))}
+                            </select>
+                            <input placeholder="Valor recebido na nota (R$)" value={conferenciasPorPedido[`${relatorio.id}__bonif`]?.valor || ''} onChange={event => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'valor', event.target.value)} className={campo} />
+                            <input placeholder="Observações, se houver" value={conferenciasPorPedido[`${relatorio.id}__bonif`]?.obs || ''} onChange={event => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'obs', event.target.value)} className={campo} />
+                            <label className="flex items-center gap-2 text-sm font-semibold text-amber-950 sm:col-span-2">
+                              <input type="checkbox" checked={conferenciasPorPedido[`${relatorio.id}__bonif`]?.divergencia || false} onChange={event => atualizarConferenciaPedido(`${relatorio.id}__bonif`, 'divergencia', event.target.checked)} className="h-4 w-4 accent-amber-700" /> Houve divergência no valor da nota bonificada
+                            </label>
+                            {conferenciasPorPedido[`${relatorio.id}__bonif`]?.valor && (
+                              <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                                <span className="text-[11px] font-semibold text-amber-950">Nota: R$ {valorBonificacao.toFixed(2)}</span>
+                                <SeloDiferencaValor recebido={numeroCampo(conferenciasPorPedido[`${relatorio.id}__bonif`].valor)} esperado={valorBonificacao} destaque />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <button type="button" onClick={() => salvarBonificacaoPedido(relatorio)} className="mt-3 cursor-pointer rounded-lg bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-600">
+                        Concluir bonificação
+                      </button>
+                    </div>
+                  </section>
+                );
+              })}
             </div>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
-      {abaConferencia === 'conferidos' && (
+      {(abaConferencia === 'conferidos' || abaConferencia === 'bonificados') && (() => {
+        const listaBase = buscaFornecedorConferencia.trim() ? conferenciasFiltradas : conferencias;
+        const lista = listaBase.filter((conf: any) => abaConferencia === 'bonificados' ? conferenciaBonificada(conf) : !conferenciaBonificada(conf));
+        const vaziaGeral = listaBase.length === 0;
+        return (
         <div>
-          {conferencias.length === 0 ? (
+          {lista.length === 0 ? (
             <div className="rounded-2xl bg-slate-50 px-5 py-10 text-center text-sm text-slate-500 ring-1 ring-slate-200">
               <div className="mb-2 text-4xl">📭</div>
-              <strong className="mb-1 block text-sm font-black text-slate-900">Nenhuma conferência registrada ainda.</strong>
-              Conforme os pedidos chegarem, eles aparecerão aqui após serem conferidos.
-            </div>
-          ) : conferenciasFiltradas.length === 0 ? (
-            <div className="rounded-2xl bg-orange-50 px-5 py-6 text-center text-sm text-orange-800 ring-1 ring-orange-200">
-              Nenhuma conferência deste fornecedor.
+              <strong className="mb-1 block text-sm font-black text-slate-900">
+                {abaConferencia === 'bonificados' ? 'Nenhum pedido bonificado concluído ainda.' : 'Nenhuma conferência registrada ainda.'}
+              </strong>
+              {abaConferencia === 'bonificados'
+                ? 'Quando a conferência marcar que a bonificação veio, o pedido cai nesta aba.'
+                : 'Conforme os pedidos chegarem, eles aparecerão aqui após serem conferidos.'}
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {conferenciasFiltradas.map((conf: any) => {
+              {lista.map((conf: any) => {
                 const pedidoOriginal = conf.pedidoId ? relatoriosPedidosCotacao.find((r: any) => r.id === conf.pedidoId) : null;
                 const pedidoPdf = pedidoOriginal || (conf.itensConferidos?.length ? { id: conf.id, data: conf.data, itens: conf.itensConferidos, totalGeral: conf.valorEsperado ?? conf.itensConferidos.reduce((a: number, i: any) => a + (i.valorTotal || 0), 0) } : null);
                 return (
@@ -524,14 +699,17 @@ export function AbaConferencia(p: {
                       <div>
                         <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Fornecedor</p>
                         <p className="m-0 truncate text-base font-black">{conf.fornecedor || 'Fornecedor não informado'}</p>
-                        <p className="m-0 text-[11px] font-semibold text-slate-300">Conferente: {conf.nomeConferente || '-'}</p>
+                        <p className="m-0 text-[11px] font-semibold text-slate-300">
+                          {conferenciaBonificada(conf) ? 'Quem recebeu' : 'Conferente'}: {conf.nomeConferente || '-'}
+                          {conf.categoria ? ` · ${conf.categoria}` : ''}
+                        </p>
                       </div>
                       <div>
                         <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Data</p>
                         <p className="m-0 text-sm font-bold">{conf.data}</p>
                       </div>
                       <div className="sm:text-right">
-                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Valor que comprei</p>
+                        <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">{conferenciaBonificada(conf) ? 'Valor da nota' : 'Valor que comprei'}</p>
                         <p className="m-0 text-xl font-black text-teal-300">R$ {Number(conf.valorEsperado ?? conf.valorRecebido ?? 0).toFixed(2)}</p>
                         {(() => {
                           const diferenca = diferencaValorConferencia(conf.valorRecebido, conf.valorEsperado);
@@ -548,9 +726,15 @@ export function AbaConferencia(p: {
                       <div className="min-w-0 flex-1">
                         <div className="mb-3 flex flex-wrap items-center gap-2">
                           {conf.houveDivergencia ? (
-                            <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-bold text-rose-800">Divergência: {rotuloTipoDivergencia(conf.tipoDivergencia)}</span>
+                            <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-bold text-rose-800">Divergência: {conferenciaBonificada(conf) && (!conf.tipoDivergencia || conf.tipoDivergencia === 'valor') ? 'Valor' : rotuloTipoDivergencia(conf.tipoDivergencia)}</span>
                           ) : (
                             <span className="rounded-full bg-teal-100 px-2.5 py-1 text-[10px] font-bold text-teal-800">Sem divergências</span>
+                          )}
+                          {String(conf.pedidoId || '').startsWith('pedido_conferido_') && (
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700">Não lançado</span>
+                          )}
+                          {conferenciaBonificada(conf) && (
+                            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-900">Bonificação veio</span>
                           )}
                           <span className="text-xs font-semibold text-slate-600">Recebido: R$ {Number(conf.valorRecebido || 0).toFixed(2)}</span>
                           <SeloDiferencaValor recebido={conf.valorRecebido} esperado={conf.valorEsperado} />
@@ -578,12 +762,14 @@ export function AbaConferencia(p: {
                           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-2.5 py-1.5 ring-1 ring-amber-200">
                             <div className="flex items-center gap-1.5">
                               <span>📄</span>
-                              <span className="text-[11px] font-bold text-amber-900">{pedidoOriginal.pdfFornecedor.nome}</span>
+                              <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className="cursor-pointer text-left text-[11px] font-bold text-amber-900 underline decoration-amber-400 underline-offset-2 hover:text-amber-700">
+                                {pedidoOriginal.pdfFornecedor.nome}
+                              </button>
                               <span className="text-[10px] text-slate-500">({pedidoOriginal.pdfFornecedor.anexadoEm})</span>
                             </div>
                             <div className="flex gap-1">
-                              <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className={botaoSecundario}>Ver</button>
-                              <a href={pedidoOriginal.pdfFornecedor.conteudo} download={pedidoOriginal.pdfFornecedor.nome} className={`${botaoPrimario} no-underline`}>Baixar</a>
+                              <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className={botaoPrimario}>Abrir PDF</button>
+                              <button type="button" onClick={() => baixarPdfFornecedor(pedidoOriginal)} className={botaoSecundario}>Baixar</button>
                             </div>
                           </div>
                         )}
@@ -605,7 +791,8 @@ export function AbaConferencia(p: {
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {abaConferencia === 'divergencias' && (
         <div>
@@ -673,12 +860,14 @@ export function AbaConferencia(p: {
                         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-2.5 py-1.5 ring-1 ring-amber-200">
                           <div className="flex items-center gap-1.5">
                             <span>📄</span>
-                            <span className="text-[11px] font-bold text-amber-900">{pedidoOriginal.pdfFornecedor.nome}</span>
+                            <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className="cursor-pointer text-left text-[11px] font-bold text-amber-900 underline decoration-amber-400 underline-offset-2 hover:text-amber-700">
+                              {pedidoOriginal.pdfFornecedor.nome}
+                            </button>
                             <span className="text-[10px] text-slate-500">({pedidoOriginal.pdfFornecedor.anexadoEm})</span>
                           </div>
                           <div className="flex gap-1">
-                            <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className={botaoSecundario}>Ver</button>
-                            <a href={pedidoOriginal.pdfFornecedor.conteudo} download={pedidoOriginal.pdfFornecedor.nome} className={`${botaoPrimario} no-underline`}>Baixar</a>
+                            <button type="button" onClick={() => visualizarPdfFornecedor(pedidoOriginal)} className={botaoPrimario}>Abrir PDF</button>
+                            <button type="button" onClick={() => baixarPdfFornecedor(pedidoOriginal)} className={botaoSecundario}>Baixar</button>
                           </div>
                         </div>
                       )}
@@ -699,6 +888,8 @@ export function AbaConferencia(p: {
             </div>
           )}
         </div>
+      )}
+      </div>
       )}
     </section>
   );

@@ -70,6 +70,124 @@ function AssinaturaCanvas({ onChange }: { onChange: (dataUrl: string) => void })
   );
 }
 
+const dataLocalChave = (valor?: string) => {
+  if (!valor) return '';
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return '';
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+};
+
+const criarImagemRelatorioManutencao = (ordens: any[], normalizarStatus: (status?: string) => string) => {
+  const hoje = dataLocalChave(new Date().toISOString());
+  const grupos = [
+    { status: 'pendente', titulo: 'PENDENTES', cor: '#0284c7' },
+    { status: 'andamento', titulo: 'EM ANDAMENTO', cor: '#d97706' },
+    { status: 'pausada', titulo: 'PAUSADAS', cor: '#7c3aed' },
+    { status: 'concluida', titulo: 'CONCLUÍDAS HOJE', cor: '#059669' }
+  ].map(grupo => ({
+    ...grupo,
+    ordens: (ordens || [])
+      .filter(ordem => normalizarStatus(ordem.status) === grupo.status)
+      .filter(ordem => grupo.status !== 'concluida' || dataLocalChave(ordem.concluidaEm) === hoje)
+      .sort((a, b) => String(b.atualizadoEm || b.criadoEm || '').localeCompare(String(a.atualizadoEm || a.criadoEm || '')))
+  }));
+
+  const medida = document.createElement('canvas');
+  const medidaContexto = medida.getContext('2d');
+  if (!medidaContexto) throw new Error('Não foi possível preparar a imagem do relatório.');
+  const largura = 1200;
+  const margem = 56;
+  const larguraTexto = largura - margem * 2 - 32;
+  const quebrarTexto = (texto: string, fonte: string) => {
+    medidaContexto.font = fonte;
+    const palavras = String(texto || '').split(/\s+/).filter(Boolean);
+    const linhas: string[] = [];
+    let linha = '';
+    palavras.forEach(palavra => {
+      const candidata = linha ? `${linha} ${palavra}` : palavra;
+      if (linha && medidaContexto.measureText(candidata).width > larguraTexto) {
+        linhas.push(linha);
+        linha = palavra;
+      } else {
+        linha = candidata;
+      }
+    });
+    if (linha) linhas.push(linha);
+    return linhas;
+  };
+  const dadosGrupos = grupos.map(grupo => ({
+    ...grupo,
+    itens: grupo.ordens.map(ordem => {
+      const linhas = [
+        `${ordem.local || 'Local não informado'} • ${ordem.tipo || 'Tipo não informado'} • Prioridade ${String(ordem.prioridade || 'média').replace(/^./, (letra: string) => letra.toUpperCase())}`,
+        ordem.descricao || 'Descrição não informada',
+        ...(grupo.status === 'pausada' && ordem.motivoPausa ? [`Motivo da pausa: ${ordem.motivoPausa}`] : []),
+        ...(grupo.status === 'concluida' && ordem.observacaoConclusao ? [`Serviço realizado: ${ordem.observacaoConclusao}`] : []),
+        ...(ordem.responsavel || ordem.assinadoPor ? [`Responsável: ${ordem.assinadoPor || ordem.responsavel}`] : [])
+      ].flatMap((linha, indice) => quebrarTexto(linha, indice === 1 ? '600 22px Arial' : '18px Arial'));
+      return { ordem, linhas, altura: 32 + linhas.length * 30 };
+    })
+  }));
+  const altura = 235 + dadosGrupos.reduce((soma, grupo) =>
+    soma + 62 + (grupo.itens.length ? grupo.itens.reduce((total, item) => total + item.altura + 14, 0) : 56), 0);
+  const canvas = document.createElement('canvas');
+  canvas.width = largura;
+  canvas.height = altura;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Não foi possível desenhar a imagem do relatório.');
+
+  ctx.fillStyle = '#f1f5f9';
+  ctx.fillRect(0, 0, largura, altura);
+  ctx.fillStyle = '#0f766e';
+  ctx.fillRect(0, 0, largura, 168);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 38px Arial';
+  ctx.fillText('RELATÓRIO DE MANUTENÇÃO', margem, 68);
+  ctx.font = '22px Arial';
+  ctx.fillText(`Pão da Vida • ${new Date().toLocaleDateString('pt-BR')}`, margem, 112);
+  const yResumo = 198;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 19px Arial';
+  ctx.fillText(
+    `Pendentes: ${dadosGrupos[0].ordens.length}   Em andamento: ${dadosGrupos[1].ordens.length}   Pausadas: ${dadosGrupos[2].ordens.length}   Concluídas hoje: ${dadosGrupos[3].ordens.length}`,
+    margem,
+    yResumo
+  );
+
+  let y = 244;
+  dadosGrupos.forEach(grupo => {
+    ctx.fillStyle = grupo.cor;
+    ctx.font = 'bold 23px Arial';
+    ctx.fillText(`${grupo.titulo} (${grupo.ordens.length})`, margem, y);
+    y += 25;
+    if (!grupo.itens.length) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '18px Arial';
+      ctx.fillText('Nenhuma ordem.', margem + 8, y + 19);
+      y += 56;
+      return;
+    }
+    grupo.itens.forEach(item => {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(margem, y, largura - margem * 2, item.altura, 12);
+      ctx.fill();
+      ctx.fillStyle = grupo.cor;
+      ctx.fillRect(margem, y + 8, 6, item.altura - 16);
+      let linhaY = y + 30;
+      item.linhas.forEach((linha, indice) => {
+        ctx.fillStyle = indice === 1 ? '#0f172a' : '#475569';
+        ctx.font = indice === 1 ? '600 22px Arial' : '18px Arial';
+        ctx.fillText(linha, margem + 20, linhaY);
+        linhaY += 30;
+      });
+      y += item.altura + 14;
+    });
+    y += 16;
+  });
+  return canvas;
+};
+
 export function AbaManutencao(p: {
   LOCAIS_MANUTENCAO: any;
   MOTIVOS_PAUSA_MANUTENCAO: any;
@@ -190,6 +308,7 @@ export function AbaManutencao(p: {
   const [ordemCompraId, setOrdemCompraId] = useState('');
   const [compraComprador, setCompraComprador] = useState('');
   const [compraValor, setCompraValor] = useState('');
+  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
   const motivoPedeCompra = (motivo: string) => (MOTIVOS_COMPRA_PAUSA || []).includes(motivo);
   const motivoPedeAutorizacao = (motivo: string) => String(motivo || '').toLowerCase().includes('autoriza');
   const temValorCompra = (ordem: any) => ordem?.valorEquipamento !== undefined && ordem?.valorEquipamento !== null && !Number.isNaN(Number(ordem.valorEquipamento));
@@ -260,6 +379,33 @@ export function AbaManutencao(p: {
   const gastoMesAtual = gastosPorMes.find(item => item.chave === chaveMesAtual)?.total || 0;
   const gastoGeral = gastosPorMes.reduce((soma, item) => soma + item.total, 0);
   const moeda = (valor: number) => `R$ ${Number(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  const compartilharRelatorio = async () => {
+    setGerandoRelatorio(true);
+    try {
+      const canvas = criarImagemRelatorioManutencao(ordensManutencao, statusOrdemNormalizado);
+      const imagem = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Não foi possível criar o arquivo da imagem.')), 'image/png');
+      });
+      const arquivo = new File([imagem], `relatorio-manutencao-${dataLocalChave(new Date().toISOString())}.png`, { type: 'image/png' });
+      if (navigator.canShare?.({ files: [arquivo] }) && navigator.share) {
+        await navigator.share({ files: [arquivo], title: 'Relatório de manutenção', text: 'Relatório de manutenção do Pão da Vida' });
+        return;
+      }
+      const url = URL.createObjectURL(imagem);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = arquivo.name;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      window.alert('A imagem do relatório foi baixada. Anexe o arquivo no WhatsApp para enviar.');
+    } catch (erro) {
+      if (erro instanceof DOMException && erro.name === 'AbortError') return;
+      console.error('Erro ao gerar/compartilhar relatório de manutenção:', erro);
+      window.alert('Não foi possível gerar ou compartilhar a imagem do relatório. Tente novamente.');
+    } finally {
+      setGerandoRelatorio(false);
+    }
+  };
   return (
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:p-6">
               <button type="button" onClick={() => setTabAtiva('pendencias')} className="mb-4 cursor-pointer rounded-lg bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-white">← Voltar ao sistema</button>
@@ -268,6 +414,17 @@ export function AbaManutencao(p: {
                 <h2 className="m-0 text-xl font-black tracking-tight text-slate-900">Manutenção</h2>
               </div>
               <p className="mb-5 mt-1 text-sm text-slate-500">Abra ordem de serviço, acompanhe o andamento e registre o reparo. As fotos ficam neste aparelho; o texto sincroniza na nuvem.</p>
+
+              <div className="mb-5">
+                <button
+                  type="button"
+                  onClick={compartilharRelatorio}
+                  disabled={gerandoRelatorio}
+                  className="cursor-pointer rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-600 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {gerandoRelatorio ? 'Preparando imagem...' : 'Gerar imagem para WhatsApp'}
+                </button>
+              </div>
 
               <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                 {filtros.map(filtro => {

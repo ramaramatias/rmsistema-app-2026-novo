@@ -3,6 +3,7 @@ import { aplicarAjustesCatalogo, custosCatalogoVazio, margemDoProduto, margemSob
 import { FORNECEDORES_POR_SECAO, PRODUTOS_POR_SECAO } from '../../catalogo/secoesDados';
 import { tributacaoDoProduto } from '../../catalogo/tributacao';
 import { chaveNomeItemCotacao } from '../../util/cotacao';
+import { ListaCompleta } from './ListaCompleta';
 
 const SECOES_NOVAS = [
   'Bebidas',
@@ -29,7 +30,7 @@ export function AbaCadastroProdutos(p: {
 }) {
   const { setTabAtiva, itensCotacao, novoProdutoCadastro, setNovoProdutoCadastro, cadastrarProduto, excluirProdutoCadastrado } = p;
   const custos = p.custosCatalogo || custosCatalogoVazio();
-  const [abaPrincipal, setAbaPrincipal] = useState<'todos' | 'secoes'>('todos');
+  const [abaPrincipal, setAbaPrincipal] = useState<'lista' | 'todos' | 'secoes'>('lista');
   const [secaoAtiva, setSecaoAtiva] = useState<string>(SECOES_NOVAS[0]);
   const [fornecedorAtivo, setFornecedorAtivo] = useState('');
   const [busca, setBusca] = useState('');
@@ -93,12 +94,17 @@ export function AbaCadastroProdutos(p: {
     <section className="mx-auto max-w-5xl rounded-2xl bg-white p-5 ring-1 ring-slate-200">
       <button onClick={() => setTabAtiva('compras')} className="mb-3.5 cursor-pointer rounded-lg border-0 bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-white">← Voltar para Compras</button>
       <h2 className="m-0 text-xl font-black uppercase tracking-tight text-slate-900">Cadastro de produtos</h2>
-      <p className="mb-4 mt-1 text-xs text-slate-500">Todos é a lista atual. Em Seções, Laticínios fica por fornecedor, Embalagens por tipo, Matéria prima e Mercearia por categoria.</p>
+      <p className="mb-4 mt-1 text-xs text-slate-500">Lista Completa é o saldo de estoque da loja. Todos é a lista atual da cotação. Em Seções, cada grupo abre separado.</p>
 
       <div className="mb-4 flex gap-2">
+        <button type="button" onClick={() => setAbaPrincipal('lista')} className={classeAba(abaPrincipal === 'lista')}>Lista Completa</button>
         <button type="button" onClick={() => setAbaPrincipal('todos')} className={classeAba(abaPrincipal === 'todos')}>Todos ({itensTodos.length})</button>
         <button type="button" onClick={() => { setAbaPrincipal('secoes'); escolherSecao(secaoAtiva === 'Bebidas' ? 'Embalagens' : secaoAtiva); }} className={classeAba(abaPrincipal === 'secoes')}>Seções</button>
       </div>
+
+      {abaPrincipal === 'lista' && (
+        <ListaCompleta />
+      )}
 
       {abaPrincipal === 'todos' && (
         <>

@@ -6,16 +6,26 @@ import { AbaManutencao } from './abas/manutencao/AbaManutencao';
 import { AbaCadastroProdutos } from './abas/cadastro-produtos/AbaCadastroProdutos';
 import { AbaCadastroFornecedores } from './abas/cadastro-fornecedores/AbaCadastroFornecedores';
 import { AbaCompras } from './abas/compras/AbaCompras';
+import { AbaConciliacao } from './abas/conciliacao/AbaConciliacao';
+import { AbaConciliacaoCompras } from './abas/conciliacao/AbaConciliacaoCompras';
+import { AbaHistoricoConciliacao } from './abas/conciliacao/AbaHistoricoConciliacao';
+import { AbaArquivoCeasa } from './abas/conciliacao/AbaArquivoCeasa';
+import { AbaInteligenciaEstoque } from './abas/conciliacao/AbaInteligenciaEstoque';
 import { AbaPendencias } from './abas/pendencias/AbaPendencias';
+import { AbaChecklist } from './abas/checklist/AbaChecklist';
 import { AbaConferencia } from './abas/conferencia/AbaConferencia';
+import { AbaNotasConferidas } from './abas/conferencia/AbaNotasConferidas';
 import { AbaPagamentos } from './abas/pagamentos/AbaPagamentos';
 import { AbaReciboComprador } from './abas/recibo-comprador/AbaReciboComprador';
 import { AbaRelatorios } from './abas/relatorios/AbaRelatorios';
 import { AbaSeguranca } from './abas/seguranca/AbaSeguranca';
 import { AbaProducao } from './abas/producao/AbaProducao';
-import { montarItensEmbalagens, montarItensLaticinios } from './catalogo/secoesDados';
+import { AbaCaixaOperacional } from './abas/caixa-operacional/AbaCaixaOperacional';
+import { AbaEstoque } from './abas/estoque/AbaEstoque';
+import type { ItemListaCompleta } from './catalogo/listaCompleta';
+import { acharItemCatalogoCotacao, montarItensEmbalagens, montarItensLaticinios } from './catalogo/secoesDados';
 import { aplicarCustosRecebidos, aplicarMargemSecao, custosCatalogoVazio, lerCustosCatalogo, registrarCustosDoPedido, type CustosCatalogoState } from './catalogo/custosCatalogo';
-import { config } from '../config';
+import { config } from './config';
 import type {
   ArquivoConferencia,
   DadosConferenciaFornecedor,
@@ -25,13 +35,16 @@ import type {
   LancamentoProducao,
   LancamentoRota,
   LancamentoDeposito,
+  MovimentoCaixaOperacional,
   OrdemManutencao,
+  ItemChecklist,
   PagamentosState,
   PedidoCompra,
   ProdutoElieuda,
   QuantidadesElieuda,
   RegistroConferencia,
   RelatorioPedidoCotacao,
+  LoteConciliacao,
   SenhasUsuarios,
   TipoDivergencia,
   Setor,
@@ -44,6 +57,7 @@ import type {
 import {
   FORNECEDORES_OFICIAIS,
   ITENS_COTACAO_OFICIAIS,
+  NOMES_VISTO_FINANCEIRO,
   LOCAIS_MANUTENCAO,
   MOTIVOS_COMPRA_PAUSA,
   MOTIVOS_PAUSA_MANUTENCAO,
@@ -87,6 +101,7 @@ import {
   salvarFotoPendencia,
   unirFotosPendencias
 } from './util/fotos';
+import { abrirPdfComoArquivo, dispararDownloadPdf, enviarAnexoPdfBytes, enviarAnexoPdfNuvem, garantirAnexoNaNuvem, guardarAnexoLocal, urlArquivoAnexo } from './util/anexoPdf';
 import {
   filtrarPedidosNaoDeletados,
   idsDeTarefasDeletadas,
@@ -100,14 +115,20 @@ import {
   unirLotesPagamento,
   unirOrdensManutencao,
   identidadePagamento,
+  marcasItensDoLote,
   unirPagamentosAbertos,
   unirPedidosCotacao,
   unirLancamentosProducao,
   unirLancamentosRota,
   unirLancamentosDeposito,
+  unirMovimentosCaixaOperacional,
   unirNomesProdutosProducao,
-  unirTarefasDeletadas
+  unirFornecedoresCotacao,
+  unirQuantidadesElieuda,
+  unirTarefasDeletadas,
+  expirarTarefasDeletadas
 } from './util/mesclar';
+import { mesclarChecklist } from './util/checklist';
 import {
   aplicarPermissoesSalvas,
   hashSenha,
@@ -134,7 +155,9 @@ import {
   enviarRegistroNuvem,
   recordDoJsonBin
 } from './util/nuvem';
-import { LogoRm } from './componentes/LogoRm';
+import { mesAtualChave } from './abas/pagamentos/relatorioPagamentos';
+import { unirLotesConciliacao } from './abas/conciliacao/lotesConciliacao';
+import { unirLotesInteligencia, type LoteInteligencia } from './abas/conciliacao/lotesInteligencia';
 
 // ==========================================
 // 🔑 CONFIGURAÇÕES & CREDENCIAIS
@@ -227,6 +250,7 @@ function App() {
   const [senhaDigitada, setSenhaDigitada] = useState('');
   const [mostrarSenhaLogin, setMostrarSenhaLogin] = useState(false);
   const [erroLogin, setErroLogin] = useState(false);
+  const [agoraLogin, setAgoraLogin] = useState(() => new Date());
   const [entrando, setEntrando] = useState(false);
   const [senhasUsuarios, setSenhasUsuarios] = useState<SenhasUsuarios>(() => lerSenhasLocais());
   const [novaSenha, setNovaSenha] = useState('');
@@ -259,7 +283,27 @@ function App() {
     }
   });
 
-  const [tabAtiva, setTabAtiva] = useState<'pendencias' | 'compras' | 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia' | 'relatorios' | 'seguranca' | 'manutencao' | 'dados' | 'producao'>('pendencias');
+  const [tabAtiva, setTabAtiva] = useState<'inicio' | 'pendencias' | 'checklist' | 'compras' | 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'consultaPagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia' | 'notasConferidas' | 'relatorios' | 'seguranca' | 'manutencao' | 'dados' | 'producao' | 'caixaOperacional' | 'estoque' | 'conciliacao' | 'conciliacaoCompras' | 'arquivoCeasa' | 'inteligenciaEstoque' | 'consultasConciliacao'>('inicio');
+  const [itensChecklist, setItensChecklist] = useState<ItemChecklist[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_checklist_items') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const [itensChecklistDeletados, setItensChecklistDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_checklist_deletados') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const itensChecklistRef = useRef(itensChecklist);
+  const itensChecklistDeletadosRef = useRef(itensChecklistDeletados);
+  itensChecklistRef.current = itensChecklist;
+  itensChecklistDeletadosRef.current = itensChecklistDeletados;
   const [ordensManutencao, setOrdensManutencao] = useState<OrdemManutencao[]>(() => {
     try {
       const salvo = resgatarBackupGeral('rm_ordens_manutencao', []);
@@ -382,6 +426,27 @@ function App() {
   lancamentosDepositoRef.current = lancamentosDeposito;
   lancamentosDepositoDeletadosRef.current = lancamentosDepositoDeletados;
 
+  const [movimentosCaixaOperacional, setMovimentosCaixaOperacional] = useState<MovimentoCaixaOperacional[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_caixa_operacional') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const [movimentosCaixaDeletados, setMovimentosCaixaDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = JSON.parse(localStorage.getItem('rm_caixa_operacional_deletados') || '[]');
+      return Array.isArray(salvo) ? salvo : [];
+    } catch {
+      return [];
+    }
+  });
+  const movimentosCaixaRef = useRef(movimentosCaixaOperacional);
+  const movimentosCaixaDeletadosRef = useRef(movimentosCaixaDeletados);
+  movimentosCaixaRef.current = movimentosCaixaOperacional;
+  movimentosCaixaDeletadosRef.current = movimentosCaixaDeletados;
+
   const [setores, setSetores] = useState<Setor[]>(() => {
     try {
       return normalizarSetores(resgatarBackupGeral('rm_setores', SETORES_PADRAO));
@@ -400,6 +465,16 @@ function App() {
   });
   const pagamentosDeletadosRef = useRef(pagamentosDeletados);
   pagamentosDeletadosRef.current = pagamentosDeletados;
+  const [lotesPagamentoDeletados, setLotesPagamentoDeletados] = useState<string[]>(() => {
+    try {
+      const salvo = localStorage.getItem('rm_lotes_pagamento_deletados');
+      return salvo ? JSON.parse(salvo) : [];
+    } catch {
+      return [];
+    }
+  });
+  const lotesPagamentoDeletadosRef = useRef(lotesPagamentoDeletados);
+  lotesPagamentoDeletadosRef.current = lotesPagamentoDeletados;
 
   // Carregar pagamentos do backup_completo.json se existir
   const carregarPagamentosBackup = () => {
@@ -408,6 +483,7 @@ function App() {
       const backupStr = localStorage.getItem('rm_backup_completo');
       const backup = backupStr ? JSON.parse(backupStr) : null;
       const lotes = unirLotesPagamento(
+        lotesPagamentoDeletadosRef.current,
         Array.isArray(backup?.historicoPagamentos) ? backup.historicoPagamentos : [],
         resgatarBackupGeral('rm_historico_pagamentos', [])
       );
@@ -424,6 +500,7 @@ function App() {
       const backupStr = localStorage.getItem('rm_backup_completo');
       const backup = backupStr ? JSON.parse(backupStr) : null;
       return unirLotesPagamento(
+        lotesPagamentoDeletadosRef.current,
         resgatarBackupGeral('rm_historico_pagamentos', []),
         Array.isArray(backup?.historicoPagamentos) ? backup.historicoPagamentos : []
       );
@@ -431,6 +508,14 @@ function App() {
       console.error('Erro ao carregar histórico:', e);
     }
     return resgatarBackupGeral('rm_historico_pagamentos', []);
+  });
+  const [lotesConciliacao, setLotesConciliacao] = useState<LoteConciliacao[]>(() => {
+    const salvo = resgatarBackupGeral('rm_lotes_conciliacao', []);
+    return Array.isArray(salvo) ? unirLotesConciliacao(salvo) : [];
+  });
+  const [lotesInteligencia, setLotesInteligencia] = useState<LoteInteligencia[]>(() => {
+    const salvo = resgatarBackupGeral('rm_lotes_inteligencia', []);
+    return Array.isArray(salvo) ? unirLotesInteligencia(salvo) : [];
   });
   const [fornecedoresCotacao, setFornecedoresCotacao] = useState<FornecedorCotacao[]>(FORNECEDORES_OFICIAIS);
   const [itensCotacao, setItensCotacao] = useState<ItemCotacao[]>(() => {
@@ -508,6 +593,8 @@ function App() {
   pedidosCotacaoDeletadosRef.current = pedidosCotacaoDeletados;
   const pagamentosRef = useRef(pagamentos);
   const historicoPagamentosRef = useRef(historicoPagamentos);
+  const lotesConciliacaoRef = useRef(lotesConciliacao);
+  const lotesInteligenciaRef = useRef(lotesInteligencia);
   const itensCotacaoRef = useRef(itensCotacao);
   const setoresRef = useRef(setores);
   setoresRef.current = setores;
@@ -530,6 +617,8 @@ function App() {
   const permissoesUsuariosRef = useRef(permissoesUsuarios);
   pagamentosRef.current = pagamentos;
   historicoPagamentosRef.current = historicoPagamentos;
+  lotesConciliacaoRef.current = lotesConciliacao;
+  lotesInteligenciaRef.current = lotesInteligencia;
   itensCotacaoRef.current = itensCotacao;
   setoresRef.current = setores;
   usuariosExtraRef.current = usuariosExtra;
@@ -564,14 +653,14 @@ function App() {
 
   const [novaConf, setNovaConf] = useState({ conferente: '', valor: '', obs: '', divergencia: false });
   const [novaConferencia, setNovaConferencia] = useState({ data: new Date().toISOString().split('T')[0], nomeConferente: '', fornecedor: '', valorRecebido: 0, houveDivergencia: false, tipoDivergencia: '' as TipoDivergencia, observacoes: '' });
-  const [conferenciasPorPedido, setConferenciasPorPedido] = useState<{ [pedidoId: string]: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia } }>({});
+  const [conferenciasPorPedido, setConferenciasPorPedido] = useState<{ [pedidoId: string]: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia; veioBonificacao: '' | 'sim' | 'nao'; categoria: string } }>({});
   const [pedidosConferidosLocais, setPedidosConferidosLocais] = useState<string[]>(() => {
     const lista = lerJsonLocal('rm_pedidos_conferidos', []);
     return Array.isArray(lista) ? lista : [];
   });
   const pedidosConferidosRef = useRef(pedidosConferidosLocais);
   pedidosConferidosRef.current = pedidosConferidosLocais;
-  const [abaConferencia, setAbaConferencia] = useState<'pedidos' | 'criar' | 'avulsa' | 'conferidos' | 'divergencias'>('pedidos');
+  const [abaConferencia, setAbaConferencia] = useState<'menu' | 'pedidos' | 'criar' | 'avulsa' | 'conferidos' | 'bonificados' | 'divergencias'>('menu');
   const [buscaFornecedorConferencia, setBuscaFornecedorConferencia] = useState('');
   const [sairTelaInteira, setSairTelaInteira] = useState(false);
 
@@ -600,11 +689,15 @@ function App() {
 
   // Histórico de Tarefas Deletadas
   const [tarefasDeletadas, setTarefasDeletadas] = useState<TarefaDeletada[]>(() => {
-    return lerJsonLocal('rm_tarefas_deletadas', []);
+    // unirTarefasDeletadas já reduz a lápide (só id) o que foi deletado há mais de 7 dias
+    return unirTarefasDeletadas(lerJsonLocal('rm_tarefas_deletadas', []), []);
   });
   const tarefasDeletadasRef = useRef(tarefasDeletadas);
   tarefasDeletadasRef.current = tarefasDeletadas;
   const sincronizacaoEmCursoRef = useRef(false);
+  const sincronizacaoAdiadaRef = useRef(false);
+  const atrasoSyncRef = useRef(0);
+  const elieudaAlteradaRef = useRef(false);
   const gravandoNuvemRef = useRef(false);
   const versaoNuvemRef = useRef<string>('');
   const fotosPendenciasRef = useRef<{ [id: string]: string }>({});
@@ -671,6 +764,19 @@ function App() {
   relatoriosPedidosRef.current = relatoriosPedidosCotacao;
   const [mostrarRelatoriosCotacao, setMostrarRelatoriosCotacao] = useState(false);
   const [relatorioPagamentosVisualizacao, setRelatorioPagamentosVisualizacao] = useState<{ dados: PagamentosState; valorTotal: number; dataRotulo?: string } | null>(null);
+  const [vistoFinanceiroNome, setVistoFinanceiroNome] = useState(() => {
+    try {
+      const salvo = localStorage.getItem('rm_visto_financeiro');
+      return NOMES_VISTO_FINANCEIRO.includes(salvo || '') ? String(salvo) : NOMES_VISTO_FINANCEIRO[0];
+    } catch {
+      return NOMES_VISTO_FINANCEIRO[0];
+    }
+  });
+  const escolherVistoFinanceiro = (nome: string) => {
+    const escolhido = NOMES_VISTO_FINANCEIRO.includes(nome) ? nome : NOMES_VISTO_FINANCEIRO[0];
+    setVistoFinanceiroNome(escolhido);
+    localStorage.setItem('rm_visto_financeiro', escolhido);
+  };
   const [relatorioElieudaVisualizacao, setRelatorioElieudaVisualizacao] = useState<{ itens: ProdutoElieuda[]; quantidades: QuantidadesElieuda } | null>(null);
   const [pedidoConferenciaId, setPedidoConferenciaId] = useState<string | null>(() => {
     try {
@@ -681,7 +787,7 @@ function App() {
   });
   const [pedidoConferenciaVisualizacao, setPedidoConferenciaVisualizacao] = useState<RelatorioPedidoCotacao | null>(null);
   const [dadosPdfFornecedor, setDadosPdfFornecedor] = useState<{ [pedidoId: string]: { valor: string; observacao: string } }>({});
-  const [pdfFornecedorVisualizacao, setPdfFornecedorVisualizacao] = useState<{ nome: string; conteudo: string } | null>(null);
+  const [pdfFornecedorVisualizacao, setPdfFornecedorVisualizacao] = useState<{ nome: string; conteudo: string; pedidoId?: string } | null>(null);
   const [mostrarAnexoFornecedorExterno, setMostrarAnexoFornecedorExterno] = useState(false);
   const [nomeFornecedorExterno, setNomeFornecedorExterno] = useState('');
 
@@ -718,6 +824,35 @@ function App() {
       }
     }
   }, [autenticado, usuarioLogado]);
+
+  useEffect(() => {
+    if (!autenticado) return;
+    const normalizados = pedidosSemPdfPesado(relatoriosPedidosRef.current);
+    relatoriosPedidosRef.current = normalizados;
+    setRelatoriosPedidosCotacao(normalizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(normalizados)); } catch { /* ignora cota */ }
+    void (async () => {
+      let mudou = false;
+      const atuais = [...(relatoriosPedidosRef.current || [])];
+      for (const pedido of atuais) {
+        if (!pedido.pdfFornecedor?.nome) continue;
+        const idAnexo = `pedido_${pedido.id}`;
+        try {
+          await garantirAnexoNaNuvem(idAnexo, pedido.pdfFornecedor.conteudo);
+          const conteudo = urlArquivoAnexo(idAnexo, { nome: pedido.pdfFornecedor.nome });
+          if (pedido.pdfFornecedor.conteudo !== conteudo) {
+            pedido.pdfFornecedor = { ...pedido.pdfFornecedor, conteudo };
+            mudou = true;
+          }
+        } catch { /* este computador não tem o arquivo para reenviar */ }
+      }
+      if (!mudou) return;
+      relatoriosPedidosRef.current = atuais;
+      setRelatoriosPedidosCotacao(atuais);
+      try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atuais))); } catch { /* ignora cota */ }
+      await gravarNaWeb();
+    })();
+  }, [autenticado]);
   // Uma notificação-resumo no login do Ramara — sem loop e sem uma alerta por tarefa (isso travava o celular)
   useEffect(() => {
     if (!autenticado || usuarioLogado?.id !== 'admin_ramara') {
@@ -743,12 +878,21 @@ function App() {
     } catch {}
   }, [setores, autenticado, usuarioLogado, permissaoNotificacao]);
 
-  // 🧹 Limpar automaticamente tarefas concluídas após 7 dias
+  // 🧹 Limpar automaticamente tarefas concluídas após 7 dias e tirar do histórico as deletadas há mais de 7 dias
   useEffect(() => {
     if (!autenticado) return;
     
     const limparTarefasAntigas = () => {
       const limite = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+      // Histórico de deletadas: após 7 dias fica só o id (lápide), para a tarefa não voltar pela nuvem
+      setTarefasDeletadas(atuais => {
+        const expiradas = expirarTarefasDeletadas(atuais);
+        const mudou = expiradas.length !== atuais.length || expiradas.some((item, indice) => item !== atuais[indice]);
+        if (!mudou) return atuais;
+        localStorage.setItem('rm_tarefas_deletadas', JSON.stringify(expiradas));
+        return expiradas;
+      });
 
       setSetores(setoresAtuais => {
         const expiradas: TarefaDeletada[] = [];
@@ -784,6 +928,7 @@ function App() {
       });
     };
 
+    limparTarefasAntigas(); // Roda já ao entrar, sem esperar o primeiro minuto
     const intervalo = setInterval(limparTarefasAntigas, 60000); // Verificar a cada minuto
     return () => clearInterval(intervalo);
   }, [autenticado]);
@@ -810,12 +955,29 @@ function App() {
     try {
       const controlador = new AbortController();
       const tempoLimite = window.setTimeout(() => controlador.abort(), 25000);
-      const resposta = await fetch('/api/nuvem', { signal: controlador.signal, cache: 'no-store' });
+      const resposta = await fetch(`/api/nuvem?t=${Date.now()}`, { signal: controlador.signal, cache: 'no-store' });
       window.clearTimeout(tempoLimite);
+      if (!resposta.ok) {
+        setErroSenha('Não foi possível consultar as senhas na nuvem. Verifique a conexão e tente novamente.');
+        return;
+      }
       const dados = await resposta.json();
+      if (typeof dados?.versao === 'string' && dados.versao) versaoNuvemRef.current = dados.versao;
       const record = recordDoJsonBin(dados);
       if (resposta.ok && record && typeof record === 'object') {
         registroNuvem = record;
+        if (Array.isArray(record.itensChecklistDeletados)) {
+          const deletados = unirIds(itensChecklistDeletadosRef.current, record.itensChecklistDeletados);
+          itensChecklistDeletadosRef.current = deletados;
+          setItensChecklistDeletados(deletados);
+          localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+        }
+        if (Array.isArray(record.itensChecklist)) {
+          const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, record.itensChecklist);
+          itensChecklistRef.current = itens;
+          setItensChecklist(itens);
+          localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+        }
         if (Array.isArray(record.setores)) {
           const extraidos = extrairFotosSetores(record.setores);
           record.setores = extraidos.semFotos;
@@ -847,7 +1009,10 @@ function App() {
           localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtuais));
         }
       }
-    } catch {}
+    } catch {
+      setErroSenha('Não foi possível verificar sua senha na nuvem. Verifique a conexão e tente novamente.');
+      return;
+    }
 
     const usuario = unirUsuariosCadastrados(extrasAtuais).find(u => u.id === usuarioSelecionado);
     if (!usuario) {
@@ -861,7 +1026,7 @@ function App() {
     } catch {}
     const hashSalva = senhasAtuais[usuario.id];
     const senhaPessoalOk = Boolean(hashSalva && hashDigitada && hashDigitada === hashSalva);
-    const senhaPadraoOk = senhaDigitada === SENHA_MEU_SISTEMA;
+    const senhaPadraoOk = !hashSalva && senhaDigitada === SENHA_MEU_SISTEMA;
     if (!senhaPessoalOk && !senhaPadraoOk) {
       setErroLogin(true);
       setSenhaDigitada('');
@@ -883,6 +1048,18 @@ function App() {
     if (backupUsuario) {
       try {
         const dados = JSON.parse(backupUsuario);
+        if (Array.isArray(dados.itensChecklistDeletados)) {
+          const deletados = unirIds(itensChecklistDeletadosRef.current, dados.itensChecklistDeletados);
+          itensChecklistDeletadosRef.current = deletados;
+          setItensChecklistDeletados(deletados);
+          localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+        }
+        if (Array.isArray(dados.itensChecklist)) {
+          const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, dados.itensChecklist);
+          itensChecklistRef.current = itens;
+          setItensChecklist(itens);
+          localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+        }
         const deletadasBackup = Array.isArray(dados.tarefasDeletadas) ? dados.tarefasDeletadas : [];
         const idsRemovidos = [...idsDeTarefasDeletadas(tarefasDeletadas), ...idsDeTarefasDeletadas(deletadasBackup)];
         if (deletadasBackup.length > 0) {
@@ -894,7 +1071,7 @@ function App() {
         }
         if (dados.pagamentos || Array.isArray(dados.historicoPagamentos)) {
           setHistoricoPagamentos(atuais => {
-            const uniaoLotes = unirLotesPagamento(atuais, dados.historicoPagamentos);
+            const uniaoLotes = unirLotesPagamento(lotesPagamentoDeletadosRef.current, atuais, dados.historicoPagamentos);
             setPagamentos(atuaisPag => unirPagamentosAbertos(atuaisPag, dados.pagamentos, uniaoLotes, pagamentosDeletadosRef.current));
             return uniaoLotes;
           });
@@ -906,6 +1083,20 @@ function App() {
         if (Array.isArray(dados.conferencias)) {
           setConferencias(atuais => unirConferencias(atuais, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id)));
         }
+        if (Array.isArray(dados.lotesConciliacao)) {
+          setLotesConciliacao(atuais => {
+            const uniao = unirLotesConciliacao(atuais, dados.lotesConciliacao);
+            lotesConciliacaoRef.current = uniao;
+            return uniao;
+          });
+        }
+        if (Array.isArray(dados.lotesInteligencia)) {
+          setLotesInteligencia(atuais => {
+            const uniao = unirLotesInteligencia(atuais, dados.lotesInteligencia);
+            lotesInteligenciaRef.current = uniao;
+            return uniao;
+          });
+        }
         if (Array.isArray(dados.pedidosCotacaoDeletados)) {
           const uniaoDel = unirIds(pedidosCotacaoDeletadosRef.current, dados.pedidosCotacaoDeletados);
           pedidosCotacaoDeletadosRef.current = uniaoDel;
@@ -913,7 +1104,7 @@ function App() {
           localStorage.setItem('rm_pedidos_cotacao_deletados', JSON.stringify(uniaoDel));
         }
         if (Array.isArray(dados.relatoriosPedidosCotacao)) {
-          const uniao = unirPedidosCotacao(pedidosCotacaoDeletadosRef.current, relatoriosPedidosRef.current, pedidosSemPdfPesado(dados.relatoriosPedidosCotacao));
+          const uniao = pedidosSemPdfPesado(unirPedidosCotacao(pedidosCotacaoDeletadosRef.current, relatoriosPedidosRef.current, pedidosSemPdfPesado(dados.relatoriosPedidosCotacao)));
           relatoriosPedidosRef.current = uniao;
           setRelatoriosPedidosCotacao(uniao);
           localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(uniao));
@@ -923,9 +1114,21 @@ function App() {
       } catch {}
     }
 
+    if (Array.isArray(registroNuvem?.historicoPagamentosDeletados)) {
+      const uniao = unirIds(lotesPagamentoDeletadosRef.current, registroNuvem.historicoPagamentosDeletados);
+      lotesPagamentoDeletadosRef.current = uniao;
+      setLotesPagamentoDeletados(uniao);
+      localStorage.setItem('rm_lotes_pagamento_deletados', JSON.stringify(uniao));
+    }
+    if (Array.isArray(registroNuvem?.pagamentosDeletados)) {
+      const uniao = unirIds(pagamentosDeletadosRef.current, registroNuvem.pagamentosDeletados);
+      pagamentosDeletadosRef.current = uniao;
+      setPagamentosDeletados(uniao);
+      localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(uniao));
+    }
     if (registroNuvem && (registroNuvem.pagamentos || Array.isArray(registroNuvem.historicoPagamentos))) {
       setHistoricoPagamentos(atuais => {
-        const uniaoLotes = unirLotesPagamento(atuais, registroNuvem.historicoPagamentos);
+        const uniaoLotes = unirLotesPagamento(lotesPagamentoDeletadosRef.current, atuais, registroNuvem.historicoPagamentos);
         localStorage.setItem('rm_historico_pagamentos', JSON.stringify(uniaoLotes));
         setPagamentos(atuaisPag => {
           const uniaoPag = unirPagamentosAbertos(atuaisPag, registroNuvem.pagamentos, uniaoLotes, pagamentosDeletadosRef.current);
@@ -936,7 +1139,7 @@ function App() {
       });
     }
 
-    setTabAtiva(usuario.tipo === 'manutencao' ? 'manutencao' : 'pendencias');
+    setTabAtiva('inicio');
     setSairTelaInteira(false);
     const idsFotoLogin = [
       ...Object.keys(registroNuvem?.fotosPendencias || {}),
@@ -965,7 +1168,11 @@ function App() {
       const atualizadas = { ...senhasUsuarios, [usuarioLogado.id]: hashNova };
       setSenhasUsuarios(atualizadas);
       localStorage.setItem('rm_senhas_usuarios', JSON.stringify(atualizadas));
-      await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, atualizadas);
+      const gravada = await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, atualizadas);
+      if (!gravada) {
+        setErroSenha('A senha ficou salva apenas neste aparelho. Verifique a conexão e tente novamente.');
+        return;
+      }
       setNovaSenha('');
       setConfirmarSenha('');
       setMostrarModalSenha(false);
@@ -982,10 +1189,25 @@ function App() {
     delete atualizadas[idAlvo];
     setSenhasUsuarios(atualizadas);
     localStorage.setItem('rm_senhas_usuarios', JSON.stringify(atualizadas));
-    await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, atualizadas, idAlvo);
+    const gravada = await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, atualizadas, idAlvo);
+    if (!gravada) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ A redefinição ficou apenas neste aparelho e não foi gravada na nuvem.' });
+      return;
+    }
     const nome = unirUsuariosCadastrados(usuariosExtra).find(u => u.id === idAlvo)?.nome || 'usuário';
     setUsuarioResetSenha('');
     setAlerta({ tipo: 'sucesso', msg: `✓ Senha de ${nome} redefinida. No próximo acesso use a senha padrão do sistema e crie uma nova.` });
+  };
+
+  const confirmarUsuarioNaNuvem = async (usuarioId: string, novasSenhas?: SenhasUsuarios) => {
+    const gravado = await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, novasSenhas);
+    if (!gravado) return false;
+
+    const resposta = await fetch(`/api/nuvem?t=${Date.now()}`, { cache: 'no-store' });
+    if (!resposta.ok) return false;
+    const registro = recordDoJsonBin(await resposta.json());
+    return Array.isArray(registro?.usuariosExtra) &&
+      registro.usuariosExtra.some((usuario: Usuario) => usuario.id === usuarioId);
   };
 
   const adicionarNovoUsuario = async () => {
@@ -996,9 +1218,18 @@ function App() {
       setErroNovoUsuario('Informe o nome do novo usuário.');
       return;
     }
-    const jaExiste = unirUsuariosCadastrados(usuariosExtra).some(usuario => usuario.nome.toLowerCase() === nome.toLowerCase());
-    if (jaExiste) {
-      setErroNovoUsuario('Já existe um usuário com esse nome.');
+    const usuarioExistente = unirUsuariosCadastrados(usuariosExtra).find(usuario => usuario.nome.toLowerCase() === nome.toLowerCase());
+    if (usuarioExistente) {
+      try {
+        const sincronizado = await confirmarUsuarioNaNuvem(usuarioExistente.id);
+        if (sincronizado) {
+          setAlerta({ tipo: 'sucesso', msg: `✓ O usuário ${usuarioExistente.nome} já existia neste aparelho e foi sincronizado com a nuvem.` });
+        } else {
+          setAlerta({ tipo: 'erro', msg: `⚠️ O usuário ${usuarioExistente.nome} continua apenas neste aparelho. Tente sincronizar novamente quando a conexão estiver disponível.` });
+        }
+      } catch {
+        setAlerta({ tipo: 'erro', msg: `⚠️ Não foi possível confirmar a sincronização de ${usuarioExistente.nome}. Tente novamente.` });
+      }
       return;
     }
     if (novoUsuarioSenha.trim() && novoUsuarioSenha.trim().length < 4) {
@@ -1026,7 +1257,16 @@ function App() {
       setSenhasUsuarios(senhasAtualizadas);
       localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtualizadas));
     }
-    await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, senhasAtualizadas);
+    try {
+      const sincronizado = await confirmarUsuarioNaNuvem(novoUsuario.id, senhasAtualizadas);
+      if (!sincronizado) {
+        setAlerta({ tipo: 'erro', msg: '⚠️ O usuário ficou salvo apenas neste aparelho. Tente sincronizá-lo novamente quando a conexão estiver disponível.' });
+        return;
+      }
+    } catch {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Não foi possível confirmar a gravação do usuário na nuvem. Tente sincronizá-lo novamente.' });
+      return;
+    }
     setNovoUsuarioNome('');
     setNovoUsuarioSenha('');
     setNovoUsuarioPermissoes(permissoesPadraoNovoUsuario());
@@ -1053,7 +1293,11 @@ function App() {
     const senhasAtualizadas = omitirIdsDoMapa(senhasUsuarios, [usuarioId]);
     setSenhasUsuarios(senhasAtualizadas);
     localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtualizadas));
-    await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, senhasAtualizadas, usuarioId);
+    const gravado = await gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [], undefined, senhasAtualizadas, usuarioId);
+    if (!gravado) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ O usuário foi removido apenas deste aparelho. A remoção não foi gravada na nuvem.' });
+      return;
+    }
     setAlerta({ tipo: 'sucesso', msg: '✓ Usuário removido.' });
   };
 
@@ -1081,13 +1325,22 @@ function App() {
         cadastroProdutos: 'cotacao',
         cadastroFornecedores: 'cotacao',
         pagamentos: 'pagamentos',
+        consultaPagamentos: 'pagamentos',
         reciboComprador: 'pagamentos',
         elieuda: 'elieuda',
         conferencia: 'conferencias',
+        notasConferidas: 'conferencias',
         relatorios: 'relatorios',
         manutencao: 'manutencao',
         dados: 'dados',
-        producao: 'producao'
+        producao: 'producao',
+        caixaOperacional: 'caixaOperacional',
+        estoque: 'estoque',
+        conciliacao: 'conciliacao',
+        conciliacaoCompras: 'conciliacao',
+        arquivoCeasa: 'conciliacao',
+        inteligenciaEstoque: 'conciliacao',
+        consultasConciliacao: 'conciliacao'
       };
       const permissaoDaAba = abaPorPermissao[tabAtiva];
     if (permissaoDaAba && !novasPermissoes[permissaoDaAba]) setTabAtiva('seguranca');
@@ -1096,7 +1349,12 @@ function App() {
     }
     setStatusSalvoSeguranca('Salvando na nuvem...');
     setUsuarioPermissaoSalvaId(usuarioId);
-    await gravarNaWeb();
+    const gravado = await gravarNaWeb();
+    if (!gravado) {
+      setStatusSalvoSeguranca('⚠️ Permissão alterada apenas neste aparelho; não foi gravada na nuvem.');
+      setAlerta({ tipo: 'erro', msg: '⚠️ A permissão foi alterada apenas neste aparelho. Tente salvar novamente quando a conexão estiver disponível.' });
+      return;
+    }
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const mensagem = `✓ SALVO às ${hora} — ${usuarioBase.nome}: ${rotuloPermissoes(novasPermissoes)}`;
     setStatusSalvoSeguranca(mensagem);
@@ -1115,15 +1373,21 @@ function App() {
   };
 
  const carregarTudo = useCallback(async () => {
-    if (sincronizacaoEmCursoRef.current || gravandoNuvemRef.current) return;
+    if (sincronizacaoEmCursoRef.current || gravandoNuvemRef.current) {
+      sincronizacaoAdiadaRef.current = true;
+      return;
+    }
     sincronizacaoEmCursoRef.current = true;
     const controlador = new AbortController();
     const tempoLimite = window.setTimeout(() => controlador.abort(), 25000);
     try {
       setStatusNuvem('⏳ Sincronizando...');
       const versaoConhecida = versaoNuvemRef.current;
+      const consulta = new URLSearchParams();
+      if (versaoConhecida) consulta.set('desde', versaoConhecida);
+      consulta.set('t', String(Date.now()));
       const resposta = await fetch(
-        versaoConhecida ? `/api/nuvem?desde=${encodeURIComponent(versaoConhecida)}` : '/api/nuvem',
+        `/api/nuvem?${consulta}`,
         { method: 'GET', cache: 'no-store', signal: controlador.signal }
       );
 
@@ -1142,6 +1406,18 @@ function App() {
       }
       const dados = { record: recordDoJsonBin(dadosBrutos) };
       if (resposta.ok && dados.record && typeof dados.record === 'object') {
+        if (Array.isArray(dados.record.itensChecklistDeletados)) {
+          const deletados = unirIds(itensChecklistDeletadosRef.current, dados.record.itensChecklistDeletados);
+          itensChecklistDeletadosRef.current = deletados;
+          setItensChecklistDeletados(deletados);
+          localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+        }
+        if (Array.isArray(dados.record.itensChecklist)) {
+          const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, dados.record.itensChecklist);
+          itensChecklistRef.current = itens;
+          setItensChecklist(itens);
+          localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+        }
         const deletadasNuvem = Array.isArray(dados.record.tarefasDeletadas) ? dados.record.tarefasDeletadas : [];
         const idsRemovidos = [...idsDeTarefasDeletadas(tarefasDeletadasRef.current), ...idsDeTarefasDeletadas(deletadasNuvem)];
         if (deletadasNuvem.length > 0) {
@@ -1169,9 +1445,15 @@ function App() {
           setPagamentosDeletados(uniao);
           localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(uniao));
         }
+        if (Array.isArray(dados.record.historicoPagamentosDeletados)) {
+          const uniao = unirIds(lotesPagamentoDeletadosRef.current, dados.record.historicoPagamentosDeletados);
+          lotesPagamentoDeletadosRef.current = uniao;
+          setLotesPagamentoDeletados(uniao);
+          localStorage.setItem('rm_lotes_pagamento_deletados', JSON.stringify(uniao));
+        }
         if (dados.record.pagamentos || Array.isArray(dados.record.historicoPagamentos)) {
           setHistoricoPagamentos(atuais => {
-            const uniaoLotes = unirLotesPagamento(atuais, dados.record.historicoPagamentos);
+            const uniaoLotes = unirLotesPagamento(lotesPagamentoDeletadosRef.current, atuais, dados.record.historicoPagamentos);
             localStorage.setItem('rm_historico_pagamentos', JSON.stringify(uniaoLotes));
             setPagamentos(atuaisPag => {
               const uniaoPag = unirPagamentosAbertos(atuaisPag, dados.record.pagamentos, uniaoLotes, pagamentosDeletadosRef.current);
@@ -1181,11 +1463,20 @@ function App() {
             return uniaoLotes;
           });
         }
-        if (Array.isArray(dados.record.fornecedoresCotacao)) setFornecedoresCotacao(dados.record.fornecedoresCotacao);
+        if (Array.isArray(dados.record.fornecedoresCotacao)) {
+          setFornecedoresCotacao(atuais => {
+            const uniao = unirFornecedoresCotacao(dados.record.fornecedoresCotacao, atuais);
+            localStorage.setItem('rm_fornecedores_cotacao', JSON.stringify(uniao));
+            return uniao;
+          });
+        }
         if (Array.isArray(dados.record.itensCotacao)) {
           setItensCotacao(itensAtuais => mesclarItensCotacao(itensAtuais, dados.record.itensCotacao));
         }
-        if (dados.record.quantidadesElieuda) setQuantidadesElieuda(dados.record.quantidadesElieuda);
+        if (dados.record.quantidadesElieuda && !elieudaAlteradaRef.current) {
+          setQuantidadesElieuda(dados.record.quantidadesElieuda);
+          localStorage.setItem('rm_elieuda', JSON.stringify(dados.record.quantidadesElieuda));
+        }
         if (dados.record.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.record.custosCatalogo));
         if (Array.isArray(dados.record.conferenciasDeletadas)) {
           const uniao = unirIds(conferenciasDeletadasRef.current, dados.record.conferenciasDeletadas);
@@ -1199,6 +1490,22 @@ function App() {
             localStorage.setItem('rm_conferencias', JSON.stringify(uniao));
             localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: uniao }));
             conferenciasRef.current = uniao;
+            return uniao;
+          });
+        }
+        if (Array.isArray(dados.record.lotesConciliacao)) {
+          setLotesConciliacao(atuais => {
+            const uniao = unirLotesConciliacao(atuais, dados.record.lotesConciliacao);
+            lotesConciliacaoRef.current = uniao;
+            gravarJsonLocal('rm_lotes_conciliacao', uniao);
+            return uniao;
+          });
+        }
+        if (Array.isArray(dados.record.lotesInteligencia)) {
+          setLotesInteligencia(atuais => {
+            const uniao = unirLotesInteligencia(atuais, dados.record.lotesInteligencia);
+            lotesInteligenciaRef.current = uniao;
+            gravarJsonLocal('rm_lotes_inteligencia', uniao);
             return uniao;
           });
         }
@@ -1326,6 +1633,22 @@ function App() {
           localStorage.setItem('rm_contas_deposito', JSON.stringify(contas));
           localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(depositos));
         }
+        if (Array.isArray(dados.record.caixaOperacionalDeletados)) {
+          const uniao = unirIds(movimentosCaixaDeletadosRef.current, dados.record.caixaOperacionalDeletados);
+          movimentosCaixaDeletadosRef.current = uniao;
+          setMovimentosCaixaDeletados(uniao);
+          localStorage.setItem('rm_caixa_operacional_deletados', JSON.stringify(uniao));
+        }
+        if (Array.isArray(dados.record.caixaOperacional)) {
+          const lista = unirMovimentosCaixaOperacional(
+            movimentosCaixaDeletadosRef.current,
+            movimentosCaixaRef.current,
+            dados.record.caixaOperacional
+          );
+          movimentosCaixaRef.current = lista;
+          setMovimentosCaixaOperacional(lista);
+          localStorage.setItem('rm_caixa_operacional', JSON.stringify(lista));
+        }
         setStatusNuvem('🟢 Nuvem');
         const idsFoto = [
           ...Object.keys(dados.record.fotosPendencias || {}),
@@ -1338,6 +1661,11 @@ function App() {
     } finally {
       window.clearTimeout(tempoLimite);
       sincronizacaoEmCursoRef.current = false;
+      if (sincronizacaoAdiadaRef.current) {
+        sincronizacaoAdiadaRef.current = false;
+        window.clearTimeout(atrasoSyncRef.current);
+        atrasoSyncRef.current = window.setTimeout(() => { void carregarTudo(); }, 1500);
+      }
     }
   }, []);
 
@@ -1360,6 +1688,7 @@ function App() {
     window.addEventListener('pageshow', sincronizarAutomaticamente);
     return () => {
       window.clearInterval(intervalo);
+      window.clearTimeout(atrasoSyncRef.current);
       document.removeEventListener('visibilitychange', sincronizarAutomaticamente);
       window.removeEventListener('focus', sincronizarAutomaticamente);
       window.removeEventListener('online', sincronizarAutomaticamente);
@@ -1377,9 +1706,21 @@ function App() {
       conferencias: conferencias.length
     };
     
-    const novosDados = { ...relatoriosPorData, [hoje]: novoRelatorio };
-    setRelatoriosPorData(novosDados);
-    localStorage.setItem('rm_relatorios_por_data', JSON.stringify(novosDados));
+    setRelatoriosPorData(atuais => {
+      const atual = atuais[hoje];
+      if (
+        atual
+        && atual.pendentes === novoRelatorio.pendentes
+        && atual.concluidas === novoRelatorio.concluidas
+        && atual.pagamentos === novoRelatorio.pagamentos
+        && atual.conferencias === novoRelatorio.conferencias
+      ) {
+        return atuais;
+      }
+      const novosDados = { ...atuais, [hoje]: novoRelatorio };
+      localStorage.setItem('rm_relatorios_por_data', JSON.stringify(novosDados));
+      return novosDados;
+    });
   }, [autenticado, setores, pagamentos, conferencias]);
 
   useEffect(() => {
@@ -1395,10 +1736,28 @@ function App() {
   }, [ordensManutencao, autenticado]);
 
   useEffect(() => {
+    if (!autenticado) return;
+    localStorage.setItem('rm_checklist_items', JSON.stringify(itensChecklist));
+    localStorage.setItem('rm_checklist_deletados', JSON.stringify(itensChecklistDeletados));
+  }, [itensChecklist, itensChecklistDeletados, autenticado]);
+
+  useEffect(() => {
     if (autenticado) {
       localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensCotacao));
     }
   }, [itensCotacao, autenticado]);
+
+  useEffect(() => {
+    if (autenticado) {
+      gravarJsonLocal('rm_lotes_conciliacao', lotesConciliacao);
+    }
+  }, [lotesConciliacao, autenticado]);
+
+  useEffect(() => {
+    if (autenticado) {
+      gravarJsonLocal('rm_lotes_inteligencia', lotesInteligencia);
+    }
+  }, [lotesInteligencia, autenticado]);
 
   const salvarCopiaSegura = useCallback((override?: Partial<{ setores: Setor[]; pagamentos: PagamentosState; historicoPagamentos: LotePagamentoHistorico[]; fornecedoresCotacao: FornecedorCotacao[]; itensCotacao: ItemCotacao[]; quantidadesElieuda: QuantidadesElieuda; conferencias: RegistroConferencia[]; relatoriosPedidosCotacao: RelatorioPedidoCotacao[]; relatoriosPorData: { [data: string]: { pendentes: number; concluidas: number; pagamentos: number; conferencias: number } }; ultimaAtualizacao: string; tarefasDeletadas: TarefaDeletada[] }>) => {
     const payload = {
@@ -1412,6 +1771,8 @@ function App() {
       relatoriosPedidosCotacao: pedidosSemPdfPesado(override?.relatoriosPedidosCotacao ?? relatoriosPedidosCotacao),
       relatoriosPorData: override?.relatoriosPorData ?? relatoriosPorData,
       tarefasDeletadas: override?.tarefasDeletadas ?? tarefasDeletadas,
+      itensChecklist: itensChecklistRef.current,
+      itensChecklistDeletados: itensChecklistDeletadosRef.current,
       ultimaAtualizacao: override?.ultimaAtualizacao ?? new Date().toLocaleString('pt-BR')
     };
 
@@ -1431,6 +1792,12 @@ function App() {
   const gravarNaWebRef = useRef<(...args: any[]) => Promise<unknown> | void>(() => Promise.resolve());
   const edicoesAutomaticasPendentesRef = useRef<{ itensCotacao?: ItemCotacao[]; quantidadesElieuda?: QuantidadesElieuda }>({});
   const atrasoGravacaoEdicoesRef = useRef<number | null>(null);
+  const virarMesLancamentoPagamentosRef = useRef(() => {});
+  useEffect(() => {
+    if (!autenticado) return;
+    virarMesLancamentoPagamentosRef.current();
+  }, [autenticado]);
+
   const agendarGravacaoEdicao = (alteracoes: { itensCotacao?: ItemCotacao[]; quantidadesElieuda?: QuantidadesElieuda }) => {
     edicoesAutomaticasPendentesRef.current = { ...edicoesAutomaticasPendentesRef.current, ...alteracoes };
     if (atrasoGravacaoEdicoesRef.current !== null) window.clearTimeout(atrasoGravacaoEdicoesRef.current);
@@ -1448,9 +1815,16 @@ function App() {
       );
     }, 600);
   };
+
   useEffect(() => () => {
     if (atrasoGravacaoEdicoesRef.current !== null) window.clearTimeout(atrasoGravacaoEdicoesRef.current);
   }, []);
+
+  useEffect(() => {
+    if (usuarioLogado) return;
+    const id = window.setInterval(() => setAgoraLogin(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, [usuarioLogado]);
 
   if (!usuarioLogado) {
     let usuariosParaLogin = USUARIOS_SISTEMA;
@@ -1459,56 +1833,86 @@ function App() {
     } catch {
       usuariosParaLogin = USUARIOS_SISTEMA;
     }
-    const campoLogin = 'w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-semibold text-slate-900 outline-none transition placeholder:font-medium placeholder:text-slate-400 focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/15';
+    const horaLogin = agoraLogin.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const noiteLogin = agoraLogin.getHours() >= 18 || agoraLogin.getHours() < 6;
     return (
-      <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-gradient-to-br from-teal-950 via-teal-700 to-emerald-900 font-sans">
-        <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-teal-300/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 bottom-24 h-80 w-80 rounded-full bg-emerald-300/15 blur-3xl" />
-        <div className="relative z-10 flex flex-1 items-center justify-center p-5">
-          <div className="w-full max-w-[440px] overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-8 text-center shadow-2xl shadow-teal-950/30 backdrop-blur-xl">
-            <div className="mb-5 inline-flex items-center gap-3 rounded-2xl bg-teal-50 p-2 pr-4 ring-1 ring-teal-100">
-              <LogoRm size={80} />
-              <div className="text-left">
-                <p className="m-0 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-700">RM</p>
-                <h2 className="m-0 text-xl font-black tracking-tight text-slate-900">Sistema-Gestão</h2>
+      <div className="login-tela grid min-h-screen bg-white text-slate-900 min-[900px]:grid-cols-[minmax(280px,42%)_1fr]" style={{ fontFamily: 'Inter, "Segoe UI", sans-serif' }}>
+        <aside className="login-faixa">
+          <div className="login-bloco">
+            <div className="login-topo">
+              <div className="login-marca">
+                <img src="/rm-icon-login.png?v=2" alt="RM" />
+              </div>
+              <div className="leading-none">
+                <p className="m-0 text-[11px] font-medium text-white/80">RM</p>
+                <strong className="mt-1 block text-[20px] font-semibold tracking-tight">Sistema-Gestão</strong>
               </div>
             </div>
-            <p className="mb-1 mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-600">Inovação & Gestão</p>
-            <p className="mb-6 mt-2 text-sm text-slate-500">Entre com o seu usuário para acessar o painel</p>
-            <form onSubmit={fazerLogin} className="flex flex-col gap-4 text-left">
-              <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Usuário</label>
-                <select value={usuarioSelecionado} onChange={(e) => setUsuarioSelecionado(e.target.value)} className={campoLogin}>
-                  <option value="">Selecione quem está acessando...</option>
-                  {usuariosParaLogin.map(u => (
-                    <option key={u.id} value={u.id}>{u.nome}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Senha de acesso</label>
-                <div className="flex items-stretch gap-2">
-                  <input type={mostrarSenhaLogin ? 'text' : 'password'} placeholder="Digite sua senha" value={senhaDigitada} onChange={(e) => setSenhaDigitada(e.target.value)} autoComplete="current-password" className={`${campoLogin} min-w-0 flex-1`} />
-                  <button type="button" onClick={() => setMostrarSenhaLogin(atual => !atual)} className="login-mostrar shrink-0 cursor-pointer rounded-xl border border-slate-200 bg-white px-3 text-[11px] font-bold uppercase tracking-wide text-teal-700 hover:bg-teal-50">
-                    {mostrarSenhaLogin ? 'Ocultar' : 'Mostrar'}
-                  </button>
-                </div>
-              </div>
-              {erroLogin && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-center text-sm font-bold text-red-700">Usuário ou senha inválidos</div>
-              )}
-              {erroSenha && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-center text-sm font-bold text-amber-800">{erroSenha}</div>
-              )}
-              <button type="submit" disabled={entrando} className="mt-1 w-full cursor-pointer rounded-xl border-0 bg-teal-700 px-4 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-teal-900/20 transition hover:bg-teal-600 active:scale-[0.99] disabled:cursor-wait disabled:opacity-80">
-                {entrando ? 'Entrando...' : 'Entrar no sistema'}
-              </button>
-            </form>
+            <p className="login-frase">“O que começou como uma forma de organizar minhas próprias pendências se transformou em uma ideia maior: criar, inovar e transformar desafios em soluções.”</p>
+            <div className="login-ilustracao">
+              <img src="/login-mulher-montanhas.jpg?v=3" alt="" />
+            </div>
           </div>
-        </div>
-        <p className="relative z-10 mx-auto mb-6 max-w-2xl px-6 text-center text-sm italic leading-relaxed text-white/90">
-          “O que começou como uma forma de organizar minhas próprias pendências se transformou em uma ideia maior: criar, inovar e transformar desafios em soluções.”
-        </p>
+          <div className="login-rodape">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              {noiteLogin ? (
+                <svg viewBox="0 0 24 24" className="h-5 w-5 text-amber-300" fill="currentColor" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z" /></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-5 w-5 text-amber-200" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg>
+              )}
+              <span>{noiteLogin ? 'Noite' : 'Dia'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-white/80" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .4-8 6 6 0 0 0-11.5-1.5A4 4 0 0 0 7 18z" /></svg>
+              <div className="leading-none">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">Hora</span>
+                <strong className="text-[15px] font-semibold tabular-nums">{horaLogin}</strong>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex items-center justify-center bg-white px-6 py-10">
+          <form onSubmit={fazerLogin} className="w-full max-w-[380px]">
+            <h1 className="m-0 text-[30px] font-bold leading-none tracking-tight text-[#111827]">Bem-vindo de volta</h1>
+            <p className="mb-7 mt-3 text-sm font-normal leading-5 text-slate-500">Entre para acessar o painel de inovação e gestão.</p>
+
+            <label className="mb-1.5 block text-[13px] font-medium text-slate-800" htmlFor="login-usuario">Usuário</label>
+            <div className="mb-4 flex h-11 w-full items-center rounded-lg border border-slate-200 bg-white px-3">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3.2" /><path d="M5 19c1.2-3 3.4-4.5 7-4.5s5.8 1.5 7 4.5" /></svg>
+              <select id="login-usuario" value={usuarioSelecionado} onChange={(e) => setUsuarioSelecionado(e.target.value)} className={`min-w-0 flex-1 cursor-pointer appearance-none border-0 bg-transparent px-2.5 text-sm font-normal leading-5 outline-none ${usuarioSelecionado ? 'text-slate-800' : 'text-slate-400'}`}>
+                <option value="">Selecione o usuário...</option>
+                {usuariosParaLogin.map(u => (
+                  <option key={u.id} value={u.id}>{u.nome}</option>
+                ))}
+              </select>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </div>
+
+            <label className="mb-1.5 block text-[13px] font-medium text-slate-800" htmlFor="login-senha">Senha de Acesso</label>
+            <div className="mb-5 flex h-11 w-full items-center rounded-lg border border-slate-200 bg-white px-3">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+              <input id="login-senha" type={mostrarSenhaLogin ? 'text' : 'password'} placeholder="Digite sua senha" value={senhaDigitada} onChange={(e) => setSenhaDigitada(e.target.value)} autoComplete="current-password" className="min-w-0 flex-1 border-0 bg-transparent px-2.5 text-sm font-normal leading-5 text-slate-800 outline-none placeholder:text-slate-400" />
+              <button type="button" onClick={() => setMostrarSenhaLogin(atual => !atual)} className="login-mostrar shrink-0 cursor-pointer text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                {mostrarSenhaLogin ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
+
+            {erroLogin && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700">Usuário ou senha inválidos</div>
+            )}
+            {erroSenha && (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-center text-sm font-medium text-amber-800">{erroSenha}</div>
+            )}
+
+            <button type="submit" disabled={entrando} className="h-11 w-full cursor-pointer rounded-lg border-0 bg-[#0a5c56] text-[15px] font-semibold text-white transition hover:bg-[#084843] disabled:cursor-wait disabled:opacity-80">
+              {entrando ? 'Entrando...' : 'Entrar no sistema'}
+            </button>
+            <button type="button" onClick={() => setErroSenha('Peça à administração para redefinir a senha na aba Segurança.')} className="login-mostrar mt-3 w-full cursor-pointer text-center text-[13px] font-medium text-[#0a5c56] underline underline-offset-2">
+              Esqueceu a senha?
+            </button>
+          </form>
+        </main>
       </div>
     );
   }
@@ -1521,6 +1925,18 @@ function App() {
   };
 
   const aplicarBackup = (dados: any) => {
+    if (Array.isArray(dados.itensChecklistDeletados)) {
+      const deletados = unirIds(itensChecklistDeletadosRef.current, dados.itensChecklistDeletados);
+      itensChecklistDeletadosRef.current = deletados;
+      setItensChecklistDeletados(deletados);
+      localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+    }
+    if (Array.isArray(dados.itensChecklist)) {
+      const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, dados.itensChecklist);
+      itensChecklistRef.current = itens;
+      setItensChecklist(itens);
+      localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+    }
     if (Array.isArray(dados.setores)) {
       const extraidos = extrairFotosSetores(dados.setores);
       setSetores(normalizarSetores(aplicarFotosNasTarefas(extraidos.semFotos, extraidos.fotos)));
@@ -1529,16 +1945,8 @@ function App() {
     if (dados.pagamentos) setPagamentos(dados.pagamentos);
     if (Array.isArray(dados.historicoPagamentos)) setHistoricoPagamentos(dados.historicoPagamentos);
     if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
-    if (Array.isArray(dados.itensCotacao)) {
-      const itens = mesclarItensCotacao(itensCotacaoRef.current, dados.itensCotacao);
-      itensCotacaoRef.current = itens;
-      setItensCotacao(itens);
-      agendarGravacaoEdicao({ itensCotacao: itens });
-    }
-    if (dados.quantidadesElieuda) {
-      setQuantidadesElieuda(dados.quantidadesElieuda);
-      agendarGravacaoEdicao({ quantidadesElieuda: dados.quantidadesElieuda });
-    }
+    if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
+    if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
     if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
     if (Array.isArray(dados.conferencias)) {
       const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
@@ -1617,6 +2025,18 @@ function App() {
         const dados = JSON.parse(texto);
         if (!dados || typeof dados !== 'object') throw new Error('Arquivo inválido');
 
+        if (Array.isArray(dados.itensChecklistDeletados)) {
+          const deletados = unirIds(itensChecklistDeletadosRef.current, dados.itensChecklistDeletados);
+          itensChecklistDeletadosRef.current = deletados;
+          setItensChecklistDeletados(deletados);
+          localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+        }
+        if (Array.isArray(dados.itensChecklist)) {
+          const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, dados.itensChecklist);
+          itensChecklistRef.current = itens;
+          setItensChecklist(itens);
+          localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+        }
         if (Array.isArray(dados.setores)) {
           const extraidos = extrairFotosSetores(dados.setores);
           setSetores(normalizarSetores(aplicarFotosNasTarefas(extraidos.semFotos, extraidos.fotos)));
@@ -1625,16 +2045,8 @@ function App() {
         if (dados.pagamentos) setPagamentos(dados.pagamentos);
         if (Array.isArray(dados.historicoPagamentos)) setHistoricoPagamentos(dados.historicoPagamentos);
         if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
-        if (Array.isArray(dados.itensCotacao)) {
-          const itens = mesclarItensCotacao(itensCotacaoRef.current, dados.itensCotacao);
-          itensCotacaoRef.current = itens;
-          setItensCotacao(itens);
-          agendarGravacaoEdicao({ itensCotacao: itens });
-        }
-        if (dados.quantidadesElieuda) {
-          setQuantidadesElieuda(dados.quantidadesElieuda);
-          agendarGravacaoEdicao({ quantidadesElieuda: dados.quantidadesElieuda });
-        }
+        if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
+        if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
         if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
         if (Array.isArray(dados.conferencias)) {
           const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
@@ -1670,15 +2082,14 @@ function App() {
   };
 
   const gravarNaWeb = async (novosSetores?: Setor[], novosPagamentos?: PagamentosState, novoHistorico?: LotePagamentoHistorico[], novosFornCotacao?: FornecedorCotacao[], novosItensCotacao?: ItemCotacao[], novasQuantidades?: QuantidadesElieuda, novasConferencias?: RegistroConferencia[], idsTarefasRemovidas: string[] = [], listaDeletadas?: TarefaDeletada[], novasSenhas?: SenhasUsuarios, senhaRemovidaId?: string) => {
-    const executar = async () => {
-    gravandoNuvemRef.current = true;
+    const executar = async (): Promise<boolean | 'retry'> => {
     try {
     const dadosSetores = novosSetores !== undefined ? novosSetores : setoresRef.current;
     const dadosPagamentos = novosPagamentos !== undefined ? novosPagamentos : pagamentosRef.current;
     const dadosHistorico = novoHistorico !== undefined ? novoHistorico : historicoPagamentosRef.current;
-    const dadosFornCotacao = novosFornCotacao !== undefined ? novosFornCotacao : fornecedoresCotacao;
-    const dadosItensCotacao = novosItensCotacao !== undefined ? novosItensCotacao : itensCotacaoRef.current;
-    const dadosElieuda = novasQuantidades !== undefined ? novasQuantidades : quantidadesElieuda;
+    let dadosFornCotacao = novosFornCotacao !== undefined ? novosFornCotacao : fornecedoresCotacao;
+    let dadosItensCotacao = novosItensCotacao !== undefined ? novosItensCotacao : itensCotacaoRef.current;
+    let dadosElieuda = novasQuantidades !== undefined ? novasQuantidades : quantidadesElieuda;
     const dadosConferencias = novasConferencias !== undefined ? novasConferencias : conferenciasRef.current;
     const deletadasParaSalvar = unirTarefasDeletadas(listaDeletadas ?? tarefasDeletadas, idsTarefasRemovidas.map(id => ({ id })));
     const dadosSenhas = novasSenhas ?? senhasUsuarios;
@@ -1720,6 +2131,7 @@ function App() {
       let conferidosParaNuvem = pedidosConferidosRef.current;
       let conferenciasDeletadasParaNuvem = conferenciasDeletadasRef.current;
       let pagamentosDeletadosParaNuvem = pagamentosDeletadosRef.current;
+      let lotesPagamentoDeletadosParaNuvem = lotesPagamentoDeletadosRef.current;
       let pedidosCotacaoDeletadosParaNuvem = pedidosCotacaoDeletadosRef.current;
       let usuariosParaNuvem = usuariosExtraRef.current;
       let usuariosDeletadosParaNuvem = usuariosExtraDeletadosRef.current;
@@ -1735,13 +2147,50 @@ function App() {
       let contasDepositoParaNuvem = contasDepositoRef.current;
       let lancamentosDepositoParaNuvem = lancamentosDepositoRef.current;
       let lancamentosDepositoDeletadosParaNuvem = lancamentosDepositoDeletadosRef.current;
+      let caixaOperacionalParaNuvem = movimentosCaixaRef.current;
+      let caixaOperacionalDeletadosParaNuvem = movimentosCaixaDeletadosRef.current;
+      let lotesConciliacaoParaNuvem = lotesConciliacaoRef.current;
+      let lotesInteligenciaParaNuvem = lotesInteligenciaRef.current;
+      let checklistParaNuvem = itensChecklistRef.current;
+      let checklistDeletadosParaNuvem = itensChecklistDeletadosRef.current;
       let conseguiuLerNuvem = false;
+      let versaoBase = '';
       try {
-        const respostaAtual = await fetch('/api/nuvem', { cache: 'no-store' });
+        const respostaAtual = await fetch(`/api/nuvem?t=${Date.now()}`, { cache: 'no-store' });
         const dadosAtuaisBrutos = await respostaAtual.json();
+        if (typeof dadosAtuaisBrutos?.versao === 'string') versaoBase = dadosAtuaisBrutos.versao;
         const dadosAtuais = { record: recordDoJsonBin(dadosAtuaisBrutos) };
         if (respostaAtual.ok && dadosAtuais.record) {
           conseguiuLerNuvem = true;
+          checklistDeletadosParaNuvem = unirIds(checklistDeletadosParaNuvem, dadosAtuais.record.itensChecklistDeletados);
+          checklistParaNuvem = mesclarChecklist(
+            checklistDeletadosParaNuvem,
+            checklistParaNuvem,
+            Array.isArray(dadosAtuais.record.itensChecklist) ? dadosAtuais.record.itensChecklist : []
+          );
+          itensChecklistDeletadosRef.current = checklistDeletadosParaNuvem;
+          itensChecklistRef.current = checklistParaNuvem;
+          setItensChecklistDeletados(checklistDeletadosParaNuvem);
+          setItensChecklist(checklistParaNuvem);
+          localStorage.setItem('rm_checklist_deletados', JSON.stringify(checklistDeletadosParaNuvem));
+          localStorage.setItem('rm_checklist_items', JSON.stringify(checklistParaNuvem));
+          if (Array.isArray(dadosAtuais.record.itensCotacao)) {
+            dadosItensCotacao = mesclarItensCotacao(dadosAtuais.record.itensCotacao, itensCotacaoRef.current, dadosItensCotacao);
+            itensCotacaoRef.current = dadosItensCotacao;
+            setItensCotacao(dadosItensCotacao);
+            localStorage.setItem('rm_itens_cotacao', JSON.stringify(dadosItensCotacao));
+          }
+          if (dadosAtuais.record.quantidadesElieuda && typeof dadosAtuais.record.quantidadesElieuda === 'object') {
+            const localGanha = elieudaAlteradaRef.current || novasQuantidades !== undefined;
+            dadosElieuda = unirQuantidadesElieuda(dadosAtuais.record.quantidadesElieuda, dadosElieuda, localGanha);
+            setQuantidadesElieuda(dadosElieuda);
+            localStorage.setItem('rm_elieuda', JSON.stringify(dadosElieuda));
+          }
+          if (Array.isArray(dadosAtuais.record.fornecedoresCotacao)) {
+            dadosFornCotacao = unirFornecedoresCotacao(dadosAtuais.record.fornecedoresCotacao, dadosFornCotacao);
+            setFornecedoresCotacao(dadosFornCotacao);
+            localStorage.setItem('rm_fornecedores_cotacao', JSON.stringify(dadosFornCotacao));
+          }
           if (dadosAtuais.record.custosCatalogo) {
             const uniaoCustos = aplicarCustosRecebidos(custosCatalogoRef.current, dadosAtuais.record.custosCatalogo);
             custosCatalogoRef.current = uniaoCustos;
@@ -1762,11 +2211,15 @@ function App() {
               return uniao;
             });
           }
-          historicoParaNuvem = unirLotesPagamento(historicoPagamentosRef.current, dadosHistorico, dadosAtuais.record.historicoPagamentos);
           pagamentosDeletadosParaNuvem = unirIds(pagamentosDeletadosRef.current, dadosAtuais.record.pagamentosDeletados);
           pagamentosDeletadosRef.current = pagamentosDeletadosParaNuvem;
           setPagamentosDeletados(pagamentosDeletadosParaNuvem);
           localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(pagamentosDeletadosParaNuvem));
+          lotesPagamentoDeletadosParaNuvem = unirIds(lotesPagamentoDeletadosRef.current, dadosAtuais.record.historicoPagamentosDeletados);
+          lotesPagamentoDeletadosRef.current = lotesPagamentoDeletadosParaNuvem;
+          setLotesPagamentoDeletados(lotesPagamentoDeletadosParaNuvem);
+          localStorage.setItem('rm_lotes_pagamento_deletados', JSON.stringify(lotesPagamentoDeletadosParaNuvem));
+          historicoParaNuvem = unirLotesPagamento(lotesPagamentoDeletadosParaNuvem, historicoPagamentosRef.current, dadosHistorico, dadosAtuais.record.historicoPagamentos);
           pagamentosParaNuvem = unirPagamentosAbertos(
             pagamentosRef.current,
             unirPagamentosAbertos(dadosPagamentos, dadosAtuais.record.pagamentos, historicoParaNuvem, pagamentosDeletadosParaNuvem),
@@ -1900,6 +2353,34 @@ function App() {
             localStorage.setItem('rm_contas_deposito', JSON.stringify(contasDepositoParaNuvem));
             localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(lancamentosDepositoParaNuvem));
           }
+          if (Array.isArray(dadosAtuais.record.caixaOperacionalDeletados)) {
+            caixaOperacionalDeletadosParaNuvem = unirIds(movimentosCaixaDeletadosRef.current, dadosAtuais.record.caixaOperacionalDeletados);
+            movimentosCaixaDeletadosRef.current = caixaOperacionalDeletadosParaNuvem;
+            setMovimentosCaixaDeletados(caixaOperacionalDeletadosParaNuvem);
+            localStorage.setItem('rm_caixa_operacional_deletados', JSON.stringify(caixaOperacionalDeletadosParaNuvem));
+          }
+          if (Array.isArray(dadosAtuais.record.caixaOperacional)) {
+            caixaOperacionalParaNuvem = unirMovimentosCaixaOperacional(
+              caixaOperacionalDeletadosParaNuvem,
+              movimentosCaixaRef.current,
+              dadosAtuais.record.caixaOperacional
+            );
+            movimentosCaixaRef.current = caixaOperacionalParaNuvem;
+            setMovimentosCaixaOperacional(caixaOperacionalParaNuvem);
+            localStorage.setItem('rm_caixa_operacional', JSON.stringify(caixaOperacionalParaNuvem));
+          }
+          if (Array.isArray(dadosAtuais.record.lotesConciliacao)) {
+            lotesConciliacaoParaNuvem = unirLotesConciliacao(lotesConciliacaoRef.current, dadosAtuais.record.lotesConciliacao);
+            lotesConciliacaoRef.current = lotesConciliacaoParaNuvem;
+            setLotesConciliacao(lotesConciliacaoParaNuvem);
+            gravarJsonLocal('rm_lotes_conciliacao', lotesConciliacaoParaNuvem);
+          }
+          if (Array.isArray(dadosAtuais.record.lotesInteligencia)) {
+            lotesInteligenciaParaNuvem = unirLotesInteligencia(lotesInteligenciaRef.current, dadosAtuais.record.lotesInteligencia);
+            lotesInteligenciaRef.current = lotesInteligenciaParaNuvem;
+            setLotesInteligencia(lotesInteligenciaParaNuvem);
+            gravarJsonLocal('rm_lotes_inteligencia', lotesInteligenciaParaNuvem);
+          }
         }
       } catch {
         setStatusNuvem('⚠️ Sem nuvem');
@@ -1912,8 +2393,9 @@ function App() {
       }
 
       setoresParaNuvem = setoresSemFotos(mesclarSetores(setoresRef.current, setoresParaNuvem, idsDeTarefasDeletadas(deletadasParaSalvar)));
-      historicoParaNuvem = unirLotesPagamento(historicoPagamentosRef.current, historicoParaNuvem);
+      historicoParaNuvem = unirLotesPagamento(lotesPagamentoDeletadosParaNuvem, historicoPagamentosRef.current, historicoParaNuvem);
       pagamentosDeletadosParaNuvem = unirIds(pagamentosDeletadosRef.current, pagamentosDeletadosParaNuvem);
+      lotesPagamentoDeletadosParaNuvem = unirIds(lotesPagamentoDeletadosRef.current, lotesPagamentoDeletadosParaNuvem);
       pagamentosParaNuvem = unirPagamentosAbertos(pagamentosRef.current, pagamentosParaNuvem, historicoParaNuvem, pagamentosDeletadosParaNuvem);
       pagamentosRef.current = pagamentosParaNuvem;
       historicoPagamentosRef.current = historicoParaNuvem;
@@ -1935,6 +2417,12 @@ function App() {
       contasDepositoParaNuvem = unirNomesProdutosProducao(contasDepositoRef.current, contasDepositoParaNuvem);
       lancamentosDepositoDeletadosParaNuvem = unirIds(lancamentosDepositoDeletadosRef.current, lancamentosDepositoDeletadosParaNuvem);
       lancamentosDepositoParaNuvem = unirLancamentosDeposito(lancamentosDepositoDeletadosParaNuvem, lancamentosDepositoRef.current, lancamentosDepositoParaNuvem);
+      caixaOperacionalDeletadosParaNuvem = unirIds(movimentosCaixaDeletadosRef.current, caixaOperacionalDeletadosParaNuvem);
+      caixaOperacionalParaNuvem = unirMovimentosCaixaOperacional(caixaOperacionalDeletadosParaNuvem, movimentosCaixaRef.current, caixaOperacionalParaNuvem);
+      lotesConciliacaoParaNuvem = unirLotesConciliacao(lotesConciliacaoRef.current, lotesConciliacaoParaNuvem);
+      lotesConciliacaoRef.current = lotesConciliacaoParaNuvem;
+      lotesInteligenciaParaNuvem = unirLotesInteligencia(lotesInteligenciaRef.current, lotesInteligenciaParaNuvem);
+      lotesInteligenciaRef.current = lotesInteligenciaParaNuvem;
       fotosPendenciasParaNuvem = enxugarFotosNuvem(filtrarFotosUsadas(unirFotosPendencias(
         fotosPendenciasParaNuvem,
         fotosPendenciasRef.current,
@@ -1943,10 +2431,11 @@ function App() {
       ), setoresParaNuvem, ordensParaNuvem), 800000);
       fotosPendenciasRef.current = fotosPendenciasParaNuvem;
       guardarFotosLocal(fotosPendenciasParaNuvem);
-      await Promise.all(Object.entries(fotosPendenciasParaNuvem).map(([id, foto]) => enviarFotoNuvem(id, foto)));
+      void Promise.all(Object.entries(fotosPendenciasParaNuvem).map(([id, foto]) => enviarFotoNuvem(id, foto)));
 
-      const registroNuvem = { setores: setoresSemFotos(setoresParaNuvem), pagamentos: pagamentosParaNuvem, historicoPagamentos: historicoParaNuvem, tarefasDeletadas: deletadasParaSalvar, fornecedoresCotacao: dadosFornCotacao, itensCotacao: dadosItensCotacao, quantidadesElieuda: dadosElieuda, custosCatalogo: custosCatalogoRef.current, conferencias: conferenciasParaNuvem, pedidosConferidos: conferidosParaNuvem, conferenciasDeletadas: conferenciasDeletadasParaNuvem, pagamentosDeletados: pagamentosDeletadosParaNuvem, pedidosCotacaoDeletados: pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosCotacao: pedidosParaNuvem, senhasUsuarios: senhasParaNuvem, usuariosExtra: usuariosParaNuvem, usuariosExtraDeletados: usuariosDeletadosParaNuvem, permissoesUsuarios: permissoesParaNuvem, ordensManutencao: ordensSemFotos(ordensParaNuvem), ordensManutencaoDeletadas: ordensDeletadasParaNuvem, fotosPendencias: fotosPendenciasParaNuvem, fotosPendenciaIds: Object.keys(fotosPendenciasParaNuvem), producaoPadaria: { produtos: produtosProducaoParaNuvem, lancamentos: lancamentosProducaoParaNuvem, lancamentosRota: lancamentosRotaParaNuvem, contasDeposito: contasDepositoParaNuvem, lancamentosDeposito: lancamentosDepositoParaNuvem }, producaoLancamentosDeletados: lancamentosProducaoDeletadosParaNuvem, producaoRotaDeletados: lancamentosRotaDeletadosParaNuvem, producaoDepositoDeletados: lancamentosDepositoDeletadosParaNuvem, ultimaAtualizacao: agora };
+      const registroNuvem = { setores: setoresSemFotos(setoresParaNuvem), pagamentos: pagamentosParaNuvem, historicoPagamentos: historicoParaNuvem, historicoPagamentosDeletados: lotesPagamentoDeletadosParaNuvem, tarefasDeletadas: deletadasParaSalvar, fornecedoresCotacao: dadosFornCotacao, itensCotacao: dadosItensCotacao, quantidadesElieuda: dadosElieuda, custosCatalogo: custosCatalogoRef.current, conferencias: conferenciasParaNuvem, pedidosConferidos: conferidosParaNuvem, conferenciasDeletadas: conferenciasDeletadasParaNuvem, pagamentosDeletados: pagamentosDeletadosParaNuvem, pedidosCotacaoDeletados: pedidosCotacaoDeletadosParaNuvem, relatoriosPedidosCotacao: pedidosParaNuvem, senhasUsuarios: senhasParaNuvem, usuariosExtra: usuariosParaNuvem, usuariosExtraDeletados: usuariosDeletadosParaNuvem, permissoesUsuarios: permissoesParaNuvem, ordensManutencao: ordensSemFotos(ordensParaNuvem), ordensManutencaoDeletadas: ordensDeletadasParaNuvem, itensChecklist: checklistParaNuvem, itensChecklistDeletados: checklistDeletadosParaNuvem, fotosPendencias: fotosPendenciasParaNuvem, fotosPendenciaIds: Object.keys(fotosPendenciasParaNuvem), producaoPadaria: { produtos: produtosProducaoParaNuvem, lancamentos: lancamentosProducaoParaNuvem, lancamentosRota: lancamentosRotaParaNuvem, contasDeposito: contasDepositoParaNuvem, lancamentosDeposito: lancamentosDepositoParaNuvem }, producaoLancamentosDeletados: lancamentosProducaoDeletadosParaNuvem, producaoRotaDeletados: lancamentosRotaDeletadosParaNuvem, producaoDepositoDeletados: lancamentosDepositoDeletadosParaNuvem, caixaOperacional: caixaOperacionalParaNuvem, caixaOperacionalDeletados: caixaOperacionalDeletadosParaNuvem, lotesConciliacao: lotesConciliacaoParaNuvem, lotesInteligencia: lotesInteligenciaParaNuvem, ultimaAtualizacao: agora, versaoBase };
       const respostaGravar = await enviarRegistroNuvem(registroNuvem);
+      if (respostaGravar.status === 409) return 'retry';
       if (!respostaGravar.ok) {
         setStatusNuvem(respostaGravar.status === 503 ? '⚠️ Nuvem fora do ar — só neste aparelho' : '⚠️ Não gravou na nuvem');
         return false;
@@ -1959,6 +2448,7 @@ function App() {
       }
       setSetores(atuais => aplicarFotosNasTarefas(atuais, fotosPendenciasParaNuvem));
       setOrdensManutencao(atuais => aplicarFotosNasOrdens(atuais, fotosPendenciasParaNuvem));
+      elieudaAlteradaRef.current = false;
       setStatusNuvem('🟢 Gravado na nuvem');
       return true;
     } catch (err) {
@@ -1966,14 +2456,73 @@ function App() {
       return false;
     }
     } finally {
-      gravandoNuvemRef.current = false;
+      /* a trava da gravação fica em rodar, para a tentativa seguinte não ser interrompida */
     }
     };
-    const proxima = gravacaoFilaRef.current.then(executar, executar);
+    const rodar = async () => {
+      gravandoNuvemRef.current = true;
+      try {
+        let resultado: boolean | 'retry' = 'retry';
+        for (let tentativa = 0; tentativa < 3 && resultado === 'retry'; tentativa++) {
+          resultado = await executar();
+        }
+        return resultado === true;
+      } finally {
+        gravandoNuvemRef.current = false;
+        if (sincronizacaoAdiadaRef.current) {
+          sincronizacaoAdiadaRef.current = false;
+          window.clearTimeout(atrasoSyncRef.current);
+          atrasoSyncRef.current = window.setTimeout(() => { void carregarTudo(); }, 800);
+        }
+      }
+    };
+    const proxima = gravacaoFilaRef.current.then(rodar, rodar);
     gravacaoFilaRef.current = proxima;
     return proxima;
   };
   gravarNaWebRef.current = gravarNaWeb;
+
+  const salvarItensChecklist = (itens: ItemChecklist[], deletados = itensChecklistDeletadosRef.current) => {
+    const filtrados = mesclarChecklist(deletados, itens);
+    itensChecklistRef.current = filtrados;
+    itensChecklistDeletadosRef.current = deletados;
+    setItensChecklist(filtrados);
+    setItensChecklistDeletados(deletados);
+    localStorage.setItem('rm_checklist_items', JSON.stringify(filtrados));
+    localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+    void gravarNaWeb();
+  };
+
+  const adicionarItemChecklist = (texto: string) => {
+    const agora = new Date().toISOString();
+    const novo: ItemChecklist = {
+      id: `check_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      texto,
+      concluido: false,
+      criadoEm: agora,
+      atualizadoEm: agora
+    };
+    salvarItensChecklist([...itensChecklistRef.current, novo]);
+  };
+
+  const atualizarItemChecklist = (id: string, texto: string) => {
+    const agora = new Date().toISOString();
+    salvarItensChecklist(itensChecklistRef.current.map(item =>
+      item.id === id ? { ...item, texto, atualizadoEm: agora } : item
+    ));
+  };
+
+  const alternarItemChecklist = (id: string) => {
+    const agora = new Date().toISOString();
+    salvarItensChecklist(itensChecklistRef.current.map(item =>
+      item.id === id ? { ...item, concluido: !item.concluido, atualizadoEm: agora } : item
+    ));
+  };
+
+  const removerItemChecklist = (id: string) => {
+    const deletados = unirIds(itensChecklistDeletadosRef.current, [id]);
+    salvarItensChecklist(itensChecklistRef.current.filter(item => item.id !== id), deletados);
+  };
 
   const salvarProdutoProducao = (nome: string) => {
     const produtos = unirNomesProdutosProducao(produtosProducaoRef.current, [nome]);
@@ -2051,6 +2600,28 @@ function App() {
     lancamentosDepositoRef.current = lista;
     setLancamentosDeposito(lista);
     localStorage.setItem('rm_lancamentos_deposito', JSON.stringify(lista));
+    void gravarNaWeb();
+  };
+
+  const adicionarMovimentoCaixaOperacional = (item: Omit<MovimentoCaixaOperacional, 'id'>) => {
+    const novo: MovimentoCaixaOperacional = { ...item, id: `cx_${Date.now()}` };
+    const lista = unirMovimentosCaixaOperacional(movimentosCaixaDeletadosRef.current, movimentosCaixaRef.current, [novo]);
+    movimentosCaixaRef.current = lista;
+    setMovimentosCaixaOperacional(lista);
+    localStorage.setItem('rm_caixa_operacional', JSON.stringify(lista));
+    void gravarNaWeb();
+    return true;
+  };
+
+  const removerMovimentoCaixaOperacional = (id: string) => {
+    const deletados = unirIds(movimentosCaixaDeletadosRef.current, [id]);
+    movimentosCaixaDeletadosRef.current = deletados;
+    setMovimentosCaixaDeletados(deletados);
+    localStorage.setItem('rm_caixa_operacional_deletados', JSON.stringify(deletados));
+    const lista = unirMovimentosCaixaOperacional(deletados, movimentosCaixaRef.current);
+    movimentosCaixaRef.current = lista;
+    setMovimentosCaixaOperacional(lista);
+    localStorage.setItem('rm_caixa_operacional', JSON.stringify(lista));
     void gravarNaWeb();
   };
 
@@ -2531,7 +3102,7 @@ function App() {
     if (isNaN(val)) return;
     const atuais = pagamentosRef.current;
     const novosPagamentos: PagamentosState = {
-      caixa: [{ id: `${Date.now()}`, descricao: novoCaixa.descricao.trim(), valor: val }, ...(atuais.caixa || [])],
+      caixa: [{ id: `${Date.now()}`, descricao: novoCaixa.descricao.trim(), valor: val, data: new Date().toISOString().slice(0, 10) }, ...(atuais.caixa || [])],
       cheque: atuais.cheque || [],
       caben: atuais.caben || []
     };
@@ -2550,7 +3121,7 @@ function App() {
     const atuais = pagamentosRef.current;
     const novosPagamentos: PagamentosState = {
       caixa: atuais.caixa || [],
-      cheque: [{ id: `${Date.now()}`, descricao: novoCheque.descricao.trim(), valor: val }, ...(atuais.cheque || [])],
+      cheque: [{ id: `${Date.now()}`, descricao: novoCheque.descricao.trim(), valor: val, data: new Date().toISOString().slice(0, 10) }, ...(atuais.cheque || [])],
       caben: atuais.caben || []
     };
     pagamentosRef.current = novosPagamentos;
@@ -2569,7 +3140,7 @@ function App() {
     const novosPagamentos: PagamentosState = {
       caixa: atuais.caixa || [],
       cheque: atuais.cheque || [],
-      caben: [{ id: `${Date.now()}`, descricao: novoCaben.descricao.trim(), valor: val }, ...(atuais.caben || [])]
+      caben: [{ id: `${Date.now()}`, descricao: novoCaben.descricao.trim(), valor: val, data: new Date().toISOString().slice(0, 10) }, ...(atuais.caben || [])]
     };
     pagamentosRef.current = novosPagamentos;
     setPagamentos(novosPagamentos);
@@ -2614,21 +3185,31 @@ function App() {
   const totalCaben = listaCabenSegura.reduce((acc, item) => acc + (Number(item?.valor) || 0), 0);
   const totalGeralPagamentos = totalCaixa + totalCheque + totalCaben;
 
-  const fecharLotePagamentos = () => {
-    const totalItens = listaCaixaSegura.length + listaChequeSegura.length + listaCabenSegura.length;
-    if (totalItens === 0) return alert('Nenhum lançamento ativo!');
-    if (!window.confirm(`Fechar lote no valor de R$ ${totalGeralPagamentos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}?`)) return;
+  const fecharLotePagamentos = (opcoes?: { automatico?: boolean; rotulo?: string }) => {
+    const listaCaixa = obterListaSegura('caixa');
+    const listaCheque = obterListaSegura('cheque');
+    const listaCaben = obterListaSegura('caben');
+    const somaCaixa = listaCaixa.reduce((acc, item) => acc + (Number(item?.valor) || 0), 0);
+    const somaCheque = listaCheque.reduce((acc, item) => acc + (Number(item?.valor) || 0), 0);
+    const somaCaben = listaCaben.reduce((acc, item) => acc + (Number(item?.valor) || 0), 0);
+    const somaGeral = somaCaixa + somaCheque + somaCaben;
+    const totalItens = listaCaixa.length + listaCheque.length + listaCaben.length;
+    if (totalItens === 0) {
+      if (!opcoes?.automatico) alert('Nenhum lançamento ativo!');
+      return false;
+    }
+    if (!opcoes?.automatico && !window.confirm(`Fechar lote no valor de R$ ${somaGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}?`)) return false;
     const novoLote: LotePagamentoHistorico = {
       id: `${Date.now()}`,
-      dataFechamento: new Date().toLocaleString('pt-BR'),
-      totalGeral: totalGeralPagamentos,
-      totalCaixa,
-      totalCheque,
-      totalCaben,
+      dataFechamento: opcoes?.rotulo || new Date().toLocaleString('pt-BR'),
+      totalGeral: somaGeral,
+      totalCaixa: somaCaixa,
+      totalCheque: somaCheque,
+      totalCaben: somaCaben,
       dados: {
-        caixa: [...listaCaixaSegura],
-        cheque: [...listaChequeSegura],
-        caben: [...listaCabenSegura]
+        caixa: [...listaCaixa],
+        cheque: [...listaCheque],
+        caben: [...listaCaben]
       }
     };
     const listaHistoricoAtual = Array.isArray(historicoPagamentosRef.current) ? historicoPagamentosRef.current : [];
@@ -2641,16 +3222,46 @@ function App() {
     localStorage.setItem('rm_historico_pagamentos', JSON.stringify(novoHistorico));
     localStorage.setItem('rm_pagamentos', JSON.stringify(pagamentosLimpos));
     void gravarNaWeb(undefined, pagamentosLimpos, novoHistorico);
-    setMostrarPastaHistorico(true);
+    if (!opcoes?.automatico) setMostrarPastaHistorico(true);
+    return true;
   };
+
+  const virarMesLancamentoPagamentos = () => {
+    const mes = mesAtualChave();
+    let salvo = '';
+    try { salvo = localStorage.getItem('rm_mes_lancamento_pagamentos') || ''; } catch { /* ignora */ }
+    if (!salvo) {
+      try { localStorage.setItem('rm_mes_lancamento_pagamentos', mes); } catch { /* ignora */ }
+      return;
+    }
+    if (salvo === mes) return;
+    const [ano, mesNum] = salvo.split('-');
+    const nomeMes = new Date(Number(ano), Number(mesNum) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    fecharLotePagamentos({
+      automatico: true,
+      rotulo: `Fechamento automático de ${nomeMes}`
+    });
+    try { localStorage.setItem('rm_mes_lancamento_pagamentos', mes); } catch { /* ignora */ }
+  };
+  virarMesLancamentoPagamentosRef.current = virarMesLancamentoPagamentos;
 
   const removerLoteHistorico = (loteId: string) => {
     if (!window.confirm('Deseja excluir permanentemente este lote?')) return;
-    const listaHistoricoAtual = Array.isArray(historicoPagamentos) ? historicoPagamentos : [];
-    const novoHistorico = listaHistoricoAtual.filter(h => h.id !== loteId);
+    const listaHistoricoAtual = Array.isArray(historicoPagamentosRef.current) ? historicoPagamentosRef.current : [];
+    const lote = listaHistoricoAtual.find(item => item.id === loteId);
+    const lotesDeletados = unirIds(lotesPagamentoDeletadosRef.current, [loteId]);
+    lotesPagamentoDeletadosRef.current = lotesDeletados;
+    setLotesPagamentoDeletados(lotesDeletados);
+    localStorage.setItem('rm_lotes_pagamento_deletados', JSON.stringify(lotesDeletados));
+    const pagamentosMarcados = unirIds(pagamentosDeletadosRef.current, marcasItensDoLote(lote));
+    pagamentosDeletadosRef.current = pagamentosMarcados;
+    setPagamentosDeletados(pagamentosMarcados);
+    localStorage.setItem('rm_pagamentos_deletados', JSON.stringify(pagamentosMarcados));
+    const novoHistorico = unirLotesPagamento(lotesDeletados, listaHistoricoAtual.filter(item => item.id !== loteId));
     historicoPagamentosRef.current = novoHistorico;
     setHistoricoPagamentos(novoHistorico);
     localStorage.setItem('rm_historico_pagamentos', JSON.stringify(novoHistorico));
+    localStorage.setItem('rm_backup_completo', JSON.stringify({ pagamentos: pagamentosRef.current, historicoPagamentos: novoHistorico }));
     void gravarNaWeb(undefined, undefined, novoHistorico);
   };
   // Funções da Cotação
@@ -2661,8 +3272,7 @@ function App() {
     if (base.some(item => item.id === itemId)) {
       novos = base.map(item => item.id === itemId ? { ...item, [campo]: valor, atualizadoEm: agora } : item);
     } else {
-      const doCatalogo = montarItensLaticinios(base).find(item => item.id === itemId)
-        || montarItensEmbalagens(base).find(item => item.id === itemId);
+      const doCatalogo = acharItemCatalogoCotacao(itemId, base);
       if (!doCatalogo) return;
       novos = [...base, { ...doCatalogo, [campo]: valor, atualizadoEm: agora, secao: doCatalogo.secao || 'Laticínios' }];
     }
@@ -2675,8 +3285,7 @@ function App() {
     const agora = new Date().toISOString();
     const base = Array.isArray(itensCotacaoRef.current) ? itensCotacaoRef.current : [];
     const itemAtual = base.find(item => item.id === itemId)
-      || montarItensLaticinios(base).find(item => item.id === itemId)
-      || montarItensEmbalagens(base).find(item => item.id === itemId);
+      || acharItemCatalogoCotacao(itemId, base);
     if (!itemAtual) return;
     const precosAtualizados = { ...(itemAtual.precos || {}), [fornecedorId]: valor };
     const custos = Object.values(precosAtualizados).map(preco => parseFloat(String(preco).replace(',', '.'))).filter(preco => !Number.isNaN(preco) && preco > 0);
@@ -2710,6 +3319,52 @@ function App() {
     setNovoProdutoCadastro({ nome: '', unidade });
     gravarNaWeb(undefined, undefined, undefined, undefined, novosItens);
     setAlerta({ tipo: 'sucesso', msg: '✓ Produto cadastrado na Cotação.' });
+  };
+
+  const incluirProdutoEstoqueNaCotacao = (produto: ItemListaCompleta, fornecedorId: string) => {
+    if (!fornecedorId) return;
+    const id = `est_${produto.id}`;
+    const agora = new Date().toISOString();
+    const base = Array.isArray(itensCotacao) ? itensCotacao : [];
+    const existente = base.find(item => item.id === id);
+    const novos = existente
+      ? base.map(item => item.id === id ? {
+          ...item,
+          precos: { ...(item.precos || {}), [fornecedorId]: item.precos?.[fornecedorId] || '' },
+          estoqueAtual: item.estoqueAtual || produto.estoque,
+          unit: item.unit || produto.embalagem || 'UN',
+          atualizadoEm: agora
+        } : item)
+      : [...base, {
+          id,
+          produto: produto.descricao,
+          unit: produto.embalagem || 'UN',
+          estoqueAtual: produto.estoque,
+          qtdSugerida: '',
+          qtdPedir: '',
+          precos: { [fornecedorId]: '' },
+          secao: 'Lista completa',
+          atualizadoEm: agora
+        } satisfies ItemCotacao];
+    itensCotacaoRef.current = novos;
+    setItensCotacao(novos);
+    localStorage.setItem('rm_itens_cotacao', JSON.stringify(novos));
+    gravarNaWeb(undefined, undefined, undefined, undefined, novos);
+  };
+
+  const retirarProdutoEstoqueDaCotacao = (itemId: string, fornecedorId: string) => {
+    const novos = (Array.isArray(itensCotacao) ? itensCotacao : []).flatMap(item => {
+      if (item.id !== itemId) return [item];
+      const precos = { ...(item.precos || {}) };
+      delete precos[fornecedorId];
+      const aindaServe = Object.keys(precos).length > 0 || String(item.qtdPedir || '').trim();
+      if (!aindaServe && String(item.id).startsWith('est_')) return [];
+      return [{ ...item, precos, atualizadoEm: new Date().toISOString() }];
+    });
+    itensCotacaoRef.current = novos;
+    setItensCotacao(novos);
+    localStorage.setItem('rm_itens_cotacao', JSON.stringify(novos));
+    gravarNaWeb(undefined, undefined, undefined, undefined, novos);
   };
 
   const excluirProdutoCadastrado = (produtoId: string) => {
@@ -3108,6 +3763,160 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     }
   };
 
+  const adicionarBonificacaoNoPedido = (dados: { pedidoId: string; produto: string; fornecedor: string; quantidade: string; unit: string; valor?: string }) => {
+    const produto = String(dados.produto || '').trim();
+    const fornecedor = String(dados.fornecedor || '').trim();
+    const quantidade = String(dados.quantidade || '').trim() || '1';
+    const unit = String(dados.unit || '').trim() || 'Und';
+    const quantidadeNumero = parseFloat(quantidade.replace(',', '.')) || 1;
+    const valorUnitario = parseFloat(String(dados.valor || '').replace(',', '.')) || 0;
+    const valorTotal = valorUnitario * quantidadeNumero;
+    if (!dados.pedidoId) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Escolha em qual pedido pendente a bonificação vai chegar.' });
+      return false;
+    }
+    if (!produto || !fornecedor) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe o produto e o fornecedor da bonificação.' });
+      return false;
+    }
+    if (valorUnitario <= 0) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe o valor do produto da bonificação.' });
+      return false;
+    }
+    const atuais = Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [];
+    const pedido = atuais.find(item => item.id === dados.pedidoId);
+    if (!pedido) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Esse pedido não está mais na lista.' });
+      return false;
+    }
+    const atualizados = atuais.map(item => item.id !== pedido.id ? item : {
+      ...item,
+      itens: [
+        ...(item.itens || []),
+        { produto, unit, quantidade, valorUnitario, valorTotal, fornecedor, bonificado: true }
+      ]
+    });
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
+    gravarNaWeb();
+    setAlerta({ tipo: 'sucesso', msg: `✓ Registro salvo. ${produto} ficou como pedido bonificado junto com o pedido de ${pedido.itens[0]?.fornecedor || fornecedor}.` });
+    return true;
+  };
+
+  const nomeFornecedorPedido = (pedido: RelatorioPedidoCotacao) =>
+    pedido.itens?.find(item => !item.bonificado)?.fornecedor || pedido.itens?.[0]?.fornecedor || '';
+
+  const localizarFornecedorDoPedido = (pedido: RelatorioPedidoCotacao) => {
+    const nome = String(nomeFornecedorPedido(pedido)).trim().toLowerCase();
+    if (!nome) return undefined;
+    return fornecedoresCotacao.find(candidato =>
+      [candidato.nomeFantasia, candidato.nome, candidato.razaoSocial]
+        .some(valor => valor && String(valor).trim().toLowerCase() === nome)
+    );
+  };
+
+  const incluirItensNoPedidoSalvo = (pedidoId: string) => {
+    const atuais = Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [];
+    const pedido = atuais.find(item => item.id === pedidoId);
+    if (!pedido || pedido.enviadoConferencia) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Esse pedido já saiu da Cotação e não pode mais receber itens aqui.' });
+      return false;
+    }
+    const fornecedor = localizarFornecedorDoPedido(pedido);
+    if (!fornecedor) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Não foi possível identificar o fornecedor deste pedido na cotação.' });
+      return false;
+    }
+    const nomeFornecedor = fornecedor.nomeFantasia || fornecedor.nome || fornecedor.razaoSocial || 'Fornecedor';
+    const candidatos = itensCotacao.filter(item => {
+      if (qtdPedirNumero(item) <= 0) return false;
+      const { vencedorFornId } = calcularMenorPrecoItem(item);
+      return vencedorFornId === fornecedor.id || item.fornecedorId === fornecedor.id;
+    });
+    if (candidatos.length === 0) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Nenhum item novo na cotação com quantidade em Pedir para este fornecedor.' });
+      return false;
+    }
+    const itens = [...(pedido.itens || [])];
+    const idsIncluidos: string[] = [];
+    candidatos.forEach(item => {
+      const { menorPreco } = calcularMenorPrecoItem(item);
+      const precoItem = parseFloat(String(item.precos?.[fornecedor.id] ?? '').replace(',', '.'));
+      const valorUnitario = (Number.isFinite(precoItem) && precoItem > 0 ? precoItem : menorPreco) || 0;
+      const quantidadeNumero = qtdPedirNumero(item);
+      const chave = String(item.produto || '').trim().toLowerCase();
+      const existente = itens.findIndex(linha => !linha.bonificado && String(linha.produto || '').trim().toLowerCase() === chave);
+      if (existente >= 0) {
+        const qtdAtual = parseFloat(String(itens[existente].quantidade || '').replace(',', '.')) || 0;
+        const quantidade = qtdAtual + quantidadeNumero;
+        itens[existente] = {
+          ...itens[existente],
+          quantidade: String(quantidade),
+          valorUnitario,
+          valorTotal: valorUnitario * quantidade,
+          fornecedor: nomeFornecedor
+        };
+      } else {
+        itens.push({
+          produto: item.produto,
+          unit: item.unit,
+          quantidade: item.qtdPedir,
+          valorUnitario,
+          valorTotal: valorUnitario * quantidadeNumero,
+          fornecedor: nomeFornecedor
+        });
+      }
+      idsIncluidos.push(item.id);
+    });
+    const idsSalvos = new Set(idsIncluidos);
+    const itensLimpos = itensCotacao.map(item => idsSalvos.has(item.id) ? { ...item, qtdPedir: '' } : item);
+    const totalGeral = itens.filter(item => !item.bonificado).reduce((total, item) => total + (Number(item.valorTotal) || 0), 0);
+    const atualizados = atuais.map(item => item.id !== pedido.id ? item : { ...item, itens, totalGeral });
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
+    itensCotacaoRef.current = itensLimpos;
+    setItensCotacao(itensLimpos);
+    localStorage.setItem('rm_itens_cotacao', JSON.stringify(itensLimpos));
+    registrarCustosPedido(candidatos.map(item => {
+      const precoItem = parseFloat(String(item.precos?.[fornecedor.id] ?? '').replace(',', '.'));
+      const { menorPreco } = calcularMenorPrecoItem(item);
+      return { id: item.id, produto: item.produto, valorUnitario: (Number.isFinite(precoItem) && precoItem > 0 ? precoItem : menorPreco) || 0 };
+    }));
+    gravarNaWeb(undefined, undefined, undefined, undefined, itensLimpos);
+    setAlerta({ tipo: 'sucesso', msg: `✓ ${candidatos.length} item(ns) da cotação incluído(s) no pedido de ${nomeFornecedor}.` });
+    return true;
+  };
+
+  const removerBonificacaoDoPedido = (pedidoId: string, indiceItem: number) => {
+    const atuais = Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [];
+    const pedido = atuais.find(item => item.id === pedidoId);
+    const alvo = pedido?.itens?.[indiceItem];
+    if (!alvo?.bonificado) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Só é possível excluir item de bonificação nesta tela.' });
+      return false;
+    }
+    const atualizados = atuais.map(item => item.id !== pedidoId ? item : {
+      ...item,
+      itens: (item.itens || []).filter((_, indice) => indice !== indiceItem)
+    });
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
+    gravarNaWeb();
+    setAlerta({ tipo: 'sucesso', msg: `✓ Bonificação "${alvo.produto}" removida.` });
+    return true;
+  };
+
+  const gravarPdfNoPedido = (pedidoId: string, pdf: RelatorioPedidoCotacao['pdfFornecedor'], lista: RelatorioPedidoCotacao[]) => {
+    const atualizados = lista.map(item => item.id === pedidoId ? { ...item, pdfFornecedor: pdf } : item);
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
+    return atualizados;
+  };
+
   const anexarPdfFornecedor = (relatorio: RelatorioPedidoCotacao) => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -3115,18 +3924,58 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     input.onchange = async (evento: Event) => {
       const arquivo = (evento.target as HTMLInputElement).files?.[0];
       if (!arquivo) return;
+      setAlerta({ tipo: 'sucesso', msg: '⏳ Enviando o PDF do vendedor para a nuvem...' });
       const leitor = new FileReader();
-      leitor.onload = () => {
-        const dados = dadosPdfFornecedor[relatorio.id] || { valor: '', observacao: '' };
-        const conteudo = String(leitor.result);
-        const atualizados = relatoriosPedidosCotacao.map(item => item.id === relatorio.id ? { ...item, pdfFornecedor: { nome: arquivo.name, conteudo, anexadoEm: new Date().toLocaleString('pt-BR'), valor: dados.valor ? parseFloat(dados.valor.replace(',', '.')) : undefined, observacao: dados.observacao } } : item);
-        setRelatoriosPedidosCotacao(atualizados);
-        localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados));
-        setAlerta({ tipo: 'sucesso', msg: '✓ PDF do fornecedor anexado ao pedido.' });
+      leitor.onerror = () => setAlerta({ tipo: 'erro', msg: '⚠️ Não foi possível ler o PDF.' });
+      leitor.onload = async () => {
+        try {
+          const dataUrl = String(leitor.result || '');
+          const idAnexo = `pedido_${relatorio.id}`;
+          await guardarAnexoLocal(idAnexo, dataUrl);
+          const dados = dadosPdfFornecedor[relatorio.id] || { valor: '', observacao: '' };
+          await enviarAnexoPdfBytes(idAnexo, new Uint8Array(await arquivo.arrayBuffer()));
+          gravarPdfNoPedido(relatorio.id, {
+            nome: arquivo.name,
+            conteudo: urlArquivoAnexo(idAnexo, { nome: arquivo.name }),
+            anexadoEm: new Date().toLocaleString('pt-BR'),
+            valor: dados.valor ? parseFloat(dados.valor.replace(',', '.')) : undefined,
+            observacao: dados.observacao
+          }, relatoriosPedidosRef.current);
+          await gravarNaWeb();
+          setAlerta({ tipo: 'sucesso', msg: '✓ PDF do fornecedor na nuvem. Qualquer computador autorizado consegue abrir.' });
+        } catch (erro) {
+          setAlerta({ tipo: 'erro', msg: `⚠️ ${erro instanceof Error ? erro.message : 'Não enviou o PDF para a nuvem.'} O pedido ainda não tem anexo para o conferente.` });
+        }
       };
       leitor.readAsDataURL(arquivo);
     };
     input.click();
+  };
+
+  const baixarPdfFornecedor = async (relatorio: Pick<RelatorioPedidoCotacao, 'id' | 'pdfFornecedor'>) => {
+    const pdf = relatorio.pdfFornecedor;
+    if (!pdf) return;
+    const idAnexo = `pedido_${relatorio.id}`;
+    const nome = pdf.nome || 'anexo-fornecedor.pdf';
+    setAlerta({ tipo: 'sucesso', msg: '⏳ Buscando o PDF na nuvem...' });
+    try {
+      await garantirAnexoNaNuvem(idAnexo, pdf.conteudo);
+      gravarPdfNoPedido(relatorio.id, {
+        ...pdf,
+        conteudo: urlArquivoAnexo(idAnexo, { nome })
+      }, relatoriosPedidosRef.current);
+      await gravarNaWeb();
+      dispararDownloadPdf(urlArquivoAnexo(idAnexo, { baixar: true, nome }), nome);
+      setAlerta({ tipo: 'sucesso', msg: '✓ PDF baixado em Downloads. O mesmo arquivo já está na nuvem para os outros computadores.' });
+      return;
+    } catch { /* tenta o arquivo deste aparelho só para quem anexou */ }
+    const local = await abrirPdfComoArquivo(idAnexo, pdf.conteudo);
+    if (!local) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Este PDF ainda não está na nuvem. Quem anexou precisa abrir o pedido e anexar de novo.' });
+      return;
+    }
+    dispararDownloadPdf(local, nome);
+    setAlerta({ tipo: 'erro', msg: '⚠️ PDF abriu só neste computador. Anexe de novo para gravar na nuvem e o conferente ver no outro aparelho.' });
   };
 
   const criarPedidoNaConferencia = (dados: {
@@ -3156,23 +4005,129 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       valorTotal: Number(item.valorTotal) || 0,
       fornecedor
     }));
+    const dataInformada = String(dados.data || '').trim();
+    const dataPedido = /^\d{4}-\d{2}-\d{2}$/.test(dataInformada)
+      ? dataInformada.split('-').reverse().join('/')
+      : (dataInformada || new Date().toLocaleString('pt-BR'));
     const novoRelatorio: RelatorioPedidoCotacao = {
       id: `pedido_avulso_${Date.now()}`,
-      data: dados.data || new Date().toLocaleString('pt-BR'),
+      data: dataPedido,
       itens,
       totalGeral: itens.reduce((total, item) => total + (Number(item.valorTotal) || 0), 0),
       enviadoConferencia: true,
-      pdfFornecedor: dados.pdf
-        ? { nome: dados.pdf.nome, conteudo: dados.pdf.conteudo, anexadoEm: new Date().toLocaleString('pt-BR') }
+      pdfFornecedor: dados.pdf?.nome
+        ? {
+            nome: dados.pdf.nome,
+            conteudo: dados.pdf.conteudo || '',
+            anexadoEm: new Date().toLocaleString('pt-BR')
+          }
         : undefined
     };
-    const atualizados = [novoRelatorio, ...relatoriosPedidosRef.current].slice(0, 50);
+    const atuais = Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [];
+    const atualizados = [novoRelatorio, ...atuais.filter(item => item.id !== novoRelatorio.id)];
     relatoriosPedidosRef.current = atualizados;
     setRelatoriosPedidosCotacao(atualizados);
-    localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(atualizados));
-    gravarNaWeb();
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
     setAbaConferencia('pedidos');
-    setAlerta({ tipo: 'sucesso', msg: `✓ Pedido de ${fornecedor} criado e enviado para Pedidos Pendentes.` });
+    const temPdfParaNuvem = Boolean(dados.pdf?.conteudo?.startsWith('data:'));
+    setAlerta({
+      tipo: 'sucesso',
+      msg: temPdfParaNuvem
+        ? '⏳ Pedido salvo. Enviando o PDF para a nuvem...'
+        : `✓ Pedido de ${fornecedor} criado e enviado para Pedidos Pendentes.`
+    });
+    void (async () => {
+      if (temPdfParaNuvem && dados.pdf) {
+        const idAnexo = `pedido_${novoRelatorio.id}`;
+        await guardarAnexoLocal(idAnexo, dados.pdf.conteudo);
+        try {
+          await enviarAnexoPdfNuvem(idAnexo, dados.pdf.conteudo);
+          gravarPdfNoPedido(novoRelatorio.id, {
+            nome: dados.pdf.nome,
+            conteudo: urlArquivoAnexo(idAnexo, { nome: dados.pdf.nome }),
+            anexadoEm: new Date().toLocaleString('pt-BR')
+          }, relatoriosPedidosRef.current);
+          await gravarNaWeb();
+          setAlerta({ tipo: 'sucesso', msg: `✓ Pedido e PDF de ${fornecedor} na nuvem. O conferente baixa em qualquer computador.` });
+          return;
+        } catch (erro) {
+          setAlerta({ tipo: 'erro', msg: `⚠️ Pedido salvo. O PDF abriu neste aparelho. A nuvem falhou: ${erro instanceof Error ? erro.message : 'anexe de novo em Pedidos Pendentes.'}` });
+        }
+      }
+      await gravarNaWeb();
+    })();
+    return true;
+  };
+
+  const lancarMercadoriaConferidaSemPedido = (dados: { fornecedor: string; categoria: string; valorTotal: string | number; conferente?: string }) => {
+    const fornecedor = String(dados.fornecedor || '').trim();
+    const categoria = String(dados.categoria || '').trim();
+    const valor = parseFloat(String(dados.valorTotal ?? '').replace(',', '.')) || 0;
+    if (!fornecedor) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe a razão social / fornecedor.' });
+      return false;
+    }
+    if (!categoria) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Selecione a categoria do item.' });
+      return false;
+    }
+    if (valor <= 0) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe o valor total da mercadoria.' });
+      return false;
+    }
+    const pedidoId = `pedido_conferido_${Date.now()}`;
+    const bonificada = categoria.toLowerCase() === 'bonificada';
+    const itens = [{
+      produto: categoria,
+      unit: 'Lote',
+      quantidade: '1',
+      valorUnitario: valor,
+      valorTotal: valor,
+      fornecedor,
+      ...(bonificada ? { bonificado: true } : {})
+    }];
+    const novoRelatorio: RelatorioPedidoCotacao = {
+      id: pedidoId,
+      data: new Date().toLocaleString('pt-BR'),
+      itens,
+      totalGeral: valor,
+      enviadoConferencia: true,
+      categoria
+    };
+    const registro: RegistroConferencia = {
+      id: `conf_${pedidoId}`,
+      pedidoId,
+      data: new Date().toLocaleString('pt-BR'),
+      fornecedor,
+      categoria,
+      valorEsperado: valor,
+      valorRecebido: valor,
+      itensConferidos: itens,
+      nomeConferente: String(dados.conferente || usuarioLogado?.nome || 'Conferente').trim(),
+      observacoes: `Mercadoria conferida sem lançamento prévio. Categoria: ${categoria}.`,
+      houveDivergencia: false,
+      tipoDivergencia: '',
+      conferentePor: usuarioLogado?.nome || 'Sistema',
+      dataPreenchimento: new Date().toISOString(),
+      veioBonificacao: bonificada,
+      notaBonificada: bonificada
+    };
+    const pedidosAtualizados = [novoRelatorio, ...relatoriosPedidosRef.current].slice(0, 50);
+    relatoriosPedidosRef.current = pedidosAtualizados;
+    setRelatoriosPedidosCotacao(pedidosAtualizados);
+    localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosAtualizados));
+    const pedidosConferidosAtualizados = unirIds(pedidosConferidosRef.current, [pedidoId]);
+    pedidosConferidosRef.current = pedidosConferidosAtualizados;
+    setPedidosConferidosLocais(pedidosConferidosAtualizados);
+    localStorage.setItem('rm_pedidos_conferidos', JSON.stringify(pedidosConferidosAtualizados));
+    const novaLista = unirConferencias([registro], conferenciasRef.current);
+    conferenciasRef.current = novaLista;
+    setConferencias(novaLista);
+    localStorage.setItem('rm_conferencias', JSON.stringify(novaLista));
+    localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: novaLista }));
+    gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, novaLista);
+    setAbaConferencia(bonificada ? 'bonificados' : 'conferidos');
+    setAlerta({ tipo: 'sucesso', msg: bonificada ? `✓ Lançamento bonificado de ${fornecedor} foi para Pedidos bonificados.` : `✓ Lançamento de ${fornecedor} criado e marcado como conferido.` });
     return true;
   };
 
@@ -3188,14 +4143,25 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       const arquivo = (evento.target as HTMLInputElement).files?.[0];
       if (!arquivo) return;
       const leitor = new FileReader();
-      leitor.onload = () => {
-        const novoRelatorio: RelatorioPedidoCotacao = { id: `pedido_externo_${Date.now()}`, data: new Date().toLocaleString('pt-BR'), itens: [], totalGeral: 0, enviadoConferencia: true, pdfFornecedor: { nome: arquivo.name, conteudo: String(leitor.result), anexadoEm: new Date().toLocaleString('pt-BR'), valor: undefined, observacao: '' } };
-        const relatoriosAtualizados = [{ ...novoRelatorio, itens: [{ produto: 'Pedido em PDF anexado', unit: '-', quantidade: '-', valorUnitario: 0, valorTotal: 0, fornecedor: nomeFornecedorExterno.trim() }] }, ...relatoriosPedidosCotacao].slice(0, 50);
-        setRelatoriosPedidosCotacao(relatoriosAtualizados);
-        localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(relatoriosAtualizados));
-        setNomeFornecedorExterno('');
-        setMostrarAnexoFornecedorExterno(false);
-        setAlerta({ tipo: 'sucesso', msg: '✓ Pedido externo anexado à Conferência.' });
+      leitor.onload = async () => {
+        try {
+          const novoId = `pedido_externo_${Date.now()}`;
+          const idAnexo = `pedido_${novoId}`;
+          const dataUrl = String(leitor.result);
+          await guardarAnexoLocal(idAnexo, dataUrl);
+          await enviarAnexoPdfNuvem(idAnexo, dataUrl);
+          const novoRelatorio: RelatorioPedidoCotacao = { id: novoId, data: new Date().toLocaleString('pt-BR'), itens: [{ produto: 'Pedido em PDF anexado', unit: '-', quantidade: '-', valorUnitario: 0, valorTotal: 0, fornecedor: nomeFornecedorExterno.trim() }], totalGeral: 0, enviadoConferencia: true, pdfFornecedor: { nome: arquivo.name, conteudo: urlArquivoAnexo(idAnexo, { nome: arquivo.name }), anexadoEm: new Date().toLocaleString('pt-BR'), valor: undefined, observacao: '' } };
+          const relatoriosAtualizados = [novoRelatorio, ...relatoriosPedidosRef.current].slice(0, 50);
+          relatoriosPedidosRef.current = relatoriosAtualizados;
+          setRelatoriosPedidosCotacao(relatoriosAtualizados);
+          try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(relatoriosAtualizados))); } catch { /* ignora cota */ }
+          setNomeFornecedorExterno('');
+          setMostrarAnexoFornecedorExterno(false);
+          await gravarNaWeb();
+          setAlerta({ tipo: 'sucesso', msg: '✓ Pedido externo anexado à Conferência.' });
+        } catch (erro) {
+          setAlerta({ tipo: 'erro', msg: `⚠️ ${erro instanceof Error ? erro.message : 'Não enviou o PDF para a nuvem.'}` });
+        }
       };
       leitor.readAsDataURL(arquivo);
     };
@@ -3220,33 +4186,42 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     setAlerta({ tipo: 'sucesso', msg: '✓ Pedido salvo excluído. Não volta mais para a lista em aberto.' });
   };
 
-  const atualizarConferenciaPedido = (pedidoId: string, campo: 'conferente' | 'valor' | 'obs' | 'divergencia' | 'tipoDivergencia', valor: string | boolean) => {
+  const atualizarConferenciaPedido = (pedidoId: string, campo: 'conferente' | 'valor' | 'obs' | 'divergencia' | 'tipoDivergencia' | 'veioBonificacao' | 'categoria', valor: string | boolean) => {
     setConferenciasPorPedido(prev => {
-      const atual = { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as TipoDivergencia, ...prev[pedidoId], [campo]: valor };
+      const atual = { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as TipoDivergencia, veioBonificacao: '' as const, categoria: '', ...prev[pedidoId], [campo]: valor };
       if (campo === 'tipoDivergencia') atual.divergencia = Boolean(valor);
       return { ...prev, [pedidoId]: atual };
     });
   };
 
-  const salvarConferenciaPedido = (relatorio: RelatorioPedidoCotacao, formularioInformado?: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia }) => {
-    const formulario = formularioInformado || conferenciasPorPedido[relatorio.id] || { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as const };
+  const persistirPedidosCotacao = (atualizados: RelatorioPedidoCotacao[]) => {
+    relatoriosPedidosRef.current = atualizados;
+    setRelatoriosPedidosCotacao(atualizados);
+    try { localStorage.setItem('rm_relatorios_pedidos_cotacao', JSON.stringify(pedidosSemPdfPesado(atualizados))); } catch { /* ignora cota */ }
+  };
+
+  const salvarConferenciaPedido = (relatorio: RelatorioPedidoCotacao, formularioInformado?: { conferente: string; valor: string; obs: string; divergencia: boolean; tipoDivergencia: TipoDivergencia; veioBonificacao?: '' | 'sim' | 'nao' }) => {
+    const formulario = formularioInformado || conferenciasPorPedido[relatorio.id] || { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as const, veioBonificacao: '' as const, categoria: '' };
     const valorRecebido = formulario.valor.trim() ? parseFloat(formulario.valor.replace(',', '.')) : 0;
     if (!formulario.conferente.trim() || Number.isNaN(valorRecebido)) {
       setAlerta({ tipo: 'erro', msg: '⚠️ Informe pelo menos o nome do conferente.' });
       return;
     }
+    const itensComprados = (relatorio.itens || []).filter(item => !item.bonificado);
     const registro: RegistroConferencia = { 
       id: `conf_${relatorio.id}_${Date.now()}`, 
       pedidoId: relatorio.id, 
       data: new Date().toLocaleString('pt-BR'), 
-      fornecedor: relatorio.itens[0]?.fornecedor || 'Fornecedor não informado',
+      fornecedor: itensComprados[0]?.fornecedor || relatorio.itens[0]?.fornecedor || 'Fornecedor não informado',
       valorEsperado: relatorio.totalGeral || 0,
-      itensConferidos: relatorio.itens || [],
+      itensConferidos: itensComprados,
       nomeConferente: formulario.conferente.trim(), 
       valorRecebido, 
       observacoes: formulario.obs.trim(), 
       houveDivergencia: formulario.divergencia, 
-      tipoDivergencia: formulario.divergencia ? formulario.tipoDivergencia : '' 
+      tipoDivergencia: formulario.divergencia ? formulario.tipoDivergencia : '',
+      veioBonificacao: false,
+      notaBonificada: false
     };
     const novaLista = unirConferencias([registro], conferenciasRef.current);
     const pedidosConferidosAtualizados = unirIds(pedidosConferidosRef.current, [relatorio.id]);
@@ -3258,7 +4233,79 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     localStorage.setItem('rm_conferencias', JSON.stringify(novaLista));
     localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: novaLista }));
     gravarNaWeb(undefined, undefined, undefined, undefined, undefined, undefined, novaLista);
-    setAlerta({ tipo: 'sucesso', msg: '✓ Mercadoria e conferência registradas com sucesso!' });
+    setAbaConferencia('conferidos');
+    setAlerta({ tipo: 'sucesso', msg: '✓ Pedido conferido. Foi para Conferidos. A bonificação, se houver, fica em outro card.' });
+  };
+
+  const salvarBonificacaoPedido = (relatorio: RelatorioPedidoCotacao) => {
+    const formulario = conferenciasPorPedido[`${relatorio.id}__bonif`] || { conferente: '', valor: '', obs: '', divergencia: false, tipoDivergencia: '' as const, veioBonificacao: '' as const, categoria: '' };
+    const itensBonificados = (relatorio.itens || []).filter(item => item.bonificado);
+    if (itensBonificados.length === 0) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Este pedido não tem bonificação.' });
+      return;
+    }
+    if (formulario.veioBonificacao !== 'sim' && formulario.veioBonificacao !== 'nao') {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Informe se a bonificação veio: Sim ou Não.' });
+      return;
+    }
+    const veio = formulario.veioBonificacao === 'sim';
+    const valorBonificacao = itensBonificados.reduce((total, item) => total + (Number(item.valorTotal) || 0), 0);
+    let valorRecebido = valorBonificacao;
+    let quemRecebeu = '';
+    let categoria = '';
+    let divergiuValor = false;
+    let tipoDivergencia: TipoDivergencia = '';
+    if (veio) {
+      quemRecebeu = formulario.conferente.trim();
+      categoria = formulario.categoria.trim();
+      const valorTexto = formulario.valor.trim();
+      valorRecebido = parseFloat(valorTexto.replace(',', '.'));
+      if (!quemRecebeu) {
+        setAlerta({ tipo: 'erro', msg: '⚠️ Informe quem recebeu a nota bonificada.' });
+        return;
+      }
+      if (!categoria) {
+        setAlerta({ tipo: 'erro', msg: '⚠️ Selecione a categoria da nota bonificada.' });
+        return;
+      }
+      if (!valorTexto || Number.isNaN(valorRecebido) || valorRecebido < 0) {
+        setAlerta({ tipo: 'erro', msg: '⚠️ Informe o valor recebido da nota bonificada.' });
+        return;
+      }
+      const cents = Math.round((valorRecebido - valorBonificacao) * 100);
+      divergiuValor = formulario.divergencia || cents !== 0;
+      tipoDivergencia = !divergiuValor ? '' : cents > 0 ? 'valor_mais' : cents < 0 ? 'valor_menos' : 'valor';
+    }
+    persistirPedidosCotacao(relatoriosPedidosRef.current.map(item => item.id !== relatorio.id ? item : { ...item, bonificacaoResolvida: true, veioBonificacao: veio }));
+    if (veio) {
+      const registro: RegistroConferencia = {
+        id: `conf_bonif_${relatorio.id}_${Date.now()}`,
+        pedidoId: `${relatorio.id}__bonif`,
+        data: new Date().toLocaleString('pt-BR'),
+        fornecedor: itensBonificados[0]?.fornecedor || relatorio.itens[0]?.fornecedor || 'Fornecedor não informado',
+        categoria,
+        valorEsperado: valorBonificacao,
+        itensConferidos: itensBonificados,
+        nomeConferente: quemRecebeu,
+        valorRecebido,
+        observacoes: formulario.obs.trim(),
+        houveDivergencia: divergiuValor,
+        tipoDivergencia,
+        veioBonificacao: true,
+        notaBonificada: true
+      };
+      const novaLista = unirConferencias([registro], conferenciasRef.current);
+      conferenciasRef.current = novaLista;
+      setConferencias(novaLista);
+      localStorage.setItem('rm_conferencias', JSON.stringify(novaLista));
+      localStorage.setItem('rm_backup_conferencia', JSON.stringify({ conferencias: novaLista }));
+      gravarNaWeb();
+      setAbaConferencia('bonificados');
+      setAlerta({ tipo: 'sucesso', msg: '✓ Bonificação concluída. Foi para Pedidos bonificados.' });
+      return;
+    }
+    gravarNaWeb();
+    setAlerta({ tipo: 'sucesso', msg: '✓ Bonificação marcada como não veio. O pedido comprado continua em Conferidos.' });
   };
 
   const importarBackupConferencia = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -3349,22 +4396,40 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     }
   };
 
-  const visualizarPdfFornecedor = (relatorio: RelatorioPedidoCotacao) => {
+    const visualizarPdfFornecedor = async (relatorio: RelatorioPedidoCotacao) => {
     if (!relatorio.pdfFornecedor) return;
+    setAlerta({ tipo: 'sucesso', msg: '⏳ Abrindo o PDF anexado...' });
+    const idAnexo = `pedido_${relatorio.id}`;
+    try {
+      await garantirAnexoNaNuvem(idAnexo, relatorio.pdfFornecedor.conteudo);
+      gravarPdfNoPedido(relatorio.id, {
+        ...relatorio.pdfFornecedor,
+        conteudo: urlArquivoAnexo(idAnexo, { nome: relatorio.pdfFornecedor.nome })
+      }, relatoriosPedidosRef.current);
+      await gravarNaWeb();
+    } catch { /* se a nuvem falhar, ainda tenta abrir o arquivo local */ }
+    const url = await abrirPdfComoArquivo(idAnexo, relatorio.pdfFornecedor.conteudo);
+    if (!url) {
+      setAlerta({ tipo: 'erro', msg: '⚠️ Este PDF ainda não está neste aparelho nem na nuvem. Anexe de novo neste pedido.' });
+      return;
+    }
+    setAlerta(null);
     setPdfFornecedorVisualizacao({
       nome: relatorio.pdfFornecedor.nome,
-      conteudo: urlPdfParaVisualizar(relatorio.pdfFornecedor.conteudo)
+      conteudo: url,
+      pedidoId: relatorio.id
     });
   };
 
   const visualizarPedidoLancadoPdf = (relatorio: RelatorioPedidoCotacao) => {
     const itens = Array.isArray(relatorio.itens) ? relatorio.itens : [];
     const linhas = itens.map(item => ({
-      produto: item.produto,
+      produto: item.bonificado ? `${item.produto} (bonificado)` : item.produto,
       unit: item.unit,
       quantidade: String(item.quantidade ?? ''),
       valorUnitario: Number(item.valorUnitario) || 0,
-      valorTotal: Number(item.valorTotal) || 0
+      valorTotal: Number(item.valorTotal) || 0,
+      bonificado: !!item.bonificado
     }));
     const fornecedor = itens[0]?.fornecedor || 'Fornecedor';
     const blob = gerarPdfPedidoFornecedor(fornecedor, linhas, Number(relatorio.totalGeral) || 0, relatorio.data);
@@ -3496,7 +4561,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
       setAlerta({ tipo: 'erro', msg: '⚠️ Não há pagamentos para enviar em PDF.' });
       return;
     }
-    const blob = gerarPdfRelatorioPagamentos(dp, valorTotal, dataRotulo);
+    const blob = gerarPdfRelatorioPagamentos(dp, valorTotal, dataRotulo, vistoFinanceiroNome);
     const dataArquivo = (dataRotulo || new Date().toLocaleDateString('pt-BR')).replace(/[^\d]+/g, '-');
     const nomeArquivo = `pagamentos-RM-${dataArquivo}.pdf`;
     const arquivo = new File([blob], nomeArquivo, { type: 'application/pdf' });
@@ -3612,6 +4677,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     };
     setQuantidadesElieuda(novoObj);
     localStorage.setItem('rm_elieuda', JSON.stringify(novoObj));
+    elieudaAlteradaRef.current = true;
     agendarGravacaoEdicao({ quantidadesElieuda: novoObj });
   };
 
@@ -3619,6 +4685,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     if (window.confirm('Confirma a limpeza de todas as quantidades para iniciar um novo pedido?')) {
       const novoObj: QuantidadesElieuda = {};
       setQuantidadesElieuda(novoObj);
+      elieudaAlteradaRef.current = true;
       gravarNaWeb(undefined, undefined, undefined, undefined, undefined, novoObj);
       setAlerta({ tipo: 'sucesso', msg: '✓ Tabela reiniciada para novo pedido!' });
       setTimeout(() => setAlerta(null), 3000);
@@ -3797,7 +4864,6 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     if (/sabonete|shampoo|rexona|absorvente|pasta colgate|pasta sorriso|barbeador|gilete|aerosol/.test(nome)) return 'Higiene pessoal';
     return 'Outros produtos';
   };
-  const telaInteiraAtiva = ['conferencia', 'cotacao', 'pagamentos', 'elieuda', 'relatorios', 'seguranca', 'manutencao', 'producao'].includes(tabAtiva) || (tabAtiva === 'pendencias' && sairTelaInteira);
   const ordensLista = (Array.isArray(ordensManutencao) ? ordensManutencao : []).filter(ordem => !ordensManutencaoDeletadasRef.current.includes(ordem.id));
   const ordensPendenteQtd = ordensLista.filter(ordem => statusOrdemNormalizado(ordem.status) === 'pendente').length;
   const ordensAndamentoQtd = ordensLista.filter(ordem => statusOrdemNormalizado(ordem.status) === 'andamento').length;
@@ -3813,9 +4879,10 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   const usuariosDoSistema = unirUsuariosCadastrados(usuariosExtra).map(usuario => aplicarPermissoesSalvas(usuario, permissoesUsuarios));
   const conferenciasLista = (Array.isArray(conferencias) ? conferencias : []).filter(conf => !conferenciasDeletadasRef.current.includes(conf.id));
   const relatoriosPedidosLista = (Array.isArray(relatoriosPedidosCotacao) ? relatoriosPedidosCotacao : []).filter(relatorio => !pedidosCotacaoDeletadosRef.current.includes(relatorio.id));
-  const pedidosConferidosIds = new Set([...pedidosConferidosLocais, ...conferenciasLista.filter(conferencia => conferencia.pedidoId).map(conferencia => conferencia.pedidoId)]);
+  const pedidosConferidosIds = new Set([...pedidosConferidosLocais, ...conferenciasLista.filter(conferencia => conferencia.pedidoId && !conferencia.notaBonificada).map(conferencia => conferencia.pedidoId)]);
   const pedidosAindaNaCotacao = relatoriosPedidosLista.filter(relatorio => relatorio.enviadoConferencia !== true);
   const pedidosPendentesConferencia = relatoriosPedidosLista.filter(relatorio => relatorio.enviadoConferencia !== false && !pedidosConferidosIds.has(relatorio.id));
+  const pedidosBonificacaoPendentes = relatoriosPedidosLista.filter(relatorio => relatorio.enviadoConferencia !== false && !relatorio.bonificacaoResolvida && (relatorio.itens || []).some(item => item.bonificado));
   const textoBuscaFornecedor = (texto: string) => (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
   const pedidoBateFornecedor = (relatorio: RelatorioPedidoCotacao, busca: string) => {
     const termo = textoBuscaFornecedor(busca);
@@ -3842,10 +4909,11 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     return pedido ? pedidoBateFornecedor(pedido, busca) : false;
   };
   const pedidosPendentesFiltrados = pedidosPendentesConferencia.filter(relatorio => pedidoBateFornecedor(relatorio, buscaFornecedorConferencia));
+  const pedidosBonificacaoPendentesFiltrados = pedidosBonificacaoPendentes.filter(relatorio => pedidoBateFornecedor(relatorio, buscaFornecedorConferencia));
   const conferenciasFiltradas = conferenciasLista.filter(conf => conferenciaBateFornecedor(conf, buscaFornecedorConferencia));
   const divergenciasFiltradas = conferenciasFiltradas.filter(conf => conf.houveDivergencia);
   const pedidosRealizadosTotal = relatoriosPedidosLista.length;
-  const pedidosPendentesTotal = pedidosPendentesConferencia.length;
+  const pedidosPendentesTotal = pedidosPendentesConferencia.length + pedidosBonificacaoPendentes.filter(relatorio => pedidosConferidosIds.has(relatorio.id)).length;
   const divergenciasQuantidadeTotal = conferenciasLista.filter(conferencia => conferencia.tipoDivergencia === 'quantidade').length;
   const divergenciasValorTotal = conferenciasLista.filter(conferencia => conferencia.tipoDivergencia === 'valor').length;
   const totalPedidoVisualizacao = (pedidoEmVisualizacao?.itens || []).reduce((total, item) => {
@@ -3890,186 +4958,197 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   })();
 
   // 2️⃣ SISTEMA PRINCIPAL
-  const classeAba = (ativa: boolean) =>
-    `relative cursor-pointer rounded-full border-0 px-4 py-2 text-[11px] font-bold uppercase tracking-wide transition ${ativa ? 'bg-white text-teal-800 shadow-md' : 'bg-white/15 text-white ring-1 ring-white/25 hover:bg-white/25'}`;
-  const botaoFerramenta = 'cursor-pointer rounded-lg border-0 px-3 py-1.5 text-[11px] font-bold transition';
-  const menuAbas = (
-    <nav className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2 px-5">
-      {usuarioLogado?.permissoes.pendencias && (
-        <button onClick={() => { setFiltroStatusTarefas('todas'); setTabAtiva('pendencias'); }} className={classeAba(tabAtiva === 'pendencias')}>
-          Pendências
-          {totalAbertasGeral > 0 && (
-            <span className="absolute -right-1 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold text-teal-950 ring-2 ring-teal-800">
-              {totalAbertasGeral}
-            </span>
-          )}
-        </button>
+  const botaoFerramenta = 'cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50';
+  const comprasAberta = ['compras', 'cotacao', 'cadastroProdutos', 'cadastroFornecedores', 'pagamentos', 'consultaPagamentos', 'reciboComprador', 'elieuda', 'conferencia', 'notasConferidas'].includes(tabAtiva);
+  const conciliacaoAberta = tabAtiva === 'conciliacao' || tabAtiva === 'conciliacaoCompras' || tabAtiva === 'arquivoCeasa' || tabAtiva === 'inteligenciaEstoque' || tabAtiva === 'consultasConciliacao';
+  const podeConciliar = usuarioLogado?.tipo === 'admin' || Boolean(usuarioLogado?.permissoes.conciliacao);
+  const manutencaoAbertas = ordensPendenteQtd + ordensAndamentoQtd + ordensPausadaQtd;
+  const nuvemSincronizando = /sincronizando/i.test(statusNuvem);
+  const nuvemProblema = /fora|sem nuvem|offline|não gravou|só neste/i.test(statusNuvem);
+  const textoNuvemTopo = nuvemSincronizando ? 'Sincronizando...' : nuvemProblema ? 'Nuvem fora do ar' : 'Nuvem Sincronizada (Automático)';
+  type ItemMenuLateral = { id: string; rotulo: string; ativo: boolean; aoClicar: () => void; icone: string; selo?: number; seloCor?: 'rose' | 'sky' };
+  const itensMenu: ItemMenuLateral[] = [
+    { id: 'inicio', rotulo: 'Início', ativo: tabAtiva === 'inicio', aoClicar: () => setTabAtiva('inicio'), icone: 'inicio' }
+  ];
+  if (usuarioLogado?.permissoes.estoque || usuarioLogado?.tipo === 'admin') itensMenu.push({ id: 'estoque', rotulo: 'Estoque', ativo: tabAtiva === 'estoque', aoClicar: () => setTabAtiva('estoque'), icone: 'estoque' });
+  if (usuarioLogado?.permissoes.pendencias) itensMenu.push({ id: 'pendencias', rotulo: 'Pendências', ativo: tabAtiva === 'pendencias', aoClicar: () => { setFiltroStatusTarefas('todas'); setTabAtiva('pendencias'); }, icone: 'pendencias', selo: totalAbertasGeral > 0 ? totalAbertasGeral : undefined, seloCor: 'rose' });
+  if (usuarioLogado?.permissoes.pendencias) itensMenu.push({ id: 'checklist', rotulo: 'Checklist', ativo: tabAtiva === 'checklist', aoClicar: () => setTabAtiva('checklist'), icone: 'checklist' });
+  if (usuarioLogado?.permissoes.cotacao || usuarioLogado?.permissoes.pagamentos || usuarioLogado?.permissoes.elieuda || usuarioLogado?.permissoes.conferencias) itensMenu.push({ id: 'compras', rotulo: 'Compras', ativo: comprasAberta, aoClicar: () => setTabAtiva('compras'), icone: 'compras' });
+  if (podeConciliar) itensMenu.push({ id: 'conciliacao', rotulo: 'Conciliação', ativo: conciliacaoAberta, aoClicar: () => setTabAtiva('conciliacao'), icone: 'conciliacao' });
+  if (usuarioLogado?.permissoes.manutencao) itensMenu.push({ id: 'manutencao', rotulo: 'FOLLOW-UP', ativo: tabAtiva === 'manutencao', aoClicar: () => setTabAtiva('manutencao'), icone: 'manutencao', selo: manutencaoAbertas > 0 ? manutencaoAbertas : undefined, seloCor: 'sky' });
+  if (usuarioLogado?.permissoes.producao) itensMenu.push({ id: 'producao', rotulo: 'Produção', ativo: tabAtiva === 'producao', aoClicar: () => setTabAtiva('producao'), icone: 'producao' });
+  if (usuarioLogado?.permissoes.caixaOperacional) itensMenu.push({ id: 'caixa', rotulo: 'Caixa', ativo: tabAtiva === 'caixaOperacional', aoClicar: () => setTabAtiva('caixaOperacional'), icone: 'caixa' });
+  if (usuarioLogado?.permissoes.relatorios) itensMenu.push({ id: 'relatorios', rotulo: 'Relatórios', ativo: tabAtiva === 'relatorios', aoClicar: () => setTabAtiva('relatorios'), icone: 'relatorios' });
+  if (usuarioLogado?.permissoes.dados) itensMenu.push({ id: 'dados', rotulo: 'Dados', ativo: tabAtiva === 'dados', aoClicar: () => setTabAtiva('dados'), icone: 'dados' });
+  itensMenu.push({ id: 'seguranca', rotulo: 'Segurança', ativo: tabAtiva === 'seguranca', aoClicar: () => setTabAtiva('seguranca'), icone: 'seguranca' });
+
+  const IconeMenu = ({ nome }: { nome: string }) => {
+    const p = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, className: 'h-[18px] w-[18px] shrink-0', viewBox: '0 0 24 24', 'aria-hidden': true as const };
+    if (nome === 'inicio') return <svg {...p}><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" /></svg>;
+    if (nome === 'checklist') return <svg {...p}><path d="m5 12 4 4L19 6" /><path d="M4 4h5M4 20h16" /></svg>;
+    if (nome === 'estoque') return <svg {...p}><path d="M4 8 12 4l8 4-8 4-8-4z" /><path d="M4 12l8 4 8-4" /><path d="M4 16l8 4 8-4" /></svg>;
+    if (nome === 'pendencias') return <svg {...p}><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>;
+    if (nome === 'compras') return <svg {...p}><circle cx="9" cy="20" r="1" /><circle cx="18" cy="20" r="1" /><path d="M3 4h2l2.2 11h11.3l2-7H7" /></svg>;
+    if (nome === 'conciliacao') return <svg {...p}><path d="M12 3v18M7 21h10" /><path d="M6 8 3.5 14a3.2 3.2 0 0 0 5 0L6 8zM18 8l-2.5 6a3.2 3.2 0 0 0 5 0L18 8z" /></svg>;
+    if (nome === 'manutencao') return <svg {...p}><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3z" /></svg>;
+    if (nome === 'producao') return <svg {...p}><path d="M4 19V10M10 19V5M16 19v-7M22 19H2" /></svg>;
+    if (nome === 'caixa') return <svg {...p}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></svg>;
+    if (nome === 'relatorios') return <svg {...p}><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v6h6M8 13h8M8 17h6" /></svg>;
+    if (nome === 'dados') return <svg {...p}><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6" /><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></svg>;
+    return <svg {...p}><path d="M12 3 5 6v6c0 4.2 2.8 7.4 7 9 4.2-1.6 7-4.8 7-9V6z" /></svg>;
+  };
+  const classeItemMenu = (ativo: boolean, compacto = false) =>
+    `flex items-center gap-3 rounded-lg border-0 text-left font-semibold tracking-wide cursor-pointer transition ${compacto ? 'shrink-0 px-3 py-2 text-[11px] uppercase' : 'w-full px-3 py-2.5 text-[13px] uppercase'} ${ativo ? 'bg-white/20 text-white' : 'bg-transparent text-white/80 hover:bg-white/10 hover:text-white'}`;
+  const desenharItemMenu = (item: ItemMenuLateral, compacto = false) => (
+    <button key={`${compacto ? 'm-' : ''}${item.id}`} type="button" onClick={item.aoClicar} className={classeItemMenu(item.ativo, compacto)} aria-current={item.ativo ? 'page' : undefined}>
+      <span className="relative text-white">
+        <IconeMenu nome={item.icone} />
+        {item.icone === 'pendencias' && (item.selo || 0) > 0 && <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-[#0a5c56]" />}
+      </span>
+      <span>{item.rotulo}</span>
+      {(item.selo || 0) > 0 && (
+        <span className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold text-white ${item.seloCor === 'sky' ? 'bg-sky-500' : 'bg-rose-500'}`}>{item.selo}</span>
       )}
-      {(usuarioLogado?.permissoes.cotacao || usuarioLogado?.permissoes.pagamentos || usuarioLogado?.permissoes.elieuda || usuarioLogado?.permissoes.conferencias) && (
-        <button
-          onClick={() => setTabAtiva('compras')}
-          className={classeAba(['compras', 'cotacao', 'cadastroProdutos', 'cadastroFornecedores', 'pagamentos', 'reciboComprador', 'elieuda', 'conferencia'].includes(tabAtiva))}
-        >
-          Compras
-        </button>
-      )}
-      {usuarioLogado?.permissoes.manutencao && (
-        <button onClick={() => setTabAtiva('manutencao')} className={classeAba(tabAtiva === 'manutencao')}>
-          Manutenção
-          {(ordensPendenteQtd + ordensAndamentoQtd + ordensPausadaQtd) > 0 && (
-            <span className="absolute -right-1 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-sky-300 px-1 text-[10px] font-bold text-sky-950 ring-2 ring-teal-800">
-              {ordensPendenteQtd + ordensAndamentoQtd + ordensPausadaQtd}
-            </span>
-          )}
-        </button>
-      )}
-      {usuarioLogado?.permissoes.producao && (
-        <button onClick={() => setTabAtiva('producao')} className={classeAba(tabAtiva === 'producao')}>Produção</button>
-      )}
-      {usuarioLogado?.permissoes.relatorios && (
-        <button onClick={() => setTabAtiva('relatorios')} className={classeAba(tabAtiva === 'relatorios')}>Relatórios</button>
-      )}
-      {usuarioLogado?.permissoes.dados && (
-        <button onClick={() => setTabAtiva('dados')} className={classeAba(tabAtiva === 'dados')}>Dados</button>
-      )}
-      <button onClick={() => setTabAtiva('seguranca')} className={classeAba(tabAtiva === 'seguranca')}>Segurança</button>
-    </nav>
+    </button>
   );
+
   return (
-    <div className="flex min-h-screen w-full flex-col justify-between bg-slate-100 font-sans">
-      
-      <div className="w-full">
-        {telaInteiraAtiva && (
-          <div className="border-b border-teal-800 bg-teal-800">
-            <div className="flex items-center justify-between gap-3 px-5 py-3">
-              <div className="inline-flex items-center gap-2.5">
-                <LogoRm size={32} compact />
-                <strong className="text-sm font-black uppercase tracking-wide text-white">RM Sistema-Gestão</strong>
-              </div>
-              <button
-                onClick={fazerLogout}
-                className={`${botaoFerramenta} bg-rose-500/90 text-white hover:bg-rose-400`}
-              >
-                Sair / Bloquear
-              </button>
-            </div>
-            <div className="bg-gradient-to-r from-teal-900 via-teal-700 to-emerald-700 py-3">
-              {menuAbas}
-            </div>
+    <div className="flex min-h-screen w-full bg-[#eef2f6] font-sans">
+      <aside className="hidden w-60 shrink-0 flex-col bg-[#0a5c56] text-white md:flex">
+        <div className="flex items-center gap-2.5 px-4 pb-4 pt-5">
+          <img src="/rm-icon-login.png?v=2" alt="RM" width={36} height={36} className="h-9 w-9 rounded-[10px] bg-white object-cover" />
+          <div className="leading-tight">
+            <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-white/80">RM</p>
+            <strong className="text-[15px] font-black text-white">Sistema-Gestão</strong>
           </div>
-        )}
-        {!telaInteiraAtiva && (
-        <header className="w-full bg-gradient-to-b from-teal-950 via-teal-800 to-teal-900 text-white shadow-lg shadow-teal-950/20">
-          <div className="h-2 w-full bg-gradient-to-r from-emerald-300 via-teal-300 to-amber-200" />
+        </div>
+        <nav className="flex flex-1 flex-col gap-1 px-3 pb-6">
+          {itensMenu.map(item => desenharItemMenu(item))}
+        </nav>
+      </aside>
 
-          <div className="relative mx-auto max-w-6xl px-5 py-5">
-            <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-3">
-              <div className="rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/20">
-                {usuarioLogado?.nome}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={fazerLogout}
-                  className={`${botaoFerramenta} bg-rose-500/90 text-white hover:bg-rose-400`}
-                >
-                  Sair / Bloquear
-                </button>
-              </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+          <p className="m-0 text-sm text-slate-600">Usuário: <strong className="font-semibold text-slate-800">{usuarioLogado?.nome}</strong></p>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className={`text-right text-[11px] font-semibold leading-tight ${nuvemProblema ? 'text-amber-700' : 'text-emerald-600'}`}>
+              <span className="inline-flex items-center gap-1.5">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .4-8 6 6 0 0 0-11.5-1.5A4 4 0 0 0 7 18z" /></svg>
+                {textoNuvemTopo}
+              </span>
+              <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Atualização: {ultimaAtualizacao}</span>
             </div>
-
-            <div className="mb-1 flex items-center justify-center gap-3">
-              <div className="inline-flex items-center gap-3 rounded-2xl bg-white/10 p-2 pr-4 ring-1 ring-white/20">
-                <LogoRm size={52} />
-                <div className="text-left">
-                  <p className="m-0 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-200">RM</p>
-                  <h1 className="m-0 text-2xl font-black tracking-tight text-white">Sistema-Gestão</h1>
-                </div>
-              </div>
-            </div>
-
-            <p className="mb-4 mt-1 text-center text-[11px] font-semibold uppercase tracking-wide text-teal-100">
-              Atualização: <strong className="text-white">{ultimaAtualizacao}</strong>
-            </p>
-
-            <div className="flex flex-col items-center gap-2 rounded-2xl bg-white p-2.5 ring-1 ring-slate-200">
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-800 ring-1 ring-emerald-200">{statusNuvem}</span>
-                <span className="text-[11px] font-semibold text-slate-500">Grava e sincroniza sozinho. Não precisa clicar o tempo todo.</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-              <button onClick={async () => { await gravarNaWeb(); setAlerta({ tipo: 'sucesso', msg: '✓ Gravado na NUVEM agora.' }); }} className={`${botaoFerramenta} bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`}>Salvar agora</button>
-              <button onClick={() => { void carregarTudo(); setAlerta({ tipo: 'sucesso', msg: '✓ Buscando o que já está na nuvem.' }); }} className={`${botaoFerramenta} bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`}>Buscar da nuvem</button>
-              <span className="hidden h-5 w-px bg-slate-200 sm:block" />
-              <input
-                type="file"
-                accept="application/json"
-                onChange={importarBackupConferencia}
-                className="hidden"
-                id="importar-conferencia"
-              />
-              <button
-                onClick={() => document.getElementById('importar-conferencia')?.click()}
-                className={`${botaoFerramenta} bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`}
-              >
-                Importar conferência
-              </button>
-              <button onClick={() => restaurarBackupDoUsuarioAtual()} className={`${botaoFerramenta} bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`}>Meu backup</button>
-              <button onClick={restaurarUltimoBackup} className={`${botaoFerramenta} bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`}>Último backup</button>
-              </div>
-            </div>
-
-            <div className="mx-auto mt-3 max-w-[980px] rounded-2xl bg-white p-3 text-left ring-1 ring-slate-200">
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <div>
-                  <strong className="block text-xs text-slate-900">Proteção de {usuarioLogado?.nome}</strong>
-                  <span className="text-[11px] text-slate-500">{historicoBackupsUsuario.length} visita(s) protegida(s) neste navegador</span>
-                </div>
-                <button
-                  onClick={() => setMostrarHistoricoBackups(!mostrarHistoricoBackups)}
-                  className={`${botaoFerramenta} bg-slate-100 text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200`}
-                >
-                  {mostrarHistoricoBackups ? 'Ocultar histórico' : 'Ver histórico de visitas'}
-                </button>
-              </div>
-
-              {mostrarHistoricoBackups && (
-                <div className="mt-2.5 border-t border-slate-100 pt-2">
-                  {historicoBackupsUsuario.length === 0 ? (
-                    <span className="text-[11px] text-slate-500">Nenhum backup deste usuário foi registrado ainda.</span>
-                  ) : (
-                    historicoBackupsUsuario.map((backup, indice) => {
-                      const tarefas = Array.isArray(backup.setores) ? backup.setores.reduce((total: number, setor: Setor) => total + setor.tarefas.length, 0) : 0;
-                      return (
-                        <div key={`${backup.salvoEm}-${indice}`} className={`flex items-center justify-between gap-2.5 py-2 ${indice < historicoBackupsUsuario.length - 1 ? 'border-b border-slate-100' : ''}`}>
-                          <div>
-                            <strong className="block text-[11px] text-slate-700">{new Date(backup.salvoEm).toLocaleString('pt-BR')}</strong>
-                            <span className="text-[10px] text-slate-500">{tarefas} tarefa(s) • atualização {backup.ultimaAtualizacao || 'não informada'}</span>
-                          </div>
-                          <button onClick={() => restaurarBackupDoUsuarioAtual(backup)} className={`${botaoFerramenta} bg-orange-50 text-orange-700 ring-1 ring-orange-200 hover:bg-orange-100`}>Restaurar esta visita</button>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="w-full bg-gradient-to-r from-teal-900 via-teal-700 to-emerald-700 py-3.5 shadow-inner">
-            {menuAbas}
+            <button type="button" onClick={fazerLogout} className="cursor-pointer rounded-lg border-0 bg-rose-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-rose-400">
+              Sair / Bloquear
+            </button>
           </div>
         </header>
-        )}
-        <main className={`box-border w-full ${telaInteiraAtiva ? 'min-h-screen p-0' : 'px-5 py-5 sm:px-8'}`}>
+        <nav className="flex gap-1 overflow-x-auto border-b border-[#084843] bg-[#0a5c56] px-3 py-2 md:hidden">
+          {itensMenu.map(item => desenharItemMenu(item, true))}
+        </nav>
+        <main className="box-border w-full flex-1 px-4 py-5 sm:px-6">
           {alerta && (
             <div className={`mb-4 rounded-2xl px-5 py-3 text-sm font-bold ${alerta.tipo === 'sucesso' ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100' : 'bg-rose-50 text-rose-800 ring-1 ring-rose-100'}`}>
               {alerta.msg}
             </div>
           )}
 
-          {/* ABAS */}
+          {tabAtiva === 'estoque' && (usuarioLogado?.permissoes.estoque || usuarioLogado?.tipo === 'admin') && (
+            <AbaEstoque />
+          )}
+
+          {tabAtiva === 'inicio' && (
+            <div className="mx-auto flex max-w-5xl flex-col gap-4">
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="m-0 mb-4 text-base font-semibold text-slate-900">Gestão de Arquivos & Nuvem</h2>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={async () => { const gravado = await gravarNaWeb(); setAlerta(gravado ? { tipo: 'sucesso', msg: '✓ Gravado na NUVEM agora.' } : { tipo: 'erro', msg: '⚠️ Não foi possível gravar na nuvem. Verifique as credenciais e o status da conexão.' }); }} className={botaoFerramenta}>Salvar agora</button>
+                  <button type="button" onClick={() => { void carregarTudo(); setAlerta({ tipo: 'sucesso', msg: '✓ Buscando o que já está na nuvem.' }); }} className={botaoFerramenta}>Buscar da nuvem</button>
+                  <input type="file" accept="application/json" onChange={importarBackupConferencia} className="hidden" id="importar-conferencia" />
+                  <button type="button" onClick={() => document.getElementById('importar-conferencia')?.click()} className={botaoFerramenta}>Importar conferência</button>
+                  <button type="button" onClick={() => restaurarBackupDoUsuarioAtual()} className={botaoFerramenta}>Meu backup</button>
+                  <button type="button" onClick={restaurarUltimoBackup} className={botaoFerramenta}>Último backup</button>
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="m-0 mb-4 text-base font-semibold text-slate-900">Proteção do Sistema</h2>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <strong className="block text-sm text-slate-900">Proteção de {usuarioLogado?.nome}</strong>
+                    <span className="text-xs text-slate-500">{historicoBackupsUsuario.length} visita(s) protegida(s) neste navegador</span>
+                  </div>
+                  <button type="button" onClick={() => setMostrarHistoricoBackups(!mostrarHistoricoBackups)} className="cursor-pointer border-0 bg-transparent p-0 text-sm text-slate-700 underline">
+                    {mostrarHistoricoBackups ? 'Ocultar histórico' : 'Ver histórico de visitas'}
+                  </button>
+                </div>
+                {mostrarHistoricoBackups && (
+                  <div className="mt-3 border-t border-slate-100 pt-2">
+                    {historicoBackupsUsuario.length === 0 ? (
+                      <span className="text-[11px] text-slate-500">Nenhum backup deste usuário foi registrado ainda.</span>
+                    ) : (
+                      historicoBackupsUsuario.map((backup, indice) => {
+                        const tarefas = Array.isArray(backup.setores) ? backup.setores.reduce((total: number, setor: Setor) => total + setor.tarefas.length, 0) : 0;
+                        return (
+                          <div key={`${backup.salvoEm}-${indice}`} className={`flex items-center justify-between gap-2.5 py-2 ${indice < historicoBackupsUsuario.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                            <div>
+                              <strong className="block text-[11px] text-slate-700">{new Date(backup.salvoEm).toLocaleString('pt-BR')}</strong>
+                              <span className="text-[10px] text-slate-500">{tarefas} tarefa(s) • atualização {backup.ultimaAtualizacao || 'não informada'}</span>
+                            </div>
+                            <button type="button" onClick={() => restaurarBackupDoUsuarioAtual(backup)} className="cursor-pointer rounded-lg border-0 bg-orange-50 px-3 py-1.5 text-[11px] font-bold text-orange-700 ring-1 ring-orange-200 hover:bg-orange-100">Restaurar esta visita</button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
           {tabAtiva === 'compras' && (
-            <AbaCompras permissoes={usuarioLogado?.permissoes} setTabAtiva={setTabAtiva} />
+            <AbaCompras
+              permissoes={usuarioLogado?.permissoes}
+              setTabAtiva={(aba) => {
+                if (aba === 'conferencia') setAbaConferencia('menu');
+                setTabAtiva(aba);
+              }}
+            />
+          )}
+          {tabAtiva === 'conciliacao' && podeConciliar && (
+            <AbaConciliacao setTabAtiva={setTabAtiva} />
+          )}
+          {tabAtiva === 'arquivoCeasa' && podeConciliar && (
+            <AbaArquivoCeasa onVoltar={() => setTabAtiva('conciliacao')} />
+          )}
+          {tabAtiva === 'consultasConciliacao' && podeConciliar && (
+            <AbaHistoricoConciliacao lotes={lotesConciliacao} onVoltar={() => setTabAtiva('conciliacao')} />
+          )}
+          {tabAtiva === 'inteligenciaEstoque' && podeConciliar && (
+            <AbaInteligenciaEstoque
+              onVoltar={() => setTabAtiva('conciliacao')}
+              lotes={lotesInteligencia}
+              aoSalvarLote={(lote) => {
+                const uniao = unirLotesInteligencia(lotesInteligenciaRef.current, [lote]);
+                lotesInteligenciaRef.current = uniao;
+                setLotesInteligencia(uniao);
+                gravarJsonLocal('rm_lotes_inteligencia', uniao);
+                void gravarNaWeb();
+              }}
+            />
+          )}
+          {tabAtiva === 'conciliacaoCompras' && podeConciliar && (
+            <AbaConciliacaoCompras
+              onVoltar={() => setTabAtiva('conciliacao')}
+              lotes={lotesConciliacao}
+              aoArquivarLote={async (lote) => {
+                const uniao = unirLotesConciliacao(lotesConciliacaoRef.current, [lote]);
+                lotesConciliacaoRef.current = uniao;
+                setLotesConciliacao(uniao);
+                gravarJsonLocal('rm_lotes_conciliacao', uniao);
+                return await gravarNaWeb();
+              }}
+            />
           )}
           {tabAtiva === 'dados' && usuarioLogado?.permissoes.dados && (
             <AbaDados
@@ -4135,6 +5214,17 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             />
           )}
 
+          {tabAtiva === 'checklist' && usuarioLogado?.permissoes.pendencias && (
+            <AbaChecklist
+              itens={itensChecklist}
+              statusNuvem={statusNuvem}
+              adicionarItem={adicionarItemChecklist}
+              atualizarItem={atualizarItemChecklist}
+              alternarItem={alternarItemChecklist}
+              removerItem={removerItemChecklist}
+            />
+          )}
+
           {tabAtiva === 'manutencao' && usuarioLogado?.permissoes.manutencao && (
             <AbaManutencao
               LOCAIS_MANUTENCAO={LOCAIS_MANUTENCAO}
@@ -4185,6 +5275,15 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             />
           )}
 
+          {tabAtiva === 'caixaOperacional' && usuarioLogado?.permissoes.caixaOperacional && (
+            <AbaCaixaOperacional
+              movimentos={movimentosCaixaOperacional}
+              nomeUsuario={usuarioLogado?.nome || ''}
+              adicionar={adicionarMovimentoCaixaOperacional}
+              remover={removerMovimentoCaixaOperacional}
+            />
+          )}
+
           {tabAtiva === 'producao' && usuarioLogado?.permissoes.producao && (
             <AbaProducao
               produtos={produtosProducao}
@@ -4205,6 +5304,9 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
 
           {tabAtiva === 'cotacao' && (
             <AbaCotacao
+              adicionarBonificacaoNoPedido={adicionarBonificacaoNoPedido}
+              incluirItensNoPedidoSalvo={incluirItensNoPedidoSalvo}
+              removerBonificacaoDoPedido={removerBonificacaoDoPedido}
               adicionarFornecedorCotacao={adicionarFornecedorCotacao}
               atualizarCampoCotacao={atualizarCampoCotacao}
               atualizarPrecoCotacao={atualizarPrecoCotacao}
@@ -4217,6 +5319,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               getDiaSemanaAtual={getDiaSemanaAtual}
               garantirEmbalagensNaCotacao={garantirEmbalagensNaCotacao}
               garantirLaticiniosNaCotacao={garantirLaticiniosNaCotacao}
+              incluirProdutoEstoqueNaCotacao={incluirProdutoEstoqueNaCotacao}
+              retirarProdutoEstoqueDaCotacao={retirarProdutoEstoqueDaCotacao}
               imprimirPedidoIndividual={imprimirPedidoIndividual}
               imprimirRelatorioCotacao={imprimirRelatorioCotacao}
               imprimirRelatorioPedidosPorVendedor={imprimirRelatorioPedidosPorVendedor}
@@ -4228,6 +5332,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               novoFornecedorNome={novoFornecedorNome}
               novoProdutoCadastro={novoProdutoCadastro}
               pedidosAindaNaCotacao={pedidosAindaNaCotacao}
+              pedidosPendentesConferencia={pedidosPendentesConferencia}
               qtdPedirNumero={qtdPedirNumero}
               relatoriosPedidosCotacao={relatoriosPedidosCotacao}
               removerItemCotacao={removerItemCotacao}
@@ -4272,8 +5377,12 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             />
           )}
 {/* 💰 TELA DE PAGAMENTOS (CAIXA, CHEQUE E CABEN) */}
-          {tabAtiva === 'pagamentos' && (
+          {(tabAtiva === 'pagamentos' || tabAtiva === 'consultaPagamentos') && usuarioLogado?.permissoes.pagamentos && (
             <AbaPagamentos
+              abaConsulta={tabAtiva === 'consultaPagamentos'}
+              vistoFinanceiroNome={vistoFinanceiroNome}
+              setVistoFinanceiroNome={escolherVistoFinanceiro}
+              nomesVistoFinanceiro={NOMES_VISTO_FINANCEIRO}
               adicionarPagamentoCaben={adicionarPagamentoCaben}
               adicionarPagamentoCaixa={adicionarPagamentoCaixa}
               adicionarPagamentoCheque={adicionarPagamentoCheque}
@@ -4318,6 +5427,17 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
             />
           )}
 
+          {tabAtiva === 'notasConferidas' && usuarioLogado?.permissoes.conferencias && (
+            <AbaNotasConferidas
+              conferencias={conferenciasLista}
+              setTabAtiva={setTabAtiva}
+              voltarParaConferencia={() => {
+                setAbaConferencia('menu');
+                setTabAtiva('conferencia');
+              }}
+            />
+          )}
+
           {tabAtiva === 'conferencia' && (
             <AbaConferencia
               abaConferencia={abaConferencia}
@@ -4330,6 +5450,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               conferenciasFiltradas={conferenciasFiltradas}
               conferenciasPorPedido={conferenciasPorPedido}
               criarPedidoNaConferencia={criarPedidoNaConferencia}
+              lancarMercadoriaConferidaSemPedido={lancarMercadoriaConferidaSemPedido}
+              nomeConferentePadrao={usuarioLogado?.nome || ''}
               divergenciasFiltradas={divergenciasFiltradas}
               fornecedoresCotacao={fornecedoresCotacao}
               enviarPdfConferenciaCompartilhado={enviarPdfConferenciaCompartilhado}
@@ -4340,7 +5462,9 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               novaConferencia={novaConferencia}
               pedidosPendentesConferencia={pedidosPendentesConferencia}
               pedidosPendentesFiltrados={pedidosPendentesFiltrados}
+              pedidosBonificacaoPendentesFiltrados={pedidosBonificacaoPendentesFiltrados}
               pedidosPendentesTotal={pedidosPendentesTotal}
+              salvarBonificacaoPedido={salvarBonificacaoPedido}
               pedidosRealizadosTotal={pedidosRealizadosTotal}
               podeExcluirPedidoConferencia={podeExcluirPedidoConferencia}
               relatoriosPedidosCotacao={relatoriosPedidosCotacao}
@@ -4353,6 +5477,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               setTabAtiva={setTabAtiva}
               visualizarPedidoLancadoPdf={visualizarPedidoLancadoPdf}
               visualizarPdfFornecedor={visualizarPdfFornecedor}
+              baixarPdfFornecedor={baixarPdfFornecedor}
             />
           )}
 
@@ -4368,9 +5493,19 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <a href={pdfFornecedorVisualizacao.conteudo} download={pdfFornecedorVisualizacao.nome} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-teal-600">
-                      Baixar
-                    </a>
+                    {pdfFornecedorVisualizacao.pedidoId ? (
+                      <button
+                        type="button"
+                        onClick={() => baixarPdfFornecedor({ id: pdfFornecedorVisualizacao.pedidoId, pdfFornecedor: { nome: pdfFornecedorVisualizacao.nome, conteudo: '', anexadoEm: '' } })}
+                        className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-teal-600"
+                      >
+                        Baixar
+                      </button>
+                    ) : (
+                      <a href={pdfFornecedorVisualizacao.conteudo} download={pdfFornecedorVisualizacao.nome} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-1.5 text-[11px] font-bold text-white no-underline hover:bg-teal-600">
+                        Baixar
+                      </a>
+                    )}
                     <button type="button" onClick={() => window.open(pdfFornecedorVisualizacao.conteudo, '_blank')} className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
                       Abrir nova aba
                     </button>
@@ -4458,9 +5593,17 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
               return <section key={tipo} style={{ marginTop: '18px' }}><h3 style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '8px 10px', margin: 0, fontSize: '13px', borderRadius: '4px', textTransform: 'uppercase' }}>{indice + 1}. {nomeTipo} • Subtotal: R$ {subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3><table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '14px' }}><thead><tr><th style={{ padding: '8px 10px', textAlign: 'left', border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9' }}>{tituloColuna}</th><th style={{ padding: '8px 10px', textAlign: 'right', border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9' }}>Valor (R$)</th></tr></thead><tbody>{itens.map(item => <tr key={item.id}><td style={{ padding: '8px 10px', border: '1px solid #e2e8f0' }}>{item.descricao}</td><td style={{ padding: '8px 10px', border: '1px solid #e2e8f0', textAlign: 'right', fontWeight: 'bold' }}>R$ {item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td></tr>)}</tbody></table></section>;
             })}
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px', paddingBottom: '8px' }}>
-              <div style={{ width: '360px', textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: '8px', fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase' }}>Visto Autorização Financeiro</div>
+              <div style={{ width: '360px', textAlign: 'center', borderTop: '2px solid #0f172a', paddingTop: '8px' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase' }}>Visto Autorização Financeiro</div>
+                <div style={{ marginTop: '6px', fontSize: '12px', fontWeight: 800, color: '#0f172a' }}>{vistoFinanceiroNome}</div>
+              </div>
             </div>
-            <div className="relatorio-pagamentos-acoes" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '24px' }}>
+            <div className="relatorio-pagamentos-acoes" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <select value={vistoFinanceiroNome} onChange={e => escolherVistoFinanceiro(e.target.value)} style={{ padding: '8px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 700 }}>
+                {NOMES_VISTO_FINANCEIRO.map(nome => (
+                  <option key={nome} value={nome}>{nome}</option>
+                ))}
+              </select>
               <button onClick={() => setRelatorioPagamentosVisualizacao(null)} style={{ padding: '8px 14px' }}>Fechar</button>
               <button onClick={() => enviarRelatorioPagamentosPdf(relatorioPagamentosVisualizacao.dados, relatorioPagamentosVisualizacao.valorTotal, relatorioPagamentosVisualizacao.dataRotulo)} style={{ padding: '8px 14px', border: 'none', backgroundColor: '#25d366', color: '#ffffff', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>Enviar WhatsApp PDF</button>
               <button onClick={() => window.print()} style={{ padding: '8px 14px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', fontWeight: 'bold' }}>🖨️ Imprimir</button>

@@ -16,9 +16,16 @@ export const setoresSemFotos = (lista?: Setor[]) =>
 
 export const pedidosSemPdfPesado = (lista?: RelatorioPedidoCotacao[]) =>
   (lista || []).map(pedido => {
-    if (!pedido?.pdfFornecedor?.conteudo || !String(pedido.pdfFornecedor.conteudo).startsWith('data:')) return pedido;
-    const { conteudo: _c, ...meta } = pedido.pdfFornecedor;
-    return { ...pedido, pdfFornecedor: { ...meta, conteudo: '' } };
+    if (!pedido?.pdfFornecedor?.nome) return pedido;
+    const conteudo = String(pedido.pdfFornecedor.conteudo || '');
+    if (conteudo.startsWith('/api/anexo') || conteudo.startsWith('http')) return pedido;
+    return {
+      ...pedido,
+      pdfFornecedor: {
+        ...pedido.pdfFornecedor,
+        conteudo: ''
+      }
+    };
   });
 
 export const gravarJsonLocal = (chave: string, valor: unknown) => {

@@ -5,16 +5,19 @@ type Permissoes = {
   conferencias?: boolean;
 };
 
-type Destino = 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia';
+type Destino = 'cotacao' | 'cadastroProdutos' | 'cadastroFornecedores' | 'pagamentos' | 'consultaPagamentos' | 'reciboComprador' | 'elieuda' | 'conferencia' | 'notasConferidas';
 
-const MODULOS: { destino: Destino; titulo: string; detalhe: string; permissao: keyof Permissoes }[] = [
-  { destino: 'cotacao', titulo: 'Cotação', detalhe: 'Comparar preços e montar o pedido de compra.', permissao: 'cotacao' },
-  { destino: 'cadastroProdutos', titulo: 'Cadastro de produtos', detalhe: 'Lista atual, bebidas, laticínios e embalagens.', permissao: 'cotacao' },
+const MODULOS: { destino: Destino; titulo: string; detalhe: string; permissao: keyof Permissoes; aba?: string }[] = [
+  { destino: 'cotacao', titulo: 'Cotação', detalhe: 'Escolher o fornecedor e cotar pela lista completa.', permissao: 'cotacao' },
+  { destino: 'cotacao', titulo: 'Bonificação', detalhe: 'Registrar produto de brinde que vem junto com o pedido pendente.', permissao: 'cotacao', aba: 'bonificacao' },
+  { destino: 'cadastroProdutos', titulo: 'Cadastro de produtos', detalhe: 'Lista Completa, lista atual e seções.', permissao: 'cotacao' },
   { destino: 'cadastroFornecedores', titulo: 'Cadastro de fornecedores', detalhe: 'Incluir e manter os fornecedores da cotação.', permissao: 'cotacao' },
   { destino: 'pagamentos', titulo: 'Pagamentos', detalhe: 'Caixa, cheque e CABEN.', permissao: 'pagamentos' },
-  { destino: 'reciboComprador', titulo: 'Recibo', detalhe: 'Escolher o fornecedor, o produto e imprimir.', permissao: 'pagamentos' },
+  { destino: 'consultaPagamentos', titulo: 'Consulta de pagamentos', detalhe: 'Buscar por nome, ver datas, totais e lotes fechados.', permissao: 'pagamentos' },
+  { destino: 'reciboComprador', titulo: 'Recibo', detalhe: 'Escolher o fornecedor, localizar o produto na lista completa e imprimir.', permissao: 'pagamentos' },
   { destino: 'elieuda', titulo: 'Pedido Elieuda', detalhe: 'Pedido de hortifrúti da semana.', permissao: 'elieuda' },
-  { destino: 'conferencia', titulo: 'Conferência', detalhe: 'Conferir mercadoria que chegou.', permissao: 'conferencias' }
+  { destino: 'conferencia', titulo: 'Conferência', detalhe: 'Conferir mercadoria que chegou.', permissao: 'conferencias' },
+  { destino: 'notasConferidas', titulo: 'Notas conferidas', detalhe: 'Consultar mercadorias recebidas, valores e ranking de fornecedores.', permissao: 'conferencias' }
 ];
 
 export function AbaCompras(p: {
@@ -31,9 +34,14 @@ export function AbaCompras(p: {
       <div className="grid gap-3 sm:grid-cols-2">
         {visiveis.map(modulo => (
           <button
-            key={modulo.destino}
+            key={`${modulo.destino}-${modulo.aba || 'padrao'}`}
             type="button"
-            onClick={() => p.setTabAtiva(modulo.destino)}
+            onClick={() => {
+              if (modulo.destino === 'cotacao') {
+                try { sessionStorage.setItem('rm_cotacao_aba', modulo.aba || 'precos'); } catch { /* ignora */ }
+              }
+              p.setTabAtiva(modulo.destino);
+            }}
             className="cursor-pointer rounded-2xl border-0 bg-slate-50 p-4 text-left ring-1 ring-slate-200 transition hover:bg-teal-50 hover:ring-teal-200"
           >
             <strong className="block text-sm font-black text-slate-900">{modulo.titulo}</strong>

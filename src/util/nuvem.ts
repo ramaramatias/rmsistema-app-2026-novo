@@ -17,7 +17,7 @@ export const recordDoJsonBin = (dados: any) =>
   dados?.record && typeof dados.record === 'object' && !Array.isArray(dados.record) ? dados.record : dados;
 
 export const enviarRegistroNuvem = async (registro: Record<string, unknown>) => {
-  const tentar = (corpo: Record<string, unknown>) => fetch('/api/nuvem', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+  const tentar = (corpo: Record<string, unknown>) => fetch(`/api/nuvem?t=${Date.now()}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, cache: 'no-store', body: JSON.stringify(corpo) });
   const leve: Record<string, unknown> = {
     ...registro,
     fotosPendencias: enxugarFotosNuvem((registro.fotosPendencias as { [id: string]: string }) || {}, 400000),
@@ -30,6 +30,7 @@ export const enviarRegistroNuvem = async (registro: Record<string, unknown>) => 
       tarefasDeletadas: leve.tarefasDeletadas,
       pagamentos: leve.pagamentos,
       historicoPagamentos: leve.historicoPagamentos,
+      historicoPagamentosDeletados: leve.historicoPagamentosDeletados,
       conferencias: leve.conferencias,
       fornecedoresCotacao: leve.fornecedoresCotacao,
       itensCotacao: leve.itensCotacao,
@@ -46,7 +47,14 @@ export const enviarRegistroNuvem = async (registro: Record<string, unknown>) => 
       permissoesUsuarios: leve.permissoesUsuarios,
       ordensManutencao: leve.ordensManutencao,
       ordensManutencaoDeletadas: leve.ordensManutencaoDeletadas,
-      ultimaAtualizacao: leve.ultimaAtualizacao
+      itensChecklist: leve.itensChecklist,
+      itensChecklistDeletados: leve.itensChecklistDeletados,
+      caixaOperacional: leve.caixaOperacional,
+      caixaOperacionalDeletados: leve.caixaOperacionalDeletados,
+      lotesConciliacao: leve.lotesConciliacao,
+      lotesInteligencia: leve.lotesInteligencia,
+      ultimaAtualizacao: leve.ultimaAtualizacao,
+      versaoBase: leve.versaoBase
     });
   }
   return resposta;

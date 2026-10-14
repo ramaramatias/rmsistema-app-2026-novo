@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { FORNECEDORES_LATICINIOS, montarItensEmbalagens, montarItensLaticinios } from '../../catalogo/secoesDados';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import type { ItemListaCompleta } from '../../catalogo/listaCompleta';
+import { classificarSecaoProduto } from '../../catalogo/secao';
+import { CotacaoListaCompleta } from './CotacaoListaCompleta';
+import { FORNECEDORES_LATICINIOS, MATERIA_PRIMA_POR_CATEGORIA, MERCEARIA_POR_CATEGORIA, SECOES_COTACAO_EXTRAS, montarItensEmbalagens, montarItensLaticinios, montarItensSecao, secaoCatalogoDoId } from '../../catalogo/secoesDados';
 import { tipoPessoaFornecedor } from '../../tipos';
 import { chaveNomeItemCotacao } from '../../util/cotacao';
 
 export function AbaCotacao(p: {
+  adicionarBonificacaoNoPedido: any;
+  incluirItensNoPedidoSalvo: any;
+  removerBonificacaoDoPedido: any;
   adicionarFornecedorCotacao: any;
   atualizarCampoCotacao: any;
   atualizarPrecoCotacao: any;
@@ -17,6 +23,8 @@ export function AbaCotacao(p: {
   garantirEmbalagensNaCotacao: () => void;
   garantirLaticiniosNaCotacao: () => void;
   imprimirPedidoIndividual: any;
+  incluirProdutoEstoqueNaCotacao: (produto: ItemListaCompleta, fornecedorId: string) => void;
+  retirarProdutoEstoqueDaCotacao: (itemId: string, fornecedorId: string) => void;
   imprimirRelatorioCotacao: any;
   imprimirRelatorioPedidosPorVendedor: any;
   itensCotacao: any;
@@ -27,6 +35,7 @@ export function AbaCotacao(p: {
   novoFornecedorNome: any;
   novoProdutoCadastro: any;
   pedidosAindaNaCotacao: any;
+  pedidosPendentesConferencia: any;
   qtdPedirNumero: any;
   relatoriosPedidosCotacao: any;
   removerItemCotacao: any;
@@ -46,6 +55,9 @@ export function AbaCotacao(p: {
   verificaEntregaHoje: any;
 }) {
   const {
+    adicionarBonificacaoNoPedido,
+    incluirItensNoPedidoSalvo,
+    removerBonificacaoDoPedido,
     adicionarFornecedorCotacao,
     atualizarCampoCotacao,
     atualizarPrecoCotacao,
@@ -59,6 +71,8 @@ export function AbaCotacao(p: {
     garantirEmbalagensNaCotacao,
     garantirLaticiniosNaCotacao,
     imprimirPedidoIndividual,
+    incluirProdutoEstoqueNaCotacao,
+    retirarProdutoEstoqueDaCotacao,
     imprimirRelatorioCotacao,
     imprimirRelatorioPedidosPorVendedor,
     itensCotacao,
@@ -69,6 +83,7 @@ export function AbaCotacao(p: {
     novoFornecedorNome,
     novoProdutoCadastro,
     pedidosAindaNaCotacao,
+    pedidosPendentesConferencia,
     qtdPedirNumero,
     relatoriosPedidosCotacao,
     removerItemCotacao,
@@ -87,19 +102,62 @@ export function AbaCotacao(p: {
     totalGeralCompraCotacao,
     verificaEntregaHoje
   } = p;
-  const [abaPedido, setAbaPedido] = useState<'precos' | 'registro' | 'salvos'>('precos');
-  const [listaCotacao, setListaCotacao] = useState<'geral' | 'embalagens' | 'laticinios'>('geral');
+  const [abaPedido, setAbaPedido] = useState<'listas' | 'precos' | 'registro' | 'salvos' | 'bonificacao'>(() => {
+    try {
+      const salvo = sessionStorage.getItem('rm_cotacao_aba');
+      if (salvo === 'listas' || salvo === 'precos' || salvo === 'registro' || salvo === 'salvos' || salvo === 'bonificacao') return salvo;
+    } catch { /* ignora */ }
+    return 'precos';
+  });
+  const [bonificacao, setBonificacao] = useState({ produto: '', fornecedor: '', quantidade: '1', unit: 'Und', valor: '', pedidoId: '' });
+  const [listaCotacao, setListaCotacao] = useState<'geral' | 'listaCompleta' | 'embalagens' | 'laticinios' | (typeof SECOES_COTACAO_EXTRAS)[number]>('geral');
+  const [fornecedorListaId, setFornecedorListaId] = useState('');
   const [fornecedorLaticinio, setFornecedorLaticinio] = useState('todos');
-  const [fornecedoresEmb, setFornecedoresEmb] = useState<[string, string]>(() => {
+  const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  const [pagina, setPagina] = useState(1);
+  const [editandoId, setEditandoId] = useState('');
+  const [buscaFornecedor, setBuscaFornecedor] = useState('');
+  const [formProduto, setFormProduto] = useState(false);
+  const [formFornecedor, setFormFornecedor] = useState(false);
+  const [marcados, setMarcados] = useState<string[] | null>(null);
+  const [fornecedoresEmb, setFornecedoresEmb] = useState<string[]>(() => {
     try {
       const salvo = JSON.parse(localStorage.getItem('rm_cotacao_embalagens_fornecedores') || '[]');
-      if (Array.isArray(salvo) && salvo[0] && salvo[1]) return [String(salvo[0]), String(salvo[1])];
+      if (Array.isArray(salvo)) return [...new Set(salvo.map((id: unknown) => String(id || '')).filter(Boolean))];
     } catch { /* ignora */ }
-    return ['', ''];
+    return [];
   });
+  const [novoEmbId, setNovoEmbId] = useState('');
   const itemEhEmbalagem = (item: any) => item?.secao === 'Embalagens' || String(item?.id || '').startsWith('emb_');
   const itemEhLaticinio = (item: any) => item?.secao === 'Laticínios' || String(item?.id || '').startsWith('lat_');
+  const itemEhSecaoExtra = (item: any) => Boolean(secaoCatalogoDoId(item?.id)) || (SECOES_COTACAO_EXTRAS as readonly string[]).includes(item?.secao);
+  const itemEhListaCompleta = (item: any) => String(item?.id || '').startsWith('est_') || item?.secao === 'Lista completa';
   const listaSecao = listaCotacao !== 'geral';
+  const nomeListaAtual = listaCotacao === 'listaCompleta'
+    ? 'Lista completa'
+    : listaCotacao === 'geral'
+    ? 'Lista geral'
+    : listaCotacao === 'embalagens'
+      ? 'Embalagens'
+      : listaCotacao === 'laticinios'
+        ? 'Laticínios'
+        : listaCotacao === 'Matéria prima'
+          ? 'Matéria-prima'
+          : listaCotacao;
+  const escolherLista = (id: 'geral' | 'listaCompleta' | 'embalagens' | 'laticinios' | (typeof SECOES_COTACAO_EXTRAS)[number]) => {
+    setFiltroCategoria('todos');
+    if (id === 'laticinios') {
+      garantirLaticiniosNaCotacao?.();
+      setFornecedorLaticinio('todos');
+    }
+    setListaCotacao(id);
+    setAbaPedido('precos');
+  };
+  const categoriasDaLista = listaCotacao === 'Matéria prima'
+    ? Object.keys(MATERIA_PRIMA_POR_CATEGORIA)
+    : listaCotacao === 'Mercearia'
+      ? Object.keys(MERCEARIA_POR_CATEGORIA)
+      : [];
   useEffect(() => {
     try { sessionStorage.setItem('rm_cotacao_aba', abaPedido); } catch { /* ignora */ }
   }, [abaPedido]);
@@ -107,17 +165,13 @@ export function AbaCotacao(p: {
     if (listaCotacao === 'embalagens') garantirEmbalagensNaCotacao?.();
   }, [listaCotacao]);
   useEffect(() => {
-    const ids = (fornecedoresCotacao || []).map((f: any) => f?.id).filter(Boolean);
-    if (!ids.length) return;
+    const ids = new Set((fornecedoresCotacao || []).filter((f: any) => tipoPessoaFornecedor(f) === 'juridica').map((f: any) => f?.id).filter(Boolean));
     setFornecedoresEmb(atuais => {
-      const a = ids.includes(atuais[0]) ? atuais[0] : ids[0];
-      const b = ids.includes(atuais[1]) && atuais[1] !== a ? atuais[1] : (ids.find((id: string) => id !== a) || a);
-      if (a === atuais[0] && b === atuais[1]) return atuais;
-      return [a, b];
+      const validos = atuais.filter(id => ids.has(id));
+      return validos.length === atuais.length ? atuais : validos;
     });
   }, [fornecedoresCotacao]);
   useEffect(() => {
-    if (!fornecedoresEmb[0] || !fornecedoresEmb[1]) return;
     localStorage.setItem('rm_cotacao_embalagens_fornecedores', JSON.stringify(fornecedoresEmb));
   }, [fornecedoresEmb]);
   const nomeFornecedor = (f: any) => f?.nomeFantasia || f?.nome || f?.razaoSocial || 'Fornecedor';
@@ -134,7 +188,16 @@ export function AbaCotacao(p: {
       if (fornecedorLaticinio === 'todos') return laticinios;
       return laticinios.filter(item => item.fornecedorId === fornecedorLaticinio);
     }
-    const geral = lista.filter((item: any) => !itemEhEmbalagem(item) && !itemEhLaticinio(item));
+    if (listaCotacao === 'listaCompleta') {
+      if (!fornecedorListaId) return [];
+      return lista.filter((item: any) => itemEhListaCompleta(item) && Object.prototype.hasOwnProperty.call(item.precos || {}, fornecedorListaId));
+    }
+    if ((SECOES_COTACAO_EXTRAS as readonly string[]).includes(listaCotacao)) {
+      const secao = montarItensSecao(listaCotacao, lista);
+      if (filtroCategoria === 'todos') return secao;
+      return secao.filter(item => item.categoria === filtroCategoria);
+    }
+    const geral = lista.filter((item: any) => !itemEhEmbalagem(item) && !itemEhLaticinio(item) && !itemEhSecaoExtra(item) && !itemEhListaCompleta(item));
     const vistos = new Set<string>();
     return geral.filter((item: any) => {
       const chave = chaveNomeItemCotacao(item) || String(item?.id || '');
@@ -142,35 +205,19 @@ export function AbaCotacao(p: {
       vistos.add(chave);
       return true;
     });
-  }, [itensCotacao, listaCotacao, fornecedorLaticinio]);
-  const idsCadastro = (fornecedoresCotacao || []).map((f: any) => f?.id).filter(Boolean);
-  const idEmbA = idsCadastro.includes(fornecedoresEmb[0]) ? fornecedoresEmb[0] : (idsCadastro[0] || '');
-  const idEmbB = idsCadastro.includes(fornecedoresEmb[1]) && fornecedoresEmb[1] !== idEmbA
-    ? fornecedoresEmb[1]
-    : (idsCadastro.find((id: string) => id !== idEmbA) || idEmbA);
+  }, [itensCotacao, listaCotacao, fornecedorLaticinio, filtroCategoria, fornecedorListaId]);
+  const idsCadastro = fornecedoresJuridicos.map((f: any) => f?.id).filter(Boolean);
+  const idsEmbEscolhidos = [...new Set(fornecedoresEmb.filter(id => idsCadastro.includes(id)))];
+  const fornecedoresEmbDisponiveis = fornecedoresJuridicos.filter((f: any) => !idsEmbEscolhidos.includes(f.id));
   const fornecedoresVisiveis = listaCotacao === 'embalagens'
-    ? [idEmbA, idEmbB].map(id => (fornecedoresCotacao || []).find((f: any) => f?.id === id)).filter(Boolean)
+    ? idsEmbEscolhidos.map(id => fornecedoresJuridicos.find((f: any) => f?.id === id)).filter(Boolean)
     : listaCotacao === 'laticinios'
       ? (fornecedorLaticinio === 'todos' ? FORNECEDORES_LATICINIOS : FORNECEDORES_LATICINIOS.filter(f => f.id === fornecedorLaticinio))
-      : (fornecedoresJuridicos || []);
+      : listaCotacao === 'listaCompleta'
+        ? fornecedoresJuridicos.filter((f: any) => f.id === fornecedorListaId)
+        : (fornecedoresJuridicos || []);
   const idsFornecedoresVisiveis = fornecedoresVisiveis.map((f: any) => f.id);
-  const itensComPreco = useMemo(() => {
-    if (listaCotacao !== 'embalagens') return itensDaLista;
-    return itensDaLista.map((item: any) => {
-      if (qtdPedirNumero(item) <= 0) return item;
-      const ultimo = precoNumero(item?.ultimoPrecoCompra);
-      if (!ultimo || !idsFornecedoresVisiveis.length) return item;
-      const precos = { ...(item.precos || {}) };
-      let mudou = false;
-      idsFornecedoresVisiveis.forEach((id: string) => {
-        if (!precoNumero(precos[id])) {
-          precos[id] = ultimo.toFixed(2);
-          mudou = true;
-        }
-      });
-      return mudou ? { ...item, precos } : item;
-    });
-  }, [itensDaLista, listaCotacao, idEmbA, idEmbB]);
+  const itensComPreco = itensDaLista;
   const itensFiltrados = useMemo(() => {
     const termo = String(buscaCotacao || '').toLowerCase().trim();
     if (!termo) return itensComPreco;
@@ -205,12 +252,14 @@ export function AbaCotacao(p: {
     somenteFornecedores: idsFornecedoresVisiveis,
     enviarConferencia: listaCotacao === 'embalagens'
   };
-  const escolherFornecedorEmb = (indice: 0 | 1, id: string) => {
-    setFornecedoresEmb(atuais => {
-      const proximo: [string, string] = [...atuais] as [string, string];
-      proximo[indice] = id;
-      return proximo;
-    });
+  const adicionarFornecedorEmb = (id: string) => {
+    const escolhido = String(id || novoEmbId || '').trim();
+    if (!escolhido || !idsCadastro.includes(escolhido)) return;
+    setFornecedoresEmb(atuais => atuais.includes(escolhido) ? atuais : [...atuais, escolhido]);
+    setNovoEmbId('');
+  };
+  const removerFornecedorEmb = (id: string) => {
+    setFornecedoresEmb(atuais => atuais.filter(atual => atual !== id));
   };
   const classeAbaInterna = (ativa: boolean) =>
     `cursor-pointer rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide transition ${
@@ -226,16 +275,29 @@ export function AbaCotacao(p: {
                 <h2 className="m-0 text-xl font-black tracking-tight text-slate-900">Pedido de compra</h2>
               </div>
               <div className="mb-5 mt-4 flex flex-wrap gap-2">
+                <button type="button" onClick={() => setAbaPedido('listas')} className={classeAbaInterna(abaPedido === 'listas')}>Listas · {nomeListaAtual}</button>
                 <button type="button" onClick={() => setAbaPedido('precos')} className={classeAbaInterna(abaPedido === 'precos')}>Cotação de preço</button>
                 <button type="button" onClick={() => setAbaPedido('registro')} className={classeAbaInterna(abaPedido === 'registro')}>Registro por fornecedor</button>
                 <button type="button" onClick={() => setAbaPedido('salvos')} className={classeAbaInterna(abaPedido === 'salvos')}>Pedidos salvos ({(pedidosAindaNaCotacao || []).length})</button>
+                <button type="button" onClick={() => setAbaPedido('bonificacao')} className={classeAbaInterna(abaPedido === 'bonificacao')}>Bonificação</button>
               </div>
-              <div className="mb-4 flex flex-wrap gap-2">
-                <button type="button" onClick={() => setListaCotacao('geral')} className={classeAbaInterna(listaCotacao === 'geral')}>Lista geral</button>
-                <button type="button" onClick={() => setListaCotacao('embalagens')} className={classeAbaInterna(listaCotacao === 'embalagens')}>Embalagens</button>
-                <button type="button" onClick={() => { garantirLaticiniosNaCotacao?.(); setListaCotacao('laticinios'); setFornecedorLaticinio('todos'); }} className={classeAbaInterna(listaCotacao === 'laticinios')}>Laticínios</button>
-              </div>
-              {listaCotacao === 'laticinios' && (
+              {abaPedido === 'listas' && (
+                <div className="mb-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                  <p className="mb-3 mt-0 text-sm font-semibold text-slate-600">Escolha a lista. A cotação abre só com ela.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => escolherLista('listaCompleta')} className={classeAbaInterna(listaCotacao === 'listaCompleta')}>Lista completa</button>
+                    <button type="button" onClick={() => escolherLista('geral')} className={classeAbaInterna(listaCotacao === 'geral')}>Lista geral</button>
+                    <button type="button" onClick={() => escolherLista('embalagens')} className={classeAbaInterna(listaCotacao === 'embalagens')}>Embalagens</button>
+                    <button type="button" onClick={() => escolherLista('laticinios')} className={classeAbaInterna(listaCotacao === 'laticinios')}>Laticínios</button>
+                    {SECOES_COTACAO_EXTRAS.map(secao => (
+                      <button key={secao} type="button" onClick={() => escolherLista(secao)} className={classeAbaInterna(listaCotacao === secao)}>
+                        {secao === 'Matéria prima' ? 'Matéria-prima' : secao}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {abaPedido === 'precos' && listaCotacao === 'laticinios' && (
                 <div className="mb-4 flex flex-wrap gap-2">
                   <button type="button" onClick={() => setFornecedorLaticinio('todos')} className={classeAbaInterna(fornecedorLaticinio === 'todos')}>Todos os laticínios</button>
                   {FORNECEDORES_LATICINIOS.map(fornecedor => (
@@ -245,19 +307,50 @@ export function AbaCotacao(p: {
                   ))}
                 </div>
               )}
+              {abaPedido === 'precos' && categoriasDaLista.length > 0 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setFiltroCategoria('todos')} className={classeAbaInterna(filtroCategoria === 'todos')}>Todas</button>
+                  {categoriasDaLista.map(nome => (
+                    <button key={nome} type="button" onClick={() => setFiltroCategoria(nome)} className={classeAbaInterna(filtroCategoria === nome)}>{nome}</button>
+                  ))}
+                </div>
+              )}
 
-              {abaPedido === 'precos' && (
+              {abaPedido === 'precos' && listaCotacao === 'listaCompleta' && (
+                <CotacaoListaCompleta
+                  fornecedores={fornecedoresJuridicos}
+                  fornecedorId={fornecedorListaId}
+                  setFornecedorId={setFornecedorListaId}
+                  itens={itensDaLista}
+                  incluir={incluirProdutoEstoqueNaCotacao}
+                  retirar={retirarProdutoEstoqueDaCotacao}
+                  atualizarCampoCotacao={atualizarCampoCotacao}
+                  atualizarPrecoCotacao={atualizarPrecoCotacao}
+                  adicionarFornecedorCotacao={adicionarFornecedorCotacao}
+                  novoFornecedorNome={novoFornecedorNome}
+                  setNovoFornecedorNome={setNovoFornecedorNome}
+                  qtdPedirNumero={qtdPedirNumero}
+                  salvarPedidoFornecedor={salvarPedidoFornecedor}
+                  imprimirPedidoIndividual={imprimirPedidoIndividual}
+                  setAlerta={setAlerta}
+                />
+              )}
+
+              {abaPedido === 'precos' && listaCotacao !== 'listaCompleta' && (
               <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
                   <p className="m-0 text-sm font-semibold text-slate-600">
                     {listaCotacao === 'embalagens'
-                      ? 'Primeiro estoque e quantidade. Depois cotação só com 2 fornecedores.'
+                      ? 'Primeiro estoque e quantidade. Depois adicione um ou mais fornecedores com CNPJ.'
                       : listaCotacao === 'laticinios'
                         ? 'Lista só de laticínios. Estoque e quantidade primeiro, depois o preço do fornecedor.'
-                        : 'Compare preços e monte o pedido'}
+                        : (SECOES_COTACAO_EXTRAS as readonly string[]).includes(listaCotacao)
+                          ? `Lista só de ${listaCotacao === 'Matéria prima' ? 'matéria-prima' : listaCotacao.toLowerCase()}.`
+                          : 'Compare preços e monte o pedido'}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
                   <input type="text" placeholder="Buscar produto..." value={buscaCotacao} onChange={e => setBuscaCotacao(e.target.value)} className={`${campo} min-w-[180px]`} />
+                  <button type="button" onClick={() => escolherLista('listaCompleta')} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-2 text-xs font-bold text-white hover:bg-teal-600">Lista completa</button>
                   <button type="button" onClick={() => setMostrarModalImportacao(true)} className="cursor-pointer rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800">Importar lote</button>
                   <button type="button" onClick={limparCotacoesPrecos} className="cursor-pointer rounded-lg bg-white px-3 py-2 text-xs font-bold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">Zerar</button>
                   <button type="button" onClick={imprimirRelatorioCotacao} className="cursor-pointer rounded-lg bg-teal-700 px-3 py-2 text-xs font-bold text-white hover:bg-teal-600">Imprimir</button>
@@ -288,40 +381,47 @@ export function AbaCotacao(p: {
               </div>
               )}
               {listaCotacao === 'embalagens' && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[0, 1].map(indice => (
-                    <label key={indice} className="flex flex-col gap-1 rounded-2xl bg-white p-4 text-[11px] font-bold uppercase tracking-wide text-slate-500 ring-1 ring-slate-200">
-                      Fornecedor {indice + 1}
+                <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+                  <div className="flex flex-wrap items-end gap-2">
+                    <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                      Adicionar fornecedor
                       <select
-                        value={indice === 0 ? idEmbA : idEmbB}
-                        onChange={e => escolherFornecedorEmb(indice as 0 | 1, e.target.value)}
+                        value={novoEmbId}
+                        onChange={e => setNovoEmbId(e.target.value)}
                         className={campo}
                       >
-                        {(fornecedoresCotacao || []).map((f: any) => (
+                        <option value="">Selecione o fornecedor</option>
+                        {fornecedoresEmbDisponiveis.map((f: any) => (
                           <option key={f.id} value={f.id}>{f.nomeFantasia || f.nome || f.razaoSocial}</option>
                         ))}
                       </select>
                     </label>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => adicionarFornecedorEmb(novoEmbId)}
+                      disabled={!novoEmbId}
+                      className="cursor-pointer rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    >
+                      Adicionar fornecedor
+                    </button>
+                  </div>
+                  {idsEmbEscolhidos.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {idsEmbEscolhidos.map(id => {
+                        const fornecedor = fornecedoresJuridicos.find((f: any) => f.id === id);
+                        return (
+                          <span key={id} className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 ring-1 ring-slate-200">
+                            {fornecedor ? nomeFornecedor(fornecedor) : id}
+                            <button type="button" onClick={() => removerFornecedorEmb(id)} className="cursor-pointer border-0 bg-transparent p-0 text-rose-500 hover:text-rose-700" title="Remover fornecedor">✕</button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="m-0 text-[12px] font-medium text-slate-500">Nenhum fornecedor nesta cotação ainda. Adicione um ou mais.</p>
+                  )}
                 </div>
               )}
-
-              <div className="flex flex-wrap gap-2">
-                <div className="rounded-xl bg-slate-900 px-3.5 py-2.5 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-slate-300">Itens</div>
-                  <div className="text-lg font-black">{itensDaLista.length}</div>
-                </div>
-                <div className="rounded-xl bg-teal-700 px-3.5 py-2.5 text-white">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-teal-100">Total geral</div>
-                  <div className="text-lg font-black">R$ {Number(totalVisivel || 0).toFixed(2)}</div>
-                </div>
-                {totaisVisiveis.map((t: any, indice: number) => (
-                  <div key={`${t.fornecedor.id}-${indice}`} className="rounded-xl bg-slate-50 px-3.5 py-2.5 ring-1 ring-slate-200">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{nomeFornecedor(t.fornecedor)}</div>
-                    <div className="text-sm font-black text-slate-900">R$ {(t.totalR$ || 0).toFixed(2)}</div>
-                  </div>
-                ))}
-              </div>
 
               <div className="overflow-x-auto rounded-2xl ring-1 ring-slate-200" style={{ maxHeight: '500px' }}>
                 <table className="w-max min-w-full border-separate border-spacing-0 text-[11px]">
@@ -530,7 +630,7 @@ export function AbaCotacao(p: {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <div>
                     <strong style={{ display: 'block', fontSize: '12px', color: '#0f172a' }}>📁 Pedidos salvos</strong>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>{(pedidosAindaNaCotacao || []).length} pedido(s) na Cotação. Use “Salvo na conferência” para tirar da lista, sem abrir a tela.</span>
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>{(pedidosAindaNaCotacao || []).length} pedido(s) na Cotação. Preencha Pedir na cotação e use “Incluir itens da cotação” no pedido, sem passar de novo pelo registro.</span>
                   </div>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button onClick={() => { if (salvarRelatorioPedidoCotacao(escopoSalvarPedido)) { setAlerta({ tipo: 'sucesso', msg: listaCotacao === 'embalagens' ? '✓ Pedido enviado para a Conferência.' : '✓ Pedidos salvos. A tela não mudou.' }); } else setAlerta({ tipo: 'erro', msg: '⚠️ Preencha uma quantidade em Pedir antes de salvar.' }); }} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>💾 Salvar pedido</button>
@@ -542,7 +642,20 @@ export function AbaCotacao(p: {
         {(pedidosAindaNaCotacao || []).length === 0 ? (
           <span style={{ fontSize: '11px', color: '#64748b' }}>Nenhum pedido salvo na Cotação. Os que foram para a Conferência já saíram desta lista.</span>
         ) : (
-          (pedidosAindaNaCotacao || []).map(relatorio => (
+          (pedidosAindaNaCotacao || []).map(relatorio => {
+            const nomePedido = relatorio.itens?.find((item: any) => !item.bonificado)?.fornecedor || relatorio.itens?.[0]?.fornecedor || '';
+            const fornecedorPedido = (fornecedoresCotacao || []).find((candidato: any) =>
+              [candidato.nomeFantasia, candidato.nome, candidato.razaoSocial]
+                .some((valor: any) => valor && String(valor).trim().toLowerCase() === String(nomePedido).trim().toLowerCase())
+            );
+            const itensParaIncluir = fornecedorPedido
+              ? (itensCotacao || []).filter((item: any) => {
+                  if (qtdPedirNumero(item) <= 0) return false;
+                  const { vencedorFornId } = calcularMenorPrecoItem(item);
+                  return vencedorFornId === fornecedorPedido.id || item.fornecedorId === fornecedorPedido.id;
+                })
+              : [];
+            return (
             <section key={relatorio.id} style={{ width: '100%', boxSizing: 'border-box', border: '2px solid #2563eb', borderRadius: '6px', padding: '14px', backgroundColor: '#ffffff', marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe', margin: '-14px -14px 10px', padding: '10px 14px' }}>
                 <div>
@@ -550,10 +663,19 @@ export function AbaCotacao(p: {
                   <span style={{ fontSize: '11px', color: '#475569' }}>{relatorio.data} • {relatorio.itens.length} item(ns) • Total: R$ {relatorio.totalGeral.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={() => incluirItensNoPedidoSalvo(relatorio.id)} style={{ backgroundColor: '#1d4ed8', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Incluir itens da cotação{itensParaIncluir.length ? ` (${itensParaIncluir.length})` : ''}</button>
                   <button onClick={() => marcarPedidoSalvoNaConferencia(relatorio)} style={{ backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Salvo na conferência</button>
                   <button onClick={() => excluirRelatorioPedidoCotacao(relatorio.id)} style={{ color: '#0f766e', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', padding: '5px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Excluir pedido</button>
                 </div>
               </div>
+              {itensParaIncluir.length > 0 && (
+                <div style={{ marginBottom: '8px', padding: '8px 10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '4px' }}>
+                  <strong style={{ display: 'block', fontSize: '10px', color: '#1e3a8a', marginBottom: '4px' }}>Prontos na cotação para incluir neste pedido</strong>
+                  {itensParaIncluir.map((item: any) => (
+                    <span key={`${relatorio.id}-pend-${item.id}`} style={{ display: 'block', fontSize: '11px', color: '#334155' }}>{item.produto} · {item.qtdPedir} {item.unit}</span>
+                  ))}
+                </div>
+              )}
 
               <div style={{ marginTop: '7px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {Object.entries(relatorio.itens.reduce((grupos: any, item: any) => { (grupos[item.fornecedor] ||= []).push(item); return grupos; }, {})).map(([fornecedor, itensFornecedor]: [string, any]) => (
@@ -570,7 +692,8 @@ export function AbaCotacao(p: {
                 ))}
               </div>
             </section>
-          ))
+          );
+          })
         )}
 
                     {(() => {
@@ -638,6 +761,100 @@ export function AbaCotacao(p: {
                 </div>
               </div>
               )}
+
+              {abaPedido === 'bonificacao' && (() => {
+                const pedidosAlvo = [...(pedidosPendentesConferencia || []), ...(pedidosAindaNaCotacao || [])]
+                  .filter((pedido: any, indice: number, lista: any[]) => lista.findIndex(item => item.id === pedido.id) === indice);
+                const pedidosDoFornecedor = bonificacao.fornecedor
+                  ? pedidosAlvo.filter((pedido: any) => (pedido.itens || []).some((item: any) => String(item.fornecedor || '').toLowerCase() === bonificacao.fornecedor.toLowerCase()))
+                  : pedidosAlvo;
+                const nomesProdutos = Array.from(new Set((itensCotacao || []).map((item: any) => String(item.produto || '').trim()).filter(Boolean)));
+                return (
+                  <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                    <div className="bg-slate-900 px-4 py-3 text-white">
+                      <p className="m-0 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Pedido bonificado</p>
+                      <p className="m-0 text-base font-black">Bonificação</p>
+                      <p className="m-0 text-[11px] font-semibold text-slate-300">Informe o produto, o valor e em qual pedido pendente o brinde vai chegar. O valor da compra não muda.</p>
+                    </div>
+                    <div className="grid gap-3 p-4 sm:grid-cols-2">
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold text-slate-600">Fornecedor</span>
+                        <select value={bonificacao.fornecedor} onChange={e => setBonificacao(atual => ({ ...atual, fornecedor: e.target.value, pedidoId: '' }))} className={campo}>
+                          <option value="">Selecione o fornecedor</option>
+                          {(fornecedoresCotacao || []).map((fornecedor: any) => (
+                            <option key={fornecedor.id} value={fornecedor.nomeFantasia || fornecedor.nome}>{fornecedor.nomeFantasia || fornecedor.nome}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold text-slate-600">Produto</span>
+                        <input list="produtos-bonificacao" value={bonificacao.produto} onChange={e => setBonificacao(atual => ({ ...atual, produto: e.target.value }))} placeholder="Nome do produto" className={campo} />
+                        <datalist id="produtos-bonificacao">
+                          {nomesProdutos.map(nome => <option key={nome} value={nome} />)}
+                        </datalist>
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold text-slate-600">Quantidade</span>
+                        <input value={bonificacao.quantidade} onChange={e => setBonificacao(atual => ({ ...atual, quantidade: e.target.value }))} className={campo} />
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-[11px] font-bold text-slate-600">Unidade</span>
+                        <input value={bonificacao.unit} onChange={e => setBonificacao(atual => ({ ...atual, unit: e.target.value }))} className={campo} />
+                      </label>
+                      <label className="flex flex-col gap-1 sm:col-span-2">
+                        <span className="text-[11px] font-bold text-slate-600">Valor do produto (R$)</span>
+                        <input value={bonificacao.valor} onChange={e => setBonificacao(atual => ({ ...atual, valor: e.target.value }))} placeholder="0,00" className={campo} />
+                      </label>
+                      <label className="flex flex-col gap-1 sm:col-span-2">
+                        <span className="text-[11px] font-bold text-slate-600">Vem junto com qual pedido pendente</span>
+                        <select value={bonificacao.pedidoId} onChange={e => setBonificacao(atual => ({ ...atual, pedidoId: e.target.value }))} className={campo}>
+                          <option value="">Selecione o pedido</option>
+                          {pedidosDoFornecedor.map((pedido: any) => (
+                            <option key={pedido.id} value={pedido.id}>
+                              {(pedido.itens?.[0]?.fornecedor || 'Pedido')} · {pedido.data} · R$ {Number(pedido.totalGeral || 0).toFixed(2)} · {(pedido.itens || []).filter((item: any) => item.bonificado).length} bonificado(s)
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-3">
+                      <span className="text-[11px] text-slate-500">
+                        {pedidosDoFornecedor.length === 0 ? 'Não há pedido pendente para este fornecedor. Salve o pedido primeiro.' : 'O valor do brinde fica na bonificação. O total da compra não muda.'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (adicionarBonificacaoNoPedido({ ...bonificacao })) {
+                            setBonificacao(atual => ({ ...atual, produto: '', quantidade: '1', valor: '' }));
+                          }
+                        }}
+                        className="cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-600"
+                      >
+                        Salvar bonificação no pedido
+                      </button>
+                    </div>
+                    {pedidosDoFornecedor.filter((pedido: any) => (pedido.itens || []).some((item: any) => item.bonificado)).map((pedido: any) => (
+                      <div key={`bonus-${pedido.id}`} className="border-t border-amber-100 bg-amber-50 px-4 py-3">
+                        <strong className="block text-[11px] font-black uppercase tracking-wide text-amber-900">Registro salvo · {(pedido.itens?.[0]?.fornecedor || 'Pedido')} · {pedido.data}</strong>
+                        {(pedido.itens || []).map((item: any, indice: number) => item.bonificado ? (
+                          <div key={`${pedido.id}-b-${indice}`} className="mt-2 flex items-center justify-between gap-2">
+                            <p className="m-0 text-sm font-semibold text-amber-950">
+                              {item.produto} · {item.quantidade} {item.unit} · R$ {Number(item.valorTotal || 0).toFixed(2)} · vem junto com este pedido pendente
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => removerBonificacaoDoPedido(pedido.id, indice)}
+                              className="cursor-pointer rounded-md border border-red-200 bg-white px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50"
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        ) : null)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </section>
   );
 }

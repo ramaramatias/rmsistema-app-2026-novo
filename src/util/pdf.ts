@@ -70,7 +70,9 @@ export const gerarPdfPedidoFornecedor = (fornecedorNome: string, linhas: LinhaPe
         comandos.push('0.97 0.98 0.99 rg', `50 ${y - 4} 495 ${alturaLinha} re`, 'f', '0 g');
       }
       const unitario = linha.item.valorUnitario !== undefined && linha.item.valorUnitario !== null ? `R$ ${linha.item.valorUnitario.toFixed(2)}` : '-';
-      const total = linha.item.valorTotal !== undefined && linha.item.valorTotal !== null ? `R$ ${linha.item.valorTotal.toFixed(2)}` : '-';
+      const total = linha.item.bonificado
+        ? `R$ ${(linha.item.valorTotal || 0).toFixed(2)}`
+        : (linha.item.valorTotal !== undefined && linha.item.valorTotal !== null ? `R$ ${linha.item.valorTotal.toFixed(2)}` : '-');
       linha.partes.forEach((parte, i) => {
         const yTexto = y - i * 11;
         comandos.push('BT', '/F1 8 Tf', `1 0 0 1 52 ${yTexto} Tm`, `(${parte}) Tj`);
@@ -102,7 +104,7 @@ export const montarArquivoPdf = (streams: string[], largura = 595, altura = 842)
     objetos.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${largura} ${altura}] /Contents ${contentId} 0 R /Resources << /Font << /F1 ${3 + streams.length * 2} 0 R >> >> >>`);
     objetos.push(`<< /Length ${conteudo.length} >>\nstream\n${conteudo}\nendstream`);
   });
-  objetos.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+  objetos.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
 
   let pdf = '%PDF-1.4\n';
   const offsets = [0];
@@ -119,7 +121,7 @@ export const montarArquivoPdf = (streams: string[], largura = 595, altura = 842)
   return new Blob([pdf], { type: 'application/pdf' });
 };
 
-export const gerarPdfRelatorioPagamentos = (dados: PagamentosState, valorTotal: number, dataRotulo?: string) => {
+export const gerarPdfRelatorioPagamentos = (dados: PagamentosState, valorTotal: number, dataRotulo?: string, vistoFinanceiro?: string) => {
   const largura = 595;
   const altura = 842;
   const secoes: { nome: string; itens: ItemPagamento[] }[] = [
@@ -162,7 +164,10 @@ export const gerarPdfRelatorioPagamentos = (dados: PagamentosState, valorTotal: 
     });
     if (numero === totalPaginas) {
       comandos.push('BT', '/F1 12 Tf', `1 0 0 1 320 ${Math.max(y - 14, 50)} Tm`, `(Total geral: R$ ${valorTotal.toFixed(2)}) Tj`, 'ET');
-      comandos.push('BT', '/F1 9 Tf', `1 0 0 1 180 ${40} Tm`, `(Visto Autorizacao Financeiro) Tj`, 'ET');
+      comandos.push('BT', '/F1 9 Tf', `1 0 0 1 160 ${52} Tm`, `(Visto Autorizacao Financeiro) Tj`, 'ET');
+      if (vistoFinanceiro) {
+        comandos.push('BT', '/F1 8 Tf', `1 0 0 1 160 ${38} Tm`, `(${textoPdf(vistoFinanceiro)}) Tj`, 'ET');
+      }
     }
     return comandos.join('\n');
   };
