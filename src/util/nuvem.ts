@@ -24,7 +24,7 @@ export const enviarRegistroNuvem = async (registro: Record<string, unknown>) => 
     relatoriosPedidosCotacao: pedidosSemPdfPesado(registro.relatoriosPedidosCotacao as RelatorioPedidoCotacao[])
   };
   let resposta = await tentar(leve);
-  if (!resposta.ok) {
+  if (resposta.status === 413) {
     resposta = await tentar({
       setores: leve.setores,
       tarefasDeletadas: leve.tarefasDeletadas,

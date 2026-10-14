@@ -1341,26 +1341,31 @@ function App() {
     }
   }, []);
 
+  const ultimaSincronizacaoAutomaticaRef = useRef(0);
+  const sincronizarAutomaticamente = useCallback(() => {
+    if (document.visibilityState !== 'visible') return;
+    const agora = Date.now();
+    if (agora - ultimaSincronizacaoAutomaticaRef.current < 15000) return;
+    ultimaSincronizacaoAutomaticaRef.current = agora;
+    void carregarTudo();
+  }, [carregarTudo]);
+
   useEffect(() => {
     if (!autenticado) return;
-    void carregarTudo();
-    const intervalo = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') return;
-      void carregarTudo();
-    }, 60000);
-    const sincronizarSeVisivel = () => {
-      if (document.visibilityState === 'visible') void carregarTudo();
-    };
-    document.addEventListener('visibilitychange', sincronizarSeVisivel);
-    window.addEventListener('focus', sincronizarSeVisivel);
-    window.addEventListener('online', sincronizarSeVisivel);
+    sincronizarAutomaticamente();
+    const intervalo = window.setInterval(sincronizarAutomaticamente, 120000);
+    document.addEventListener('visibilitychange', sincronizarAutomaticamente);
+    window.addEventListener('focus', sincronizarAutomaticamente);
+    window.addEventListener('online', sincronizarAutomaticamente);
+    window.addEventListener('pageshow', sincronizarAutomaticamente);
     return () => {
       window.clearInterval(intervalo);
-      document.removeEventListener('visibilitychange', sincronizarSeVisivel);
-      window.removeEventListener('focus', sincronizarSeVisivel);
-      window.removeEventListener('online', sincronizarSeVisivel);
+      document.removeEventListener('visibilitychange', sincronizarAutomaticamente);
+      window.removeEventListener('focus', sincronizarAutomaticamente);
+      window.removeEventListener('online', sincronizarAutomaticamente);
+      window.removeEventListener('pageshow', sincronizarAutomaticamente);
     };
-  }, [autenticado, carregarTudo]);
+  }, [autenticado, sincronizarAutomaticamente]);
 // Salvar relatório do dia automaticamente
   useEffect(() => {
     if (!autenticado) return;
@@ -1424,19 +1429,28 @@ function App() {
   }, [setores, pagamentos, historicoPagamentos, fornecedoresCotacao, itensCotacao, quantidadesElieuda, conferencias, relatoriosPedidosCotacao, relatoriosPorData, tarefasDeletadas, usuarioLogado]);
 
   const gravarNaWebRef = useRef<(...args: any[]) => Promise<unknown> | void>(() => Promise.resolve());
-  const gravacaoAutomaticaInicialRef = useRef(true);
-  useEffect(() => {
-    if (!autenticado) {
-      gravacaoAutomaticaInicialRef.current = true;
-      return;
-    }
-    if (gravacaoAutomaticaInicialRef.current) {
-      gravacaoAutomaticaInicialRef.current = false;
-      return;
-    }
-    const espera = window.setTimeout(() => { void gravarNaWebRef.current(); }, 1800);
-    return () => window.clearTimeout(espera);
-  }, [autenticado, itensCotacao, quantidadesElieuda]);
+  const edicoesAutomaticasPendentesRef = useRef<{ itensCotacao?: ItemCotacao[]; quantidadesElieuda?: QuantidadesElieuda }>({});
+  const atrasoGravacaoEdicoesRef = useRef<number | null>(null);
+  const agendarGravacaoEdicao = (alteracoes: { itensCotacao?: ItemCotacao[]; quantidadesElieuda?: QuantidadesElieuda }) => {
+    edicoesAutomaticasPendentesRef.current = { ...edicoesAutomaticasPendentesRef.current, ...alteracoes };
+    if (atrasoGravacaoEdicoesRef.current !== null) window.clearTimeout(atrasoGravacaoEdicoesRef.current);
+    atrasoGravacaoEdicoesRef.current = window.setTimeout(() => {
+      atrasoGravacaoEdicoesRef.current = null;
+      const pendentes = edicoesAutomaticasPendentesRef.current;
+      edicoesAutomaticasPendentesRef.current = {};
+      void gravarNaWebRef.current(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        pendentes.itensCotacao,
+        pendentes.quantidadesElieuda
+      );
+    }, 600);
+  };
+  useEffect(() => () => {
+    if (atrasoGravacaoEdicoesRef.current !== null) window.clearTimeout(atrasoGravacaoEdicoesRef.current);
+  }, []);
 
   if (!usuarioLogado) {
     let usuariosParaLogin = USUARIOS_SISTEMA;
@@ -1515,8 +1529,16 @@ function App() {
     if (dados.pagamentos) setPagamentos(dados.pagamentos);
     if (Array.isArray(dados.historicoPagamentos)) setHistoricoPagamentos(dados.historicoPagamentos);
     if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
-    if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
-    if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
+    if (Array.isArray(dados.itensCotacao)) {
+      const itens = mesclarItensCotacao(itensCotacaoRef.current, dados.itensCotacao);
+      itensCotacaoRef.current = itens;
+      setItensCotacao(itens);
+      agendarGravacaoEdicao({ itensCotacao: itens });
+    }
+    if (dados.quantidadesElieuda) {
+      setQuantidadesElieuda(dados.quantidadesElieuda);
+      agendarGravacaoEdicao({ quantidadesElieuda: dados.quantidadesElieuda });
+    }
     if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
     if (Array.isArray(dados.conferencias)) {
       const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
@@ -1603,8 +1625,16 @@ function App() {
         if (dados.pagamentos) setPagamentos(dados.pagamentos);
         if (Array.isArray(dados.historicoPagamentos)) setHistoricoPagamentos(dados.historicoPagamentos);
         if (Array.isArray(dados.fornecedoresCotacao)) setFornecedoresCotacao(dados.fornecedoresCotacao);
-        if (Array.isArray(dados.itensCotacao)) setItensCotacao(mesclarItensCotacao(itensCotacao, dados.itensCotacao));
-        if (dados.quantidadesElieuda) setQuantidadesElieuda(dados.quantidadesElieuda);
+        if (Array.isArray(dados.itensCotacao)) {
+          const itens = mesclarItensCotacao(itensCotacaoRef.current, dados.itensCotacao);
+          itensCotacaoRef.current = itens;
+          setItensCotacao(itens);
+          agendarGravacaoEdicao({ itensCotacao: itens });
+        }
+        if (dados.quantidadesElieuda) {
+          setQuantidadesElieuda(dados.quantidadesElieuda);
+          agendarGravacaoEdicao({ quantidadesElieuda: dados.quantidadesElieuda });
+        }
         if (dados.custosCatalogo) setCustosCatalogo(atuais => aplicarCustosRecebidos(atuais, dados.custosCatalogo));
         if (Array.isArray(dados.conferencias)) {
           const uniao = unirConferencias(conferenciasRef.current, dados.conferencias).filter(item => !conferenciasDeletadasRef.current.includes(item.id));
@@ -2626,33 +2656,36 @@ function App() {
   // Funções da Cotação
   const atualizarCampoCotacao = (itemId: string, campo: 'estoqueAtual' | 'qtdSugerida' | 'qtdPedir', valor: string) => {
     const agora = new Date().toISOString();
-    setItensCotacao(atuais => {
-      const base = Array.isArray(atuais) ? atuais : [];
-      if (base.some(item => item.id === itemId)) {
-        return base.map(item => item.id === itemId ? { ...item, [campo]: valor, atualizadoEm: agora } : item);
-      }
+    const base = Array.isArray(itensCotacaoRef.current) ? itensCotacaoRef.current : [];
+    let novos: ItemCotacao[];
+    if (base.some(item => item.id === itemId)) {
+      novos = base.map(item => item.id === itemId ? { ...item, [campo]: valor, atualizadoEm: agora } : item);
+    } else {
       const doCatalogo = montarItensLaticinios(base).find(item => item.id === itemId)
         || montarItensEmbalagens(base).find(item => item.id === itemId);
-      if (!doCatalogo) return base;
-      return [...base, { ...doCatalogo, [campo]: valor, atualizadoEm: agora, secao: doCatalogo.secao || 'Laticínios' }];
-    });
+      if (!doCatalogo) return;
+      novos = [...base, { ...doCatalogo, [campo]: valor, atualizadoEm: agora, secao: doCatalogo.secao || 'Laticínios' }];
+    }
+    itensCotacaoRef.current = novos;
+    setItensCotacao(novos);
+    agendarGravacaoEdicao({ itensCotacao: novos });
   };
 
   const atualizarPrecoCotacao = (itemId: string, fornecedorId: string, valor: string) => {
     const agora = new Date().toISOString();
-    setItensCotacao(atuais => {
-      const base = Array.isArray(atuais) ? atuais : [];
-      const itemAtual = base.find(item => item.id === itemId)
-        || montarItensLaticinios(base).find(item => item.id === itemId)
-        || montarItensEmbalagens(base).find(item => item.id === itemId);
-      if (!itemAtual) return base;
-      const precosAtualizados = { ...(itemAtual.precos || {}), [fornecedorId]: valor };
-      const custos = Object.values(precosAtualizados).map(preco => parseFloat(String(preco).replace(',', '.'))).filter(preco => !Number.isNaN(preco) && preco > 0);
-      if (base.some(item => item.id === itemId)) {
-        return base.map(item => item.id === itemId ? { ...item, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : item.menorCusto, atualizadoEm: agora } : item);
-      }
-      return [...base, { ...itemAtual, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : undefined, atualizadoEm: agora, secao: itemAtual.secao || 'Laticínios' }];
-    });
+    const base = Array.isArray(itensCotacaoRef.current) ? itensCotacaoRef.current : [];
+    const itemAtual = base.find(item => item.id === itemId)
+      || montarItensLaticinios(base).find(item => item.id === itemId)
+      || montarItensEmbalagens(base).find(item => item.id === itemId);
+    if (!itemAtual) return;
+    const precosAtualizados = { ...(itemAtual.precos || {}), [fornecedorId]: valor };
+    const custos = Object.values(precosAtualizados).map(preco => parseFloat(String(preco).replace(',', '.'))).filter(preco => !Number.isNaN(preco) && preco > 0);
+    const novos = base.some(item => item.id === itemId)
+      ? base.map(item => item.id === itemId ? { ...item, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : item.menorCusto, atualizadoEm: agora } : item)
+      : [...base, { ...itemAtual, precos: precosAtualizados, menorCusto: custos.length ? Math.min(...custos) : undefined, atualizadoEm: agora, secao: itemAtual.secao || 'Laticínios' }];
+    itensCotacaoRef.current = novos;
+    setItensCotacao(novos);
+    agendarGravacaoEdicao({ itensCotacao: novos });
   };
 
   const adicionarNovoItemCotacao = () => {
@@ -2861,43 +2894,41 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
   };
 
   const garantirEmbalagensNaCotacao = () => {
-    setItensCotacao(atuais => {
-      const base = Array.isArray(atuais) ? atuais : [];
-      const montados = montarItensEmbalagens(base);
-      const porId = new Map(montados.map(item => [item.id, item]));
-      let mudou = false;
-      const atualizados = base.map(item => {
-        const catalogo = porId.get(item.id);
-        if (!catalogo) return item;
-        const precisaPreco = !(Number(item.ultimoPrecoCompra) > 0) && Number(catalogo.ultimoPrecoCompra) > 0;
-        const precisaSecao = item.secao !== 'Embalagens';
-        if (!precisaPreco && !precisaSecao) return item;
-        mudou = true;
-        return {
-          ...item,
-          secao: 'Embalagens',
-          ultimoPrecoCompra: precisaPreco ? catalogo.ultimoPrecoCompra : item.ultimoPrecoCompra
-        };
-      });
-      const ids = new Set(atualizados.map(item => item.id));
-      const novos = montados.filter(item => !ids.has(item.id));
-      if (!novos.length && !mudou) return base;
-      return [...atualizados, ...novos];
+    const base = Array.isArray(itensCotacaoRef.current) ? itensCotacaoRef.current : [];
+    const montados = montarItensEmbalagens(base);
+    const porId = new Map(montados.map(item => [item.id, item]));
+    let mudou = false;
+    const atualizados = base.map(item => {
+      const catalogo = porId.get(item.id);
+      if (!catalogo) return item;
+      const precisaPreco = !(Number(item.ultimoPrecoCompra) > 0) && Number(catalogo.ultimoPrecoCompra) > 0;
+      const precisaSecao = item.secao !== 'Embalagens';
+      if (!precisaPreco && !precisaSecao) return item;
+      mudou = true;
+      return {
+        ...item,
+        secao: 'Embalagens',
+        ultimoPrecoCompra: precisaPreco ? catalogo.ultimoPrecoCompra : item.ultimoPrecoCompra
+      };
     });
+    const ids = new Set(atualizados.map(item => item.id));
+    const novos = montados.filter(item => !ids.has(item.id));
+    if (!novos.length && !mudou) return;
+    const lista = [...atualizados, ...novos];
+    itensCotacaoRef.current = lista;
+    setItensCotacao(lista);
+    agendarGravacaoEdicao({ itensCotacao: lista });
   };
 
   const garantirLaticiniosNaCotacao = () => {
-    try {
-      setItensCotacao(atuais => {
-        const base = Array.isArray(atuais) ? atuais : [];
-        const ids = new Set(base.map(item => item.id));
-        const novos = montarItensLaticinios(base).filter(item => !ids.has(item.id));
-        if (!novos.length) return base;
-        return [...base, ...novos.map(item => ({ ...item, secao: 'Laticínios' as const }))];
-      });
-    } catch {
-      /* a aba abre mesmo se a gravação atrasar */
-    }
+    const base = Array.isArray(itensCotacaoRef.current) ? itensCotacaoRef.current : [];
+    const ids = new Set(base.map(item => item.id));
+    const novos = montarItensLaticinios(base).filter(item => !ids.has(item.id));
+    if (!novos.length) return;
+    const lista = [...base, ...novos.map(item => ({ ...item, secao: 'Laticínios' as const }))];
+    itensCotacaoRef.current = lista;
+    setItensCotacao(lista);
+    agendarGravacaoEdicao({ itensCotacao: lista });
   };
 
   const gravarCustosCatalogo = (proximo: CustosCatalogoState) => {
@@ -3581,6 +3612,7 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     };
     setQuantidadesElieuda(novoObj);
     localStorage.setItem('rm_elieuda', JSON.stringify(novoObj));
+    agendarGravacaoEdicao({ quantidadesElieuda: novoObj });
   };
 
   const limparDadosElieuda = () => {

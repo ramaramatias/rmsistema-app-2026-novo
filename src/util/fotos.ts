@@ -170,15 +170,32 @@ export const guardarFotosLocal = (fotos: { [id: string]: string }) => {
   Object.entries(fotos).forEach(([id, foto]) => { void salvarFotoPendencia(id, foto); });
 };
 
+const fotosEnviadasNuvem = new Map<string, string>();
+const enviosDeFotoEmCurso = new Map<string, { foto: string; promessa: Promise<void> }>();
+
 export const enviarFotoNuvem = async (id: string, foto: string) => {
   if (!id || !foto || !foto.startsWith('data:image')) return;
-  try {
-    await fetch('/api/foto', {
+  if (fotosEnviadasNuvem.get(id) === foto) return;
+  const envioEmCurso = enviosDeFotoEmCurso.get(id);
+  if (envioEmCurso?.foto === foto) return envioEmCurso.promessa;
+
+  const promessa = (async () => {
+    const resposta = await fetch('/api/foto', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, foto })
     });
-  } catch {}
+    if (!resposta.ok) throw new Error(`Falha ao enviar foto (${resposta.status}).`);
+    fotosEnviadasNuvem.set(id, foto);
+  })().catch(erro => {
+    console.error(`Falha ao enviar a foto ${id} para a nuvem.`, erro);
+  });
+  enviosDeFotoEmCurso.set(id, { foto, promessa });
+  try {
+    await promessa;
+  } finally {
+    if (enviosDeFotoEmCurso.get(id)?.promessa === promessa) enviosDeFotoEmCurso.delete(id);
+  }
 };
 
 export const buscarFotoNuvem = async (id: string) => {
