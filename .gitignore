@@ -25,7 +25,8 @@ dist-ssr
 
 .vercel
 .env*
-config.ts
+firebase-service-account.json
+
 
 # Pastas de outros editores neste PC (não fazem parte do sistema)
 Trae/
@@ -33,8 +34,14 @@ Devin/
 cursor/
 PearAI/
 
+# Boletins baixados da CEASA neste computador
+dados/ceasa/
+
 # Backups locais com dados operacionais
 backup_completo.json
 backup_conferencia.json
 Relatorio_Pendencias_*.txt
 analise_sistema.py/
+
+.vercel
+.env*
