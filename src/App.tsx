@@ -951,66 +951,68 @@ function App() {
     let extrasAtuais = usuariosExtra;
     let permissoesAtuais = permissoesUsuarios;
     let registroNuvem: any = null;
+    let consultaNuvemFalhou = false;
+    let tempoLimite: number | undefined;
     try {
       const controlador = new AbortController();
-      const tempoLimite = window.setTimeout(() => controlador.abort(), 25000);
+      tempoLimite = window.setTimeout(() => controlador.abort(), 25000);
       const resposta = await fetch(`/api/nuvem?t=${Date.now()}`, { signal: controlador.signal, cache: 'no-store' });
-      window.clearTimeout(tempoLimite);
       if (!resposta.ok) {
-        setErroSenha('Não foi possível consultar as senhas na nuvem. Verifique a conexão e tente novamente.');
-        return;
-      }
-      const dados = await resposta.json();
-      if (typeof dados?.versao === 'string' && dados.versao) versaoNuvemRef.current = dados.versao;
-      const record = recordDoJsonBin(dados);
-      if (resposta.ok && record && typeof record === 'object') {
-        registroNuvem = record;
-        if (Array.isArray(record.itensChecklistDeletados)) {
-          const deletados = unirIds(itensChecklistDeletadosRef.current, record.itensChecklistDeletados);
-          itensChecklistDeletadosRef.current = deletados;
-          setItensChecklistDeletados(deletados);
-          localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
-        }
-        if (Array.isArray(record.itensChecklist)) {
-          const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, record.itensChecklist);
-          itensChecklistRef.current = itens;
-          setItensChecklist(itens);
-          localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
-        }
-        if (Array.isArray(record.setores)) {
-          const extraidos = extrairFotosSetores(record.setores);
-          record.setores = extraidos.semFotos;
-          registroNuvem.setores = extraidos.semFotos;
-          fotosPendenciasRef.current = unirFotosPendencias(fotosPendenciasRef.current, record.fotosPendencias, extraidos.fotos);
-          guardarFotosLocal(fotosPendenciasRef.current);
-          const idsRemovidos = [...idsDeTarefasDeletadas(tarefasDeletadas), ...idsDeTarefasDeletadas(record.tarefasDeletadas)];
-          setSetores(atuais => aplicarFotosNasTarefas(normalizarSetores(mesclarSetores(atuais, extraidos.semFotos, idsRemovidos)), fotosPendenciasRef.current));
-        }
-        if (Array.isArray(record.usuariosExtraDeletados)) {
-          const deletados = unirIds(usuariosExtraDeletadosRef.current, record.usuariosExtraDeletados);
-          usuariosExtraDeletadosRef.current = deletados;
-          setUsuariosExtraDeletados(deletados);
-          localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(deletados));
-        }
-        if (Array.isArray(record.usuariosExtra)) {
-          extrasAtuais = unirUsuariosExtraAtivos(usuariosExtraDeletadosRef.current, usuariosExtra, record.usuariosExtra);
-          setUsuariosExtra(extrasAtuais);
-          localStorage.setItem('rm_usuarios_extra', JSON.stringify(extrasAtuais));
-        }
-        if (record.permissoesUsuarios && typeof record.permissoesUsuarios === 'object') {
-          permissoesAtuais = unirPermissoesUsuarios(permissoesUsuarios, record.permissoesUsuarios);
-          setPermissoesUsuarios(permissoesAtuais);
-          localStorage.setItem('rm_permissoes_usuarios', JSON.stringify(permissoesAtuais));
-        }
-        if (record.senhasUsuarios && typeof record.senhasUsuarios === 'object') {
-          senhasAtuais = { ...senhasAtuais, ...record.senhasUsuarios };
-          setSenhasUsuarios(senhasAtuais);
-          localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtuais));
+        consultaNuvemFalhou = true;
+      } else {
+        const dados = await resposta.json();
+        if (typeof dados?.versao === 'string' && dados.versao) versaoNuvemRef.current = dados.versao;
+        const record = recordDoJsonBin(dados);
+        if (record && typeof record === 'object') {
+          registroNuvem = record;
+          if (Array.isArray(record.itensChecklistDeletados)) {
+            const deletados = unirIds(itensChecklistDeletadosRef.current, record.itensChecklistDeletados);
+            itensChecklistDeletadosRef.current = deletados;
+            setItensChecklistDeletados(deletados);
+            localStorage.setItem('rm_checklist_deletados', JSON.stringify(deletados));
+          }
+          if (Array.isArray(record.itensChecklist)) {
+            const itens = mesclarChecklist(itensChecklistDeletadosRef.current, itensChecklistRef.current, record.itensChecklist);
+            itensChecklistRef.current = itens;
+            setItensChecklist(itens);
+            localStorage.setItem('rm_checklist_items', JSON.stringify(itens));
+          }
+          if (Array.isArray(record.setores)) {
+            const extraidos = extrairFotosSetores(record.setores);
+            record.setores = extraidos.semFotos;
+            registroNuvem.setores = extraidos.semFotos;
+            fotosPendenciasRef.current = unirFotosPendencias(fotosPendenciasRef.current, record.fotosPendencias, extraidos.fotos);
+            guardarFotosLocal(fotosPendenciasRef.current);
+            const idsRemovidos = [...idsDeTarefasDeletadas(tarefasDeletadas), ...idsDeTarefasDeletadas(record.tarefasDeletadas)];
+            setSetores(atuais => aplicarFotosNasTarefas(normalizarSetores(mesclarSetores(atuais, extraidos.semFotos, idsRemovidos)), fotosPendenciasRef.current));
+          }
+          if (Array.isArray(record.usuariosExtraDeletados)) {
+            const deletados = unirIds(usuariosExtraDeletadosRef.current, record.usuariosExtraDeletados);
+            usuariosExtraDeletadosRef.current = deletados;
+            setUsuariosExtraDeletados(deletados);
+            localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(deletados));
+          }
+          if (Array.isArray(record.usuariosExtra)) {
+            extrasAtuais = unirUsuariosExtraAtivos(usuariosExtraDeletadosRef.current, usuariosExtra, record.usuariosExtra);
+            setUsuariosExtra(extrasAtuais);
+            localStorage.setItem('rm_usuarios_extra', JSON.stringify(extrasAtuais));
+          }
+          if (record.permissoesUsuarios && typeof record.permissoesUsuarios === 'object') {
+            permissoesAtuais = unirPermissoesUsuarios(permissoesUsuarios, record.permissoesUsuarios);
+            setPermissoesUsuarios(permissoesAtuais);
+            localStorage.setItem('rm_permissoes_usuarios', JSON.stringify(permissoesAtuais));
+          }
+          if (record.senhasUsuarios && typeof record.senhasUsuarios === 'object') {
+            senhasAtuais = { ...senhasAtuais, ...record.senhasUsuarios };
+            setSenhasUsuarios(senhasAtuais);
+            localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhasAtuais));
+          }
         }
       }
     } catch {
-      setErroSenha('Não foi possível verificar sua senha na nuvem. Verifique a conexão e tente novamente.');
-      return;
+      consultaNuvemFalhou = true;
+    } finally {
+      if (tempoLimite !== undefined) window.clearTimeout(tempoLimite);
     }
 
     const usuario = unirUsuariosCadastrados(extrasAtuais).find(u => u.id === usuarioSelecionado);
@@ -1033,6 +1035,7 @@ function App() {
     }
 
     setUsuarioLogado(aplicarPermissoesSalvas(usuario, permissoesAtuais));
+    if (consultaNuvemFalhou) setStatusNuvem('💾 Só neste aparelho');
     setAutenticado(true);
     setErroLogin(false);
     setNovaSenha('');
