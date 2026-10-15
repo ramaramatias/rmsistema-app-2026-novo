@@ -15,7 +15,6 @@ import { AbaSeguranca } from './abas/seguranca/AbaSeguranca';
 import { AbaProducao } from './abas/producao/AbaProducao';
 import { montarItensEmbalagens, montarItensLaticinios } from './catalogo/secoesDados';
 import { aplicarCustosRecebidos, aplicarMargemSecao, custosCatalogoVazio, lerCustosCatalogo, registrarCustosDoPedido, type CustosCatalogoState } from './catalogo/custosCatalogo';
-import { config } from '../config';
 import type {
   ArquivoConferencia,
   DadosConferenciaFornecedor,
@@ -139,7 +138,7 @@ import { LogoRm } from './componentes/LogoRm';
 // ==========================================
 // 🔑 CONFIGURAÇÕES & CREDENCIAIS
 // ==========================================
-const SENHA_MEU_SISTEMA = config.system.password;
+const SENHA_MEU_SISTEMA = import.meta.env.VITE_SYSTEM_PASSWORD || '1234';
 
 
 

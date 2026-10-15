@@ -21,9 +21,8 @@ Sistema de gestão integrado para o Pão da Vida, centralizando operações admi
 
 ## 🔧 Configuração
 
-1. Copie `config.example.ts` para `config.ts`
-2. Preencha com suas credenciais reais
-3. Não commit o arquivo `config.ts`
+1. Para definir a senha inicial da aplicação, configure `VITE_SYSTEM_PASSWORD` no `.env.local` e nas variáveis de ambiente da Vercel. Se não estiver definida, a senha inicial padrão é `1234`.
+2. Não coloque credenciais privadas em módulos importados pelo frontend: variáveis `VITE_*` são incorporadas ao JavaScript enviado ao navegador e não devem conter segredos.
 
 ## 📦 Comandos
 
