@@ -10,7 +10,10 @@ export const permissoesPadraoNovoUsuario = (): Usuario['permissoes'] => ({
   elieuda: false,
   manutencao: false,
   dados: false,
-  producao: false
+  producao: false,
+  caixaOperacional: false,
+  estoque: false,
+  conciliacao: false
 });
 
 export const rotuloPermissoes = (permissoes: Usuario['permissoes']) => {
@@ -33,7 +36,10 @@ export const normalizarUsuarioCadastrado = (usuario: Usuario): Usuario | null =>
       elieuda: Boolean(usuario.permissoes?.elieuda),
       manutencao: Boolean(usuario.permissoes?.manutencao),
       dados: Boolean(usuario.permissoes?.dados),
-      producao: Boolean(usuario.permissoes?.producao)
+      producao: Boolean(usuario.permissoes?.producao),
+      caixaOperacional: Boolean(usuario.permissoes?.caixaOperacional),
+      estoque: Boolean(usuario.permissoes?.estoque),
+      conciliacao: Boolean(usuario.permissoes?.conciliacao)
     }
   };
 };
@@ -84,16 +90,15 @@ export const unirPermissoesUsuarios = (...mapas: Array<{ [id: string]: Usuario['
   return uniao;
 };
 
-export const aplicarPermissoesSalvas = (usuario: Usuario, permissoesSalvas: { [id: string]: Usuario['permissoes'] }) => (
-  {
-    ...usuario,
-    permissoes: {
-      ...permissoesPadraoNovoUsuario(),
-      ...usuario.permissoes,
-      ...(permissoesSalvas[usuario.id] || {})
-    }
-  }
-);
+export const aplicarPermissoesSalvas = (usuario: Usuario, permissoesSalvas: { [id: string]: Usuario['permissoes'] }) => {
+  const permissoes = {
+    ...permissoesPadraoNovoUsuario(),
+    ...usuario.permissoes,
+    ...(permissoesSalvas[usuario.id] || {})
+  };
+  if (usuario.tipo === 'admin') permissoes.estoque = true;
+  return { ...usuario, permissoes };
+};
 
 export const lerSenhasLocais = (): SenhasUsuarios => {
   try {

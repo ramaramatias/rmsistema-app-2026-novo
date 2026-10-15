@@ -1,3 +1,17 @@
+import { useMemo, useState } from 'react';
+import {
+  ROTULO_TIPO_PAGAMENTO,
+  type TipoPagamentoRelatorio,
+  calcularRelatorioPagamentos,
+  intervaloDoMes,
+  mesAtualChave,
+  mesesDisponiveisPagamentos,
+  rotuloMesChave
+} from './relatorioPagamentos';
+
+const dinheiro = (valor: number) =>
+  Number(valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export function AbaPagamentos(p: {
   adicionarPagamentoCaben: any;
   adicionarPagamentoCaixa: any;
@@ -21,6 +35,10 @@ export function AbaPagamentos(p: {
   setNovoCaixa: any;
   setNovoCheque: any;
   setTabAtiva: any;
+  abaConsulta?: boolean;
+  vistoFinanceiroNome?: string;
+  setVistoFinanceiroNome?: (nome: string) => void;
+  nomesVistoFinanceiro?: string[];
   totalCaben: any;
   totalCaixa: any;
   totalCheque: any;
@@ -49,24 +67,160 @@ export function AbaPagamentos(p: {
     setNovoCaixa,
     setNovoCheque,
     setTabAtiva,
+    abaConsulta,
+    vistoFinanceiroNome,
+    setVistoFinanceiroNome,
+    nomesVistoFinanceiro,
     totalCaben,
     totalCaixa,
     totalCheque,
     totalGeralPagamentos
   } = p;
+  const abaInterna = abaConsulta ? 'relatorio' : 'lancar';
+  const [buscaRelatorio, setBuscaRelatorio] = useState('');
+  const [tipoRelatorio, setTipoRelatorio] = useState<TipoPagamentoRelatorio | 'todos'>('todos');
+  const [mesRelatorio, setMesRelatorio] = useState(mesAtualChave);
+  const meses = useMemo(
+    () => mesesDisponiveisPagamentos(historicoPagamentos, pagamentos),
+    [historicoPagamentos, pagamentos]
+  );
+  const periodo = intervaloDoMes(mesRelatorio);
+  const relatorio = useMemo(
+    () => calcularRelatorioPagamentos(historicoPagamentos, pagamentos, { busca: buscaRelatorio, tipo: tipoRelatorio, inicio: periodo.inicio, fim: periodo.fim }),
+    [historicoPagamentos, pagamentos, buscaRelatorio, tipoRelatorio, periodo.inicio, periodo.fim]
+  );
+  const botaoAba = (ativa: boolean) => ({
+    backgroundColor: ativa ? '#0f766e' : '#ffffff',
+    color: ativa ? '#ffffff' : '#475569',
+    border: ativa ? 'none' : '1px solid #cbd5e1',
+    borderRadius: '10px',
+    padding: '10px 16px',
+    fontSize: '12px',
+    fontWeight: 'bold' as const,
+    cursor: 'pointer'
+  });
   return (
             <section style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #cbd5e1' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-                <button type="button" onClick={() => setTabAtiva('pagamentos')} style={{ backgroundColor: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Pagamentos</button>
-                <button type="button" onClick={() => setTabAtiva('reciboComprador')} style={{ backgroundColor: '#ffffff', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '10px 16px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Recibo</button>
+                <button type="button" onClick={() => setTabAtiva('pagamentos')} style={botaoAba(abaInterna === 'lancar')}>Pagamentos</button>
+                <button type="button" onClick={() => setTabAtiva('consultaPagamentos')} style={botaoAba(abaInterna === 'relatorio')}>Consulta de pagamentos</button>
+                <button type="button" onClick={() => setTabAtiva('reciboComprador')} style={botaoAba(false)}>Recibo</button>
               </div>
+              {abaInterna === 'relatorio' && (
+                <div>
+                  <button onClick={() => setTabAtiva('compras')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>← Voltar para Compras</button>
+                  <h2 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: 900, textTransform: 'uppercase' }}>📊 Consulta de pagamentos</h2>
+                  <p style={{ margin: '6px 0 16px 0', fontSize: '11px', color: '#0f766e' }}>Procure pelo nome e escolha se a consulta é Caixa, Cheque ou CABEN. O sistema mostra a data, o valor e o total no mês.</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                    {([
+                      ['todos', 'Todas'],
+                      ['caixa', 'Caixa'],
+                      ['cheque', 'Cheque'],
+                      ['caben', 'CABEN']
+                    ] as const).map(([valor, rotulo]) => (
+                      <button key={valor} type="button" onClick={() => setTipoRelatorio(valor)} style={botaoAba(tipoRelatorio === valor)}>{rotulo}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                    <input
+                      value={buscaRelatorio}
+                      onChange={e => setBuscaRelatorio(e.target.value)}
+                      placeholder="Buscar por nome (fornecedor, descrição...)"
+                      style={{ flex: '1 1 240px', minWidth: 0, boxSizing: 'border-box', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 600 }}
+                    />
+                    <select
+                      value={mesRelatorio}
+                      onChange={e => setMesRelatorio(e.target.value)}
+                      style={{ flex: '0 1 220px', minWidth: 0, boxSizing: 'border-box', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, color: '#0f172a' }}
+                    >
+                      {meses.map(mes => (
+                        <option key={mes} value={mes}>{rotuloMesChave(mes)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '18px' }}>
+                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #0f766e', borderRadius: '6px', padding: '12px 16px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>TOTAL NO PERÍODO</span>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: '#0f766e', marginTop: '4px' }}>R$ {dinheiro(relatorio.total)}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '12px 16px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>COMPRAS ENCONTRADAS</span>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: '#2563eb', marginTop: '4px' }}>{relatorio.quantidade}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderLeft: '4px solid #7c3aed', borderRadius: '6px', padding: '12px 16px' }}>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold' }}>LOTES FECHADOS</span>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: '#7c3aed', marginTop: '4px' }}>{relatorio.lotes.length}</div>
+                    </div>
+                  </div>
+                  {relatorio.grupos.length === 0 ? (
+                    <p style={{ margin: 0, padding: '18px', textAlign: 'center', fontSize: '13px', color: '#64748b', backgroundColor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>Nenhum pagamento encontrado neste mês{tipoRelatorio !== 'todos' ? ` em ${ROTULO_TIPO_PAGAMENTO[tipoRelatorio]}` : ''}{buscaRelatorio.trim() ? ' com esse nome' : ''}.</p>
+                  ) : relatorio.grupos.map(grupo => (
+                    <div key={grupo.chave} style={{ marginBottom: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px 14px', backgroundColor: '#ffffff' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        <strong style={{ fontSize: '14px', color: '#0f172a' }}>{grupo.nome}</strong>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#059669' }}>Total: R$ {dinheiro(grupo.total)} · {grupo.quantidade} compra(s)</span>
+                      </div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                          <thead>
+                            <tr style={{ textAlign: 'left', color: '#64748b' }}>
+                              <th style={{ padding: '6px 4px', borderBottom: '1px solid #e2e8f0' }}>Data</th>
+                              <th style={{ padding: '6px 4px', borderBottom: '1px solid #e2e8f0' }}>Forma</th>
+                              <th style={{ padding: '6px 4px', borderBottom: '1px solid #e2e8f0' }}>Origem</th>
+                              <th style={{ padding: '6px 4px', borderBottom: '1px solid #e2e8f0', textAlign: 'right' }}>Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {grupo.linhas.map(linha => (
+                              <tr key={`${linha.id}_${linha.dataIso}_${linha.tipo}`}>
+                                <td style={{ padding: '6px 4px', borderBottom: '1px solid #f1f5f9', color: '#334155' }}>{linha.data}</td>
+                                <td style={{ padding: '6px 4px', borderBottom: '1px solid #f1f5f9', color: '#334155' }}>{ROTULO_TIPO_PAGAMENTO[linha.tipo]}</td>
+                                <td style={{ padding: '6px 4px', borderBottom: '1px solid #f1f5f9', color: '#64748b' }}>{linha.origem === 'aberto' ? 'Lançamento aberto' : `Lote ${linha.loteData || ''}`.trim()}</td>
+                                <td style={{ padding: '6px 4px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>R$ {dinheiro(linha.valor)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                  <h3 style={{ margin: '22px 0 10px 0', fontSize: '14px', color: '#0f172a' }}>📁 Lotes fechados em {rotuloMesChave(mesRelatorio)}</h3>
+                  {relatorio.lotes.length === 0 ? (
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>Nenhum lote foi fechado neste mês.</span>
+                  ) : relatorio.lotes.map((lote: any) => (
+                    <div key={lote.id} style={{ padding: '10px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '13px', color: '#0f172a' }}>Fechamento: {lote.dataFechamento}</strong>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>Caixa: R$ {dinheiro(lote.totalCaixa)} | Cheque: R$ {dinheiro(lote.totalCheque)} | CABEN: R$ {dinheiro(lote.totalCaben)}</span>
+                        </div>
+                        <strong style={{ fontSize: '14px', color: '#059669' }}>Total: R$ {dinheiro(lote.totalGeral)}</strong>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {abaInterna === 'lancar' && <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
                   <button onClick={() => setTabAtiva('compras')} style={{ backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '5px', padding: '7px 12px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>← Voltar para Compras</button>
                   <h2 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '900', textTransform: 'uppercase' }}>💳 Gestão de Pagamentos</h2>
                   <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: '#0f766e' }}>Ao lançar (botão +), o pagamento é salvo na nuvem e aparece em qualquer computador ao entrar no site.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '220px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>Visto autorização financeiro</span>
+                    <select
+                      value={vistoFinanceiroNome || ''}
+                      onChange={e => setVistoFinanceiroNome?.(e.target.value)}
+                      style={{ boxSizing: 'border-box', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', fontWeight: 700, color: '#0f172a' }}
+                    >
+                      {(nomesVistoFinanceiro || []).map(nome => (
+                        <option key={nome} value={nome}>{nome}</option>
+                      ))}
+                    </select>
+                  </label>
                   <button onClick={() => imprimirRelatorioPagamentos(pagamentos, totalGeralPagamentos)} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🖨️ Imprimir / Visualizar</button>
                   <button onClick={() => enviarRelatorioPagamentosPdf(pagamentos, totalGeralPagamentos)} style={{ backgroundColor: '#25d366', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>WhatsApp PDF</button>
                   <button onClick={fecharLotePagamentos} style={{ backgroundColor: '#059669', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🔒 Fechar Lote</button>
@@ -187,6 +341,7 @@ export function AbaPagamentos(p: {
                     </div>
                   ))}
                 </div>
+              </>}
             </section>
   );
 }

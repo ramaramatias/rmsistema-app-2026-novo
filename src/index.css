@@ -15,6 +15,119 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
   pointer-events: none;
 }
 
+.login-tela,
+.login-tela * {
+  box-sizing: border-box;
+}
+.login-tela button,
+.login-tela input,
+.login-tela select {
+  font-family: inherit;
+  margin: 0;
+}
+.login-faixa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100%;
+  background: #0a5c56;
+  color: #ffffff;
+  padding: 48px 40px 72px;
+}
+@media (max-width: 899px) {
+  .login-faixa {
+    min-height: 420px;
+    padding: 32px 24px 64px;
+  }
+}
+.login-bloco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2rem;
+  margin: 0 auto;
+  padding: 0;
+  width: auto;
+}
+.login-bloco > * {
+  align-self: center;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.login-topo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+.login-frase {
+  font-family: Inter, Roboto, "Open Sans", "Segoe UI", Helvetica, Arial, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: #ffffff;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+  white-space: normal;
+}
+.login-ilustracao {
+  width: min(280px, 80vw);
+  margin: 0 auto;
+  padding: 0;
+  background: #0a5c56;
+}
+.login-ilustracao img {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: lighten;
+}
+.login-rodape {
+  position: absolute;
+  left: 40px;
+  right: 40px;
+  bottom: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: auto;
+  margin: 0;
+}
+@media (max-width: 899px) {
+  .login-rodape {
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+  }
+}
+.login-marca {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+.login-marca img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .login-mostrar {
   appearance: none;
   -webkit-appearance: none;

@@ -37,6 +37,19 @@
     },
     "api/foto.ts": {
       "maxDuration": 15
+    },
+    "api/anexo.ts": {
+      "maxDuration": 30
+    },
+    "api/ceasa.ts": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/ceasa?acao=buscar",
+      "schedule": "45 14 * * *"
+    }
+  ]
 }

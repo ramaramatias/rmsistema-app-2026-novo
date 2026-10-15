@@ -8,7 +8,7 @@ Este é um sistema de gestão integrado desenvolvido para o Pão da Vida, que ce
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Deploy**: Vercel
-- **Armazenamento de Dados**: JSONBin.io
+- **Armazenamento de Dados**: Firebase Realtime Database (SDK Admin no servidor)
 - **Integrações**: Varejo Fácil (sistema de PDV)
 - **Autenticação**: Senha simples (configurável)
 
@@ -168,7 +168,7 @@ Para dúvidas ou problemas, entre em contato com a equipe de desenvolvimento.
 
 ## 📝 Notas de Desenvolvimento
 
-- O sistema utiliza JSONBin.io para armazenamento de dados
+- O sistema utiliza Firebase Realtime Database para sincronizar os dados pela API serverless
 - A integração com Varejo Fácil é feita via API REST
 - O sistema foi desenvolvido com foco em uso interno do Pão da Vida
 - A interface está em português brasileiro

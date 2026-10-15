@@ -188,7 +188,7 @@ export const enviarFotoNuvem = async (id: string, foto: string) => {
     if (!resposta.ok) throw new Error(`Falha ao enviar foto (${resposta.status}).`);
     fotosEnviadasNuvem.set(id, foto);
   })().catch(erro => {
-    console.error(`Falha ao enviar a foto ${id} para a nuvem.`, erro);
+    console.error(`Não foi possível enviar a foto ${id} para a nuvem.`, erro);
   });
   enviosDeFotoEmCurso.set(id, { foto, promessa });
   try {

@@ -376,7 +376,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: true,
       manutencao: true,
       dados: true,
-      producao: true
+      producao: true,
+      caixaOperacional: true,
+      estoque: true,
+      conciliacao: true
     }
   },
   {
@@ -392,7 +395,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: true,
       manutencao: false,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
   {
@@ -408,7 +414,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: false,
       manutencao: false,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
   {
@@ -424,7 +433,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: false,
       manutencao: false,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
   {
@@ -440,7 +452,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: false,
       manutencao: false,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
   {
@@ -456,7 +471,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: false,
       manutencao: false,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
   {
@@ -472,7 +490,10 @@ export const USUARIOS_SISTEMA: Usuario[] = [
       elieuda: false,
       manutencao: true,
       dados: false,
-      producao: false
+      producao: false,
+      caixaOperacional: false,
+      estoque: false,
+      conciliacao: false
     }
   },
 ];
@@ -486,7 +507,10 @@ export const PERMISSOES_OPCOES: { chave: keyof Usuario['permissoes']; nome: stri
   { chave: 'relatorios', nome: 'Relatórios', detalhe: 'Estatísticas do sistema' },
   { chave: 'manutencao', nome: 'Manutenção', detalhe: 'Ordens de serviço e reparos' },
   { chave: 'dados', nome: 'Dados', detalhe: 'Nuvem, backup e gerenciamento' },
-  { chave: 'producao', nome: 'Produção', detalhe: 'Lançamentos da padaria por turno' }
+  { chave: 'producao', nome: 'Produção', detalhe: 'Lançamentos da padaria por turno' },
+  { chave: 'caixaOperacional', nome: 'Caixa operacional', detalhe: 'Caixa pequeno: aportes, compras e empréstimos' },
+  { chave: 'estoque', nome: 'Estoque', detalhe: 'Controle de estoque da tela inicial' },
+  { chave: 'conciliacao', nome: 'Conciliação', detalhe: 'Comparar nota fiscal com a tabela de preços' }
 ];
 
 export const PRODUTOS_PADARIA_PADRAO = [
@@ -566,6 +590,12 @@ export const listaProdutosElieudaPadrao: ProdutoElieuda[] = [
   { produto: 'Jerimum', unit: 'Kg' }, { produto: 'Manjericão', unit: 'Molho' }, { produto: 'Salsa', unit: 'Molho' },
   { produto: 'Quiabo', unit: 'Kg' }, { produto: 'Maxixe', unit: 'Kg' }, { produto: 'Rabanete', unit: 'Molho/Kg' },
   { produto: 'Couve Folha', unit: 'Molho' }, { produto: 'Hortelã', unit: 'Molho' }, { produto: 'Capim Santo', unit: 'Molho' }
+];
+
+export const NOMES_VISTO_FINANCEIRO = [
+  'Ramara Matias',
+  'José Valdi Bezerra de Farias',
+  'Jorge Carneiro Figueira'
 ];
 
 export const LOCAIS_MANUTENCAO = ['Loja', 'Restaurante', 'Padaria', 'Embalagem', 'Cozinha', 'Confeitaria', 'Almoxarifado', 'Sítio', 'CABEN', 'Ave Cristo', 'Área comum', 'Outro'];

@@ -8,6 +8,7 @@ import type {
   LancamentoProducao,
   LancamentoRota,
   LancamentoDeposito,
+  MovimentoCaixaOperacional,
   Setor,
   StatusTarefa,
   Tarefa,
@@ -90,12 +91,56 @@ export const mesclarSetores = (setoresBase: Setor[], setoresNovos: Setor[], idsR
   return [...setoresMesclados, ...setoresSoNaNuvem];
 };
 
+/** Por quantos dias uma tarefa deletada fica visível no histórico antes de ser removida automaticamente. */
+export const DIAS_HISTORICO_DELETADAS = 7;
+
+/**
+ * Lê a data em que a tarefa foi deletada. Aceita ISO e o formato brasileiro 'dd/mm/aaaa[, hh:mm]'.
+ * O formato brasileiro é tratado antes do `new Date()` para não confundir dia com mês (ex.: 01/09 não vira 9 de janeiro).
+ */
+export const parseDataDeletada = (valor?: string): Date | null => {
+  if (!valor) return null;
+  const br = String(valor).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:,?\s*(\d{1,2}):(\d{2}))?/);
+  if (br) {
+    const ano = Number(br[3].length === 2 ? `20${br[3]}` : br[3]);
+    const data = new Date(ano, Number(br[2]) - 1, Number(br[1]), br[4] ? Number(br[4]) : 0, br[5] ? Number(br[5]) : 0);
+    return Number.isNaN(data.getTime()) ? null : data;
+  }
+  return parseDataConclusao(valor);
+};
+
+/** Dias que ainda faltam para a tarefa deletada sair do histórico (0 = sai hoje). `null` se a data for desconhecida. */
+export const diasRestantesHistoricoDeletada = (item: Pick<TarefaDeletada, 'deletadaEm'> | { id: string }, agora = Date.now()) => {
+  const data = parseDataDeletada((item as Partial<TarefaDeletada>).deletadaEm);
+  if (!data) return null;
+  const passados = Math.floor((agora - data.getTime()) / 86_400_000);
+  return Math.max(0, DIAS_HISTORICO_DELETADAS - passados);
+};
+
+export const tarefaDeletadaExpirou = (item: TarefaDeletada | { id: string }, agora = Date.now()) => {
+  const data = parseDataDeletada((item as Partial<TarefaDeletada>).deletadaEm);
+  if (!data) return false;
+  return agora - data.getTime() > DIAS_HISTORICO_DELETADAS * 86_400_000;
+};
+
+/** Um item do histórico que ainda pode ser mostrado e recuperado (não é só uma lápide de id). */
+export const ehHistoricoDeletada = (item: TarefaDeletada | { id: string } | undefined | null): item is TarefaDeletada =>
+  Boolean(item?.id && (item as Partial<TarefaDeletada>).texto && (item as Partial<TarefaDeletada>).deletadaEm);
+
+/**
+ * Tarefas deletadas há mais de 7 dias são reduzidas a uma "lápide" só com o id: somem do histórico,
+ * mas continuam impedindo que a tarefa volte quando os dados são mesclados com a nuvem ou com outro computador.
+ * Itens que não expiraram são devolvidos com a mesma referência (permite comparar e saber se algo mudou).
+ */
+export const expirarTarefasDeletadas = (lista: Array<TarefaDeletada | { id: string }>, agora = Date.now()) =>
+  (lista || []).map(item => (ehHistoricoDeletada(item) && tarefaDeletadaExpirou(item, agora) ? { id: item.id } : item)) as TarefaDeletada[];
+
 export const unirTarefasDeletadas = (atuais: TarefaDeletada[], extras: Array<TarefaDeletada | { id: string }>) => {
   const porId = new Map<string, TarefaDeletada | { id: string }>();
-  [...atuais, ...extras].forEach(item => {
+  [...(atuais || []), ...(extras || [])].forEach(item => {
     if (item?.id && !porId.has(item.id)) porId.set(item.id, item);
   });
-  return Array.from(porId.values()) as TarefaDeletada[];
+  return expirarTarefasDeletadas(Array.from(porId.values()));
 };
 
 export const contarItensPagamento = (dados?: PagamentosState) =>
@@ -111,10 +156,23 @@ export const unirRelatoriosPedidos = (...listas: Array<RelatorioPedidoCotacao[] 
         porId.set(item.id, item);
         return;
       }
+      const pesoPdf = (conteudo?: string) => {
+        const valor = String(conteudo || '');
+        if (valor.startsWith('/api/anexo')) return 4;
+        if (valor.startsWith('http')) return 3;
+        if (valor.startsWith('data:')) return 2;
+        return valor ? 1 : 0;
+      };
+      const pdfAtual = atual.pdfFornecedor;
+      const pdfNovo = item.pdfFornecedor;
+      const pdfFornecedor = pesoPdf(pdfNovo?.conteudo) >= pesoPdf(pdfAtual?.conteudo) ? (pdfNovo || pdfAtual) : (pdfAtual || pdfNovo);
       porId.set(item.id, {
         ...atual,
         ...item,
-        enviadoConferencia: Boolean(atual.enviadoConferencia || item.enviadoConferencia)
+        enviadoConferencia: Boolean(atual.enviadoConferencia || item.enviadoConferencia),
+        bonificacaoResolvida: Boolean(atual.bonificacaoResolvida || item.bonificacaoResolvida),
+        itens: (item.itens?.length || 0) >= (atual.itens?.length || 0) ? (item.itens || atual.itens) : atual.itens,
+        pdfFornecedor
       });
     });
   });
@@ -141,11 +199,12 @@ export const unirConferencias = (...listas: Array<RegistroConferencia[] | undefi
 
 export const unirIds = (...listas: Array<string[] | undefined>) => Array.from(new Set(listas.flatMap(lista => lista || []).filter(Boolean)));
 
-export const unirLotesPagamento = (...listas: Array<LotePagamentoHistorico[] | undefined>) => {
+export const unirLotesPagamento = (deletados: string[] | undefined, ...listas: Array<LotePagamentoHistorico[] | undefined>) => {
+  const bloqueados = new Set((deletados || []).filter(Boolean));
   const porId = new Map<string, LotePagamentoHistorico>();
   listas.forEach(lista => {
     (lista || []).forEach(lote => {
-      if (!lote?.id) return;
+      if (!lote?.id || bloqueados.has(lote.id)) return;
       const atual = porId.get(lote.id);
       if (!atual || contarItensPagamento(lote.dados) > contarItensPagamento(atual.dados) || (lote.totalGeral || 0) > (atual.totalGeral || 0)) {
         porId.set(lote.id, lote);
@@ -169,6 +228,18 @@ export const idsItensDeLotes = (lotes: LotePagamentoHistorico[]) => {
 
 export const identidadePagamento = (item: Pick<ItemPagamento, 'descricao' | 'valor'> | undefined) =>
   `pag-${String(item?.descricao || 'item').trim().toLowerCase().replace(/\s+/g, '-')}-${Number(item?.valor) || 0}`;
+
+export const marcasItensDoLote = (lote?: LotePagamentoHistorico) => {
+  const marcas: string[] = [];
+  if (!lote?.dados) return marcas;
+  (['caixa', 'cheque', 'caben'] as const).forEach(tipo => {
+    (lote.dados?.[tipo] || []).forEach(item => {
+      if (item?.id) marcas.push(item.id);
+      marcas.push(identidadePagamento(item));
+    });
+  });
+  return marcas;
+};
 
 export const garantirIdPagamento = (item: ItemPagamento) => {
   if (item?.id) return item;
@@ -257,6 +328,48 @@ export const unirLancamentosRota = (idsDeletados: string[] = [], ...listas: Arra
     });
   });
   return Array.from(porId.values());
+};
+
+export const unirMovimentosCaixaOperacional = (idsDeletados: string[] = [], ...listas: Array<MovimentoCaixaOperacional[] | undefined>) => {
+  const bloqueados = new Set((idsDeletados || []).filter(Boolean));
+  const porId = new Map<string, MovimentoCaixaOperacional>();
+  listas.forEach(lista => {
+    (lista || []).forEach(item => {
+      if (!item?.id || bloqueados.has(item.id)) return;
+      porId.set(item.id, item);
+    });
+  });
+  return Array.from(porId.values());
+};
+
+export const unirFornecedoresCotacao = <T extends { id?: string; nome?: string }>(...listas: Array<T[] | undefined>) => {
+  const mapa = new Map<string, T>();
+  listas.forEach(lista => {
+    (lista || []).forEach(item => {
+      if (!item) return;
+      const chave = String(item.id || item.nome || '').trim();
+      if (!chave) return;
+      const anterior = mapa.get(chave);
+      mapa.set(chave, anterior ? { ...anterior, ...item } : item);
+    });
+  });
+  return [...mapa.values()];
+};
+
+type DiasElieuda = { terca?: string; quinta?: string; sabado?: string };
+
+export const unirQuantidadesElieuda = (
+  nuvem: Record<string, DiasElieuda> | undefined,
+  local: Record<string, DiasElieuda> | undefined,
+  localGanha: boolean
+) => {
+  if (!localGanha) return { ...(nuvem || {}) };
+  if (local && Object.keys(local).length === 0) return {};
+  const saida: Record<string, DiasElieuda> = { ...(nuvem || {}) };
+  Object.entries(local || {}).forEach(([produto, dias]) => {
+    saida[produto] = { ...(saida[produto] || {}), ...(dias || {}) };
+  });
+  return saida;
 };
 
 export const unirLancamentosDeposito = (idsDeletados: string[] = [], ...listas: Array<LancamentoDeposito[] | undefined>) => {

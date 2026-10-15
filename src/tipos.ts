@@ -3,6 +3,7 @@ export type TipoUsuario = 'admin' | 'gabriela' | 'assuncao' | 'luzia' | 'leandro
 export interface Tarefa { id: string; texto: string; status: StatusTarefa; concluida?: boolean; criadaEm: string; concluidaEm?: string; criador: string; dataCriacao: string; responsavel?: string; prioridade?: 'baixa' | 'media' | 'alta' | 'urgente'; foto?: string; }
 export interface TarefaDeletada { id: string; texto: string; status: StatusTarefa; criadaEm: string; criador: string; deletadaEm: string; deletadaPor: string; setorId: string; foto?: string; }
 export interface Setor { id: string; nome: string; cor: string; tarefas: Tarefa[]; }
+export interface ItemChecklist { id: string; texto: string; concluido: boolean; criadoEm: string; atualizadoEm: string; }
 export interface ItemPagamento { id: string; descricao: string; valor: number; data?: string; }
 export interface PagamentosState { caixa: ItemPagamento[]; cheque: ItemPagamento[]; caben: ItemPagamento[]; }
 export interface LotePagamentoHistorico { id: string; dataFechamento: string; totalGeral: number; totalCaixa: number; totalCheque: number; totalCaben: number; dados: PagamentosState; }
@@ -42,11 +43,11 @@ export function diferencaValorConferencia(recebido?: number, esperado?: number) 
   if (cents > 0) return { tipo: 'mais' as const, valor, rotulo: `Valor a mais: R$ ${texto}`, detalhe: `Recebido ficou R$ ${texto} acima do valor que comprei.` };
   return { tipo: 'menos' as const, valor, rotulo: `Valor a menos: R$ ${texto}`, detalhe: `Recebido ficou R$ ${texto} abaixo do valor que comprei.` };
 }
-export interface RegistroConferencia { id: string; data: string; nomeConferente: string; valorRecebido: number; observacoes: string; houveDivergencia: boolean; tipoDivergencia?: TipoDivergencia; pedidoId?: string; fornecedor?: string; valorEsperado?: number; itensConferidos?: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; conferentePor?: string; dataPreenchimento?: string; }
+export interface RegistroConferencia { id: string; data: string; nomeConferente: string; valorRecebido: number; observacoes: string; houveDivergencia: boolean; tipoDivergencia?: TipoDivergencia; pedidoId?: string; fornecedor?: string; categoria?: string; valorEsperado?: number; itensConferidos?: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string; bonificado?: boolean }[]; conferentePor?: string; dataPreenchimento?: string; veioBonificacao?: boolean; notaBonificada?: boolean; }
 export interface ArquivoConferencia { id: string; nome: string; dataUpload: string; uploadPor: string; conteudo: string; }
 export interface DadosConferenciaFornecedor { fornecedorId: string; fornecedorNome: string; valorNota: number; valorRecebido: number; divergencia: boolean; conferentePor: string; dataPreenchimento: string; }
 export interface PedidoCompra { id: string; data: string; fornecedorId: string; fornecedorNome: string; itens: { produtoId: string; produto: string; quantidade: number; precoUnitario: number; total: number }[]; totalGeral: number; status: 'pendente' | 'enviado' | 'recebido'; }
-export interface RelatorioPedidoCotacao { id: string; data: string; itens: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string }[]; totalGeral: number; enviadoConferencia?: boolean; pdfFornecedor?: { nome: string; conteudo: string; anexadoEm: string; valor?: number; observacao?: string }; }
+export interface RelatorioPedidoCotacao { id: string; data: string; itens: { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; fornecedor: string; bonificado?: boolean }[]; totalGeral: number; enviadoConferencia?: boolean; categoria?: string; pdfFornecedor?: { nome: string; conteudo: string; anexadoEm: string; valor?: number; observacao?: string }; bonificacaoResolvida?: boolean; veioBonificacao?: boolean; }
 export type StatusOrdemManutencao = 'pendente' | 'andamento' | 'pausada' | 'concluida' | 'nao_realizada' | 'aberta';
 export interface OrdemManutencao {
   id: string;
@@ -113,7 +114,47 @@ export interface LancamentoDeposito {
   valor: number;
   obs: string;
 }
-export interface Usuario { id: string; nome: string; tipo: TipoUsuario; permissoes: { pendencias: boolean; conferencias: boolean; cotacao: boolean; pagamentos: boolean; relatorios: boolean; elieuda: boolean; manutencao: boolean; dados: boolean; producao: boolean; }; }
+export type TipoMovimentoCaixa = 'entrada' | 'saida';
+export type NaturezaMovimentoCaixa = 'aporte' | 'reposicao' | 'compra' | 'emprestimo' | 'debito';
+export interface MovimentoCaixaOperacional {
+  id: string;
+  criadoEm: string;
+  tipo: TipoMovimentoCaixa;
+  natureza: NaturezaMovimentoCaixa;
+  descricao: string;
+  valor: number;
+  responsavel: string;
+}
+export const SALDO_INICIAL_CAIXA_OPERACIONAL = 3700;
+export interface Usuario { id: string; nome: string; tipo: TipoUsuario; permissoes: { pendencias: boolean; conferencias: boolean; cotacao: boolean; pagamentos: boolean; relatorios: boolean; elieuda: boolean; manutencao: boolean; dados: boolean; producao: boolean; caixaOperacional: boolean; estoque: boolean; conciliacao: boolean; }; }
 export type SenhasUsuarios = { [usuarioId: string]: string };
-export type LinhaPedidoPdf = { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number };
+export type LinhaPedidoPdf = { produto: string; unit: string; quantidade: string; valorUnitario: number; valorTotal: number; bonificado?: boolean };
 export type LinhaPdfPagamento = { tipo: 'secao' | 'item'; rotulo: string; valor?: string };
+export type MarcaConciliacao = 'nenhuma' | 'vermelha' | 'verde';
+export interface ItemLoteConciliacao {
+  produto: string;
+  quantidade: number;
+  unidade: string;
+  precoNf: number;
+  precoCeasa: number | null;
+  semPreco: boolean;
+  detalhe: string;
+  marca: MarcaConciliacao;
+  justificativa: string;
+}
+export interface LoteConciliacao {
+  id: string;
+  arquivadoEm: string;
+  mes: string;
+  empresa: string;
+  numeroNf: string;
+  dataNf: string;
+  dataCeasa: string;
+  origem: string;
+  totalNf: number;
+  totalCeasa: number;
+  margemValor: number;
+  margemPct: number | null;
+  imagemRelatorioId?: string;
+  linhas: ItemLoteConciliacao[];
+}

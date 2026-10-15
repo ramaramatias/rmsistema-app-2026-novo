@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { LISTA_COMPLETA } from '../../catalogo/listaCompleta';
 import { PRODUTOS_POR_SECAO } from '../../catalogo/secoesDados';
 import type { ItemCotacao } from '../../tipos';
 
 const CHAVE_COMPRADOR = 'rm_recibo_comprador_cnpj';
+const CHAVE_COMPRADOR_PERSONALIZADO = 'rm_recibo_comprador_personalizado';
 const campo = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15';
 const botaoPrimario = 'cursor-pointer rounded-lg bg-teal-700 px-4 py-2 text-sm font-bold text-white hover:bg-teal-600';
 const botaoSecundario = 'cursor-pointer rounded-lg bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50';
@@ -12,11 +14,20 @@ type PessoaRecibo = {
   cnpj: string;
   endereco: string;
   cidade: string;
+  semLogo?: boolean;
 };
 
-type IdComprador = 'filial' | 'matriz';
+type IdComprador = 'filial' | 'matriz' | 'personalizado';
 
-const COMPRADORES: Record<IdComprador, PessoaRecibo> = {
+const compradorPersonalizadoVazio = (): PessoaRecibo => ({
+  razaoSocial: '',
+  cnpj: '',
+  endereco: '',
+  cidade: '',
+  semLogo: true
+});
+
+const COMPRADORES: Record<Exclude<IdComprador, 'personalizado'>, PessoaRecibo> = {
   filial: {
     razaoSocial: 'CENTRO ESPIRITA O POBRE DE DEUS',
     cnpj: '86.732.443/0003-54',
@@ -27,19 +38,37 @@ const COMPRADORES: Record<IdComprador, PessoaRecibo> = {
     razaoSocial: 'CENTRO ESPIRITA O POBRE DE DEUS',
     cnpj: '86.732.443/0001-92',
     endereco: 'RUA SILVA JARDIM N:879, BAIRRO SANTA TEREZINHA',
-    cidade: ''
+    cidade: 'VIÇOSA DO CEARÁ'
   }
 };
 
 const ROTULO_COMPRADOR: Record<IdComprador, string> = {
   filial: 'Filial',
-  matriz: 'Matriz'
+  matriz: 'Matriz',
+  personalizado: 'Personalizado'
+};
+
+const lerCompradorPersonalizado = (): PessoaRecibo => {
+  try {
+    const salvo = localStorage.getItem(CHAVE_COMPRADOR_PERSONALIZADO);
+    if (!salvo) return compradorPersonalizadoVazio();
+    const dados = JSON.parse(salvo) as Partial<PessoaRecibo>;
+    return {
+      razaoSocial: String(dados.razaoSocial || ''),
+      cnpj: String(dados.cnpj || ''),
+      endereco: String(dados.endereco || ''),
+      cidade: String(dados.cidade || ''),
+      semLogo: true
+    };
+  } catch {
+    return compradorPersonalizadoVazio();
+  }
 };
 
 const lerIdComprador = (): IdComprador => {
   try {
     const salvo = localStorage.getItem(CHAVE_COMPRADOR);
-    if (salvo === 'matriz' || salvo === 'filial') return salvo;
+    if (salvo === 'matriz' || salvo === 'filial' || salvo === 'personalizado') return salvo;
     if (salvo?.includes('0001-92')) return 'matriz';
     return 'filial';
   } catch {
@@ -49,7 +78,16 @@ const lerIdComprador = (): IdComprador => {
 
 type FornecedorLista = PessoaRecibo & { id: string; nome: string };
 
-type ProdutoLista = { id: string; codigo: string; nome: string; unidade: string; origem: 'todos' | 'secoes' };
+type ProdutoLista = {
+  id: string;
+  codigo: string;
+  nome: string;
+  unidade: string;
+  origem: 'lista' | 'todos' | 'secoes';
+  estoque?: string;
+  custo?: string;
+  preco?: string;
+};
 
 type FormaPagamento = 'pix' | 'dinheiro' | 'conta';
 type LocalProduto = 'venda' | 'almoxarifado';
@@ -72,6 +110,7 @@ type DadosImpressao = {
   agencia: string;
   contaCorrente: string;
   local: LocalProduto | '';
+  desconto: string;
 };
 
 const rascunhoVazio = (): ItemRecibo => ({
@@ -107,9 +146,11 @@ const ROTULO_PAGAMENTO: Record<FormaPagamento, string> = {
   conta: 'Conta corrente'
 };
 
-const ROTULO_LOCAL: Record<LocalProduto, string> = {
-  venda: 'Venda',
-  almoxarifado: 'Almoxarifado'
+const rotuloLocal = (local: LocalProduto, comprador: PessoaRecibo) => {
+  if (String(comprador.cnpj || '').includes('0001-92')) {
+    return local === 'venda' ? 'UACB' : 'CABEN';
+  }
+  return local === 'venda' ? 'Venda' : 'Almoxarifado';
 };
 
 const textoPagamento = (dados: DadosImpressao) => {
@@ -204,10 +245,21 @@ const novoRecibo = (fornecedor: FornecedorLista, comprador: PessoaRecibo): Dados
   formaPagamento: '',
   agencia: '',
   contaCorrente: '',
-  local: ''
+  local: '',
+  desconto: ''
 });
 
 const montarListaProdutos = (itens?: ItemCotacao[]): ProdutoLista[] => {
+  const completa = LISTA_COMPLETA.map(item => ({
+    id: `est_${item.id}`,
+    codigo: item.codigo,
+    nome: item.descricao,
+    unidade: item.embalagem || '',
+    origem: 'lista' as const,
+    estoque: item.estoque,
+    custo: item.custo,
+    preco: item.preco
+  }));
   const secoes = Object.values(PRODUTOS_POR_SECAO).flat().map(item => ({
     id: `sec_${item.id}`,
     codigo: resolverCodigo(item.nome, item.codigo),
@@ -228,26 +280,30 @@ const montarListaProdutos = (itens?: ItemCotacao[]): ProdutoLista[] => {
       };
     });
   const porNome = new Map<string, ProdutoLista>();
-  [...todos, ...secoes].forEach(item => {
+  [...completa, ...todos, ...secoes].forEach(item => {
     const chave = normalizar(item.nome);
     if (!chave) return;
     const atual = porNome.get(chave);
-    if (!atual) {
-      porNome.set(chave, item);
-      return;
-    }
-    if (!atual.codigo && item.codigo) porNome.set(chave, item);
+    if (!atual || atual.origem !== 'lista') porNome.set(chave, item);
   });
   return Array.from(porNome.values()).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 };
 
 const totalItem = (item: ItemRecibo) => numeroCampo(item.quantidade) * numeroCampo(item.valorUnitario);
 
-const totalRecibo = (dados: DadosImpressao) =>
-  (dados.itens || []).reduce((soma, item) => soma + totalItem(item), 0);
+const contasRecibo = (dados: DadosImpressao) => {
+  const subtotal = (dados.itens || []).reduce((soma, item) => soma + totalItem(item), 0);
+  const desconto = Math.min(Math.max(0, numeroCampo(dados.desconto)), subtotal);
+  return { subtotal, desconto, total: Math.max(0, subtotal - desconto) };
+};
+
+const totalRecibo = (dados: DadosImpressao) => contasRecibo(dados).total;
+
+/** Nome de quem assina como vendedor no recibo: o fornecedor escolhido. */
+const nomeVendedor = (dados: DadosImpressao) => String(dados.fornecedor?.razaoSocial || '').trim();
 
 const fraseDeclaracao = (pessoa: PessoaRecibo) =>
-  `Declaro (amos) ter recebido de CENTRO ESPÍRITA O POBRE DE DEUS, CNPJ ${pessoa.cnpj}, a importância totalizada, referente à compra dos itens discriminados abaixo:`;
+  `Declaro ter recebido de CENTRO ESPÍRITA O POBRE DE DEUS, CNPJ ${pessoa.cnpj}, a importância totalizada, referente à compra dos itens discriminados abaixo:`;
 
 const blocoPessoaHtml = (titulo: string, pessoa: PessoaRecibo, rotuloDoc: string) => `
   <div class="pessoa">
@@ -259,13 +315,25 @@ const blocoPessoaHtml = (titulo: string, pessoa: PessoaRecibo, rotuloDoc: string
   </div>
 `;
 
+const LOGO_FILIAL = '/logo-pao-da-vida.jpg';
+const LOGO_MATRIZ = '/logo-centro-espirita.jpg';
+const logoDoComprador = (pessoa: PessoaRecibo) =>
+  pessoa.semLogo ? null : String(pessoa.cnpj || '').includes('0001-92') ? LOGO_MATRIZ : LOGO_FILIAL;
+const altLogoComprador = (pessoa: PessoaRecibo) =>
+  String(pessoa.cnpj || '').includes('0001-92') ? 'Centro Espírita O Pobre de Deus' : 'Pão da Vida';
+const urlLogoRecibo = (pessoa: PessoaRecibo) => {
+  const logo = logoDoComprador(pessoa);
+  return logo ? `${window.location.origin}${logo}?v=2` : '';
+};
+
 const htmlFolha = (dados: DadosImpressao) => {
-  const total = totalRecibo(dados);
+  const { subtotal, desconto, total } = contasRecibo(dados);
   const extenso = valorPorExtenso(total);
   return `<section class="folha">
-    <h1>RECIBO</h1>
-    <div class="topo">
-      <span>Data: ${escapar(dataBr(dados.data))}</span>
+    <div class="cabecalho">
+      ${urlLogoRecibo(dados.comprador) ? `<img class="logo" src="${urlLogoRecibo(dados.comprador)}" alt="${escapar(altLogoComprador(dados.comprador))}">` : ''}
+      <h1>RECIBO</h1>
+      <span class="data-topo">Data: ${escapar(dataBr(dados.data))}</span>
     </div>
     ${blocoPessoaHtml('Comprador', dados.comprador, 'CNPJ')}
     ${blocoPessoaHtml('Fornecedor', dados.fornecedor, 'CNPJ / CPF')}
@@ -284,14 +352,20 @@ const htmlFolha = (dados: DadosImpressao) => {
           <td>R$ ${dinheiro(totalItem(item))}</td>
         </tr>`).join('')}
       </table>
+      <p><b>Subtotal</b><span>R$ ${dinheiro(subtotal)}</span></p>
+      <p><b>Desconto</b><span>R$ ${dinheiro(desconto)}</span></p>
       <p class="total"><b>Total da compra</b><span>R$ ${dinheiro(total)}</span></p>
       <p class="extenso">${escapar(extenso ? extenso.charAt(0).toUpperCase() + extenso.slice(1) : '')}</p>
       <p><b>Pagamento</b><span>${escapar(textoPagamento(dados))}</span></p>
-      <p><b>Local</b><span>${escapar(dados.local ? ROTULO_LOCAL[dados.local] : '')}</span></p>
+      <p><b>Local</b><span>${escapar(dados.local ? rotuloLocal(dados.local, dados.comprador) : '')}</span></p>
     </div>
     <p class="data">${escapar(dados.comprador.cidade || dados.fornecedor.cidade || 'Fortaleza')}, ${escapar(dataBr(dados.data))}.</p>
     <footer>
-      <div><i></i>Vendedor</div>
+      <div>
+        <i></i>
+        ${nomeVendedor(dados) ? `<b class="assinante">${escapar(nomeVendedor(dados))}</b>` : ''}
+        <span class="cargo">Vendedor</span>
+      </div>
     </footer>
   </section>`;
 };
@@ -305,7 +379,9 @@ const imprimirFolha = (dados: DadosImpressao) => {
       body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 0; }
       .folha { border: 2px solid #111; padding: 18px 20px; }
       h1 { margin: 0; text-align: center; font-size: 22px; letter-spacing: .08em; }
-      .topo { display: flex; justify-content: flex-end; margin: 10px 0 14px; font-size: 13px; }
+      .cabecalho { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-bottom: 14px; }
+      .cabecalho .logo { justify-self: start; width: 118px; height: 118px; object-fit: contain; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cabecalho .data-topo { justify-self: end; font-size: 13px; }
       .pessoa { padding: 4px 0 8px; margin-bottom: 8px; }
       .pessoa h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
       .pessoa p { display: flex; gap: 12px; margin: 4px 0; font-size: 14px; }
@@ -326,10 +402,28 @@ const imprimirFolha = (dados: DadosImpressao) => {
       footer { display: flex; justify-content: center; margin-top: 42px; text-align: center; font-size: 12px; }
       footer div { width: 240px; }
       footer i { display: block; border-top: 1px solid #111; margin-bottom: 6px; }
+      footer .assinante { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+      footer .cargo { display: block; margin-top: 2px; font-size: 11px; color: #444; }
     </style></head><body>${htmlFolha(dados)}</body></html>`);
   win.document.close();
   win.focus();
-  setTimeout(() => win.print(), 400);
+  // Espera a logo carregar antes de imprimir (com limite de tempo para não travar).
+  let imprimiu = false;
+  const imprimir = () => {
+    if (imprimiu) return;
+    imprimiu = true;
+    win.print();
+  };
+  const imagens = Array.from(win.document.images);
+  const pendentes = imagens.filter(img => !img.complete);
+  if (pendentes.length === 0) {
+    setTimeout(imprimir, 400);
+  } else {
+    let faltam = pendentes.length;
+    const umaCarregou = () => { faltam -= 1; if (faltam <= 0) setTimeout(imprimir, 100); };
+    pendentes.forEach(img => { img.onload = umaCarregou; img.onerror = umaCarregou; });
+    setTimeout(imprimir, 2500);
+  }
 };
 
 function CaixaPessoa({ titulo, pessoa, rotuloDoc }: { titulo: string; pessoa: PessoaRecibo; rotuloDoc: string }) {
@@ -344,11 +438,11 @@ function CaixaPessoa({ titulo, pessoa, rotuloDoc }: { titulo: string; pessoa: Pe
   );
 }
 
-function EscolherComprador({ id, onChange, coluna }: { id: IdComprador; onChange: (id: IdComprador) => void; coluna?: boolean }) {
+function EscolherComprador({ id, onChange, coluna, personalizado }: { id: IdComprador; onChange: (id: IdComprador) => void; coluna?: boolean; personalizado: PessoaRecibo }) {
   return (
     <div className={coluna ? 'grid gap-2' : 'grid gap-2 sm:grid-cols-2'}>
-      {(['filial', 'matriz'] as IdComprador[]).map(opcao => {
-        const pessoa = COMPRADORES[opcao];
+      {(['filial', 'matriz', 'personalizado'] as IdComprador[]).map(opcao => {
+        const pessoa = opcao === 'personalizado' ? personalizado : COMPRADORES[opcao as Exclude<IdComprador, 'personalizado'>];
         const ativo = id === opcao;
         return (
           <button
@@ -357,13 +451,45 @@ function EscolherComprador({ id, onChange, coluna }: { id: IdComprador; onChange
             onClick={() => onChange(opcao)}
             className={`cursor-pointer rounded-xl border-0 p-3 text-left ring-1 ${ativo ? 'bg-teal-50 ring-teal-300' : 'bg-white ring-slate-200 hover:bg-slate-50'}`}
           >
-            <span className={`text-[11px] font-black uppercase tracking-wide ${ativo ? 'text-teal-800' : 'text-slate-500'}`}>{ROTULO_COMPRADOR[opcao]}</span>
-            <strong className="mt-1 block text-sm font-black text-slate-900">{pessoa.razaoSocial}</strong>
-            <span className="mt-1 block text-xs font-semibold text-slate-600">CNPJ {pessoa.cnpj}</span>
-            <span className="mt-1 block text-xs text-slate-500">{pessoa.endereco}{pessoa.cidade ? ` • ${pessoa.cidade}` : ''}</span>
+            {opcao === 'personalizado' ? (
+              <span className={`block text-[11px] font-black uppercase tracking-wide ${ativo ? 'text-teal-800' : 'text-slate-500'}`}>{ROTULO_COMPRADOR[opcao]}</span>
+            ) : (
+              <>
+                <span className="mb-2 flex items-center gap-2">
+                  {logoDoComprador(pessoa) ? <img src={`${logoDoComprador(pessoa)}?v=2`} alt={altLogoComprador(pessoa)} className="h-14 w-14 bg-white object-contain" /> : null}
+                  <span className={`text-[11px] font-black uppercase tracking-wide ${ativo ? 'text-teal-800' : 'text-slate-500'}`}>{ROTULO_COMPRADOR[opcao]}</span>
+                </span>
+                <strong className="mt-1 block text-sm font-black text-slate-900">{pessoa.razaoSocial}</strong>
+                <span className="mt-1 block text-xs font-semibold text-slate-600">CNPJ {pessoa.cnpj}</span>
+                <span className="mt-1 block text-xs text-slate-500">{pessoa.endereco}{pessoa.cidade ? ` • ${pessoa.cidade}` : ''}</span>
+              </>
+            )}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function FormularioCompradorPersonalizado({ valor, onChange }: { valor: PessoaRecibo; onChange: (campo: keyof PessoaRecibo, valorCampo: string) => void }) {
+  return (
+    <div className="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-600">
+        Razão social
+        <input value={valor.razaoSocial} onChange={e => onChange('razaoSocial', e.target.value)} className={campo} />
+      </label>
+      <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-600">
+        CNPJ
+        <input value={valor.cnpj} onChange={e => onChange('cnpj', e.target.value)} className={campo} />
+      </label>
+      <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-600">
+        Endereço
+        <input value={valor.endereco} onChange={e => onChange('endereco', e.target.value)} className={campo} />
+      </label>
+      <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-600">
+        Cidade
+        <input value={valor.cidade} onChange={e => onChange('cidade', e.target.value)} className={campo} />
+      </label>
     </div>
   );
 }
@@ -373,16 +499,28 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
   const [buscaProduto, setBuscaProduto] = useState('');
   const [rascunho, setRascunho] = useState<ItemRecibo>(rascunhoVazio);
   const [idComprador, setIdComprador] = useState<IdComprador>(lerIdComprador);
+  const [compradorPersonalizado, setCompradorPersonalizado] = useState<PessoaRecibo>(lerCompradorPersonalizado);
   const [recibo, setRecibo] = useState<DadosImpressao | null>(null);
-  const comprador = COMPRADORES[idComprador];
+  const comprador = idComprador === 'personalizado' ? compradorPersonalizado : COMPRADORES[idComprador as Exclude<IdComprador, 'personalizado'>];
 
   useEffect(() => {
     localStorage.setItem(CHAVE_COMPRADOR, idComprador);
   }, [idComprador]);
 
+  useEffect(() => {
+    localStorage.setItem(CHAVE_COMPRADOR_PERSONALIZADO, JSON.stringify(compradorPersonalizado));
+    if (idComprador === 'personalizado') {
+      setRecibo(atual => atual ? { ...atual, comprador: compradorPersonalizado } : atual);
+    }
+  }, [compradorPersonalizado, idComprador]);
+
   const escolherComprador = (id: IdComprador) => {
     setIdComprador(id);
-    setRecibo(atual => atual ? { ...atual, comprador: COMPRADORES[id] } : atual);
+    setRecibo(atual => atual ? { ...atual, comprador: id === 'personalizado' ? compradorPersonalizado : COMPRADORES[id as Exclude<IdComprador, 'personalizado'>] } : atual);
+  };
+
+  const atualizarCompradorPersonalizado = (campo: keyof PessoaRecibo, valorCampo: string) => {
+    setCompradorPersonalizado(atual => ({ ...atual, [campo]: valorCampo }));
   };
 
   const lista = useMemo(() => {
@@ -400,10 +538,15 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
   const produtos = useMemo(() => montarListaProdutos(p.itensCotacao), [p.itensCotacao]);
   const produtosFiltrados = useMemo(() => {
     const texto = normalizar(buscaProduto);
-    if (!texto) return [];
-    return produtos.filter(item =>
-      normalizar(item.nome).includes(texto) || normalizar(item.codigo).includes(texto)
-    ).slice(0, 20);
+    if (texto.length < 2) return [];
+    const achados: ProdutoLista[] = [];
+    for (const item of produtos) {
+      if (normalizar(item.nome).includes(texto) || normalizar(item.codigo).includes(texto)) {
+        achados.push(item);
+        if (achados.length === 8) break;
+      }
+    }
+    return achados;
   }, [produtos, buscaProduto]);
 
   const escolherProduto = (item: ProdutoLista) => {
@@ -413,7 +556,7 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
       produto: item.nome,
       quantidade: rascunho.quantidade,
       unidade: item.unidade || rascunho.unidade,
-      valorUnitario: rascunho.valorUnitario
+      valorUnitario: rascunho.valorUnitario || item.custo || ''
     });
     setBuscaProduto('');
   };
@@ -437,9 +580,9 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
   };
 
   const itensNaTela = recibo ? [...recibo.itens, ...(rascunho.produto ? [rascunho] : [])] : [];
-  const total = itensNaTela.reduce((soma, item) => soma + totalItem(item), 0);
-  const extenso = valorPorExtenso(total);
   const reciboNaTela = recibo ? { ...recibo, comprador, itens: itensNaTela } : null;
+  const { subtotal, desconto, total } = reciboNaTela ? contasRecibo(reciboNaTela) : { subtotal: 0, desconto: 0, total: 0 };
+  const extenso = valorPorExtenso(total);
 
   return (
     <section className="mx-auto max-w-5xl rounded-2xl bg-white p-5 ring-1 ring-slate-200">
@@ -449,13 +592,16 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
         <button type="button" className="cursor-pointer rounded-xl bg-teal-700 px-4 py-2.5 text-xs font-bold tracking-wide text-white shadow-sm shadow-teal-900/20">Recibo</button>
       </div>
       <h2 className="m-0 text-xl font-black uppercase tracking-tight text-slate-900">Recibo</h2>
-      <p className="mb-4 mt-1 text-xs text-slate-500">Escolha o produto na lista Todos ou nas Seções. Dá para adicionar mais de um item no mesmo recibo.</p>
+      <p className="mb-4 mt-1 text-xs text-slate-500">Escolha o fornecedor e localize o produto na lista completa. Dá para adicionar mais de um item no mesmo recibo.</p>
 
       {!recibo || !reciboNaTela ? (
         <>
           <div className="mb-4 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
             <p className="mb-2 mt-0 text-[11px] font-bold uppercase tracking-wide text-slate-500">Comprador</p>
-            <EscolherComprador id={idComprador} onChange={escolherComprador} />
+            <EscolherComprador id={idComprador} onChange={escolherComprador} personalizado={compradorPersonalizado} />
+            {idComprador === 'personalizado' && (
+              <FormularioCompradorPersonalizado valor={compradorPersonalizado} onChange={atualizarCompradorPersonalizado} />
+            )}
           </div>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar fornecedor..." className={`${campo} mb-3`} />
           <div className="grid gap-2 sm:grid-cols-2">
@@ -483,7 +629,10 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
           <div className="grid gap-2 self-start rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
             <p className="m-0 text-[11px] font-bold uppercase tracking-wide text-slate-500">Comprador</p>
-            <EscolherComprador id={idComprador} onChange={escolherComprador} coluna />
+            <EscolherComprador id={idComprador} onChange={escolherComprador} coluna personalizado={compradorPersonalizado} />
+            {idComprador === 'personalizado' && (
+              <FormularioCompradorPersonalizado valor={compradorPersonalizado} onChange={atualizarCompradorPersonalizado} />
+            )}
             <p className="m-0 mt-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">Produto e imprimir</p>
             {recibo.itens.length > 0 && (
               <div className="grid gap-1">
@@ -507,8 +656,8 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                 </div>
               ) : (
                 <>
-                  <input value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} placeholder="Todos ou Seções: código ou nome" className={campo} />
-                  {buscaProduto.trim() ? (
+                  <input value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} placeholder="Nome ou código da lista completa" className={campo} />
+                  {buscaProduto.trim().length >= 2 ? (
                     <div className="max-h-56 overflow-y-auto rounded-lg bg-white ring-1 ring-slate-200">
                       {produtosFiltrados.map(item => (
                         <button
@@ -517,8 +666,11 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                           onClick={() => escolherProduto(item)}
                           className="flex w-full cursor-pointer flex-col border-0 border-b border-slate-100 bg-white px-3 py-2 text-left last:border-b-0 hover:bg-teal-50"
                         >
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{item.origem === 'todos' ? 'Todos' : 'Seções'}{item.codigo ? ` • ${item.codigo}` : ''}</span>
                           <strong className="text-sm font-bold text-slate-900">{item.nome}</strong>
+                          <span className="text-[11px] font-semibold text-slate-500">
+                            {item.codigo || 'Sem código'}
+                            {item.origem === 'lista' ? ` · estoque ${item.estoque} ${item.unidade} · custo ${item.custo} · venda ${item.preco}` : ` · ${item.origem === 'todos' ? 'Todos' : 'Seções'}`}
+                          </span>
                         </button>
                       ))}
                       {produtosFiltrados.length === 0 && (
@@ -526,7 +678,7 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                       )}
                     </div>
                   ) : (
-                    <p className="m-0 text-xs font-semibold text-slate-500">Digite para buscar em Todos e nas Seções.</p>
+                    <p className="m-0 text-xs font-semibold text-slate-500">Digite o nome ou o código da lista completa.</p>
                   )}
                 </>
               )}
@@ -573,6 +725,10 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                 </label>
               </div>
             ) : null}
+            <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-500">
+              Desconto
+              <input value={recibo.desconto || ''} onChange={e => setRecibo({ ...recibo, desconto: e.target.value })} placeholder="0,00" className={campo} />
+            </label>
             <div className="flex flex-col gap-1 text-[11px] font-bold text-slate-500">
               Onde ficou
               <div className="grid grid-cols-2 gap-1">
@@ -583,20 +739,22 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                     onClick={() => setRecibo({ ...recibo, local: opcao })}
                     className={`cursor-pointer rounded-lg border-0 px-2 py-2 text-[11px] font-bold ${recibo.local === opcao ? 'bg-teal-700 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200'}`}
                   >
-                    {ROTULO_LOCAL[opcao]}
+                    {rotuloLocal(opcao, comprador)}
                   </button>
                 ))}
               </div>
             </div>
+            {desconto > 0 ? <p className="m-0 text-xs font-semibold text-slate-500">Subtotal R$ {dinheiro(subtotal)} · Desconto R$ {dinheiro(desconto)}</p> : null}
             <p className="m-0 text-sm font-black text-teal-900">Total: R$ {dinheiro(total)}</p>
             <button type="button" onClick={() => imprimirFolha(reciboNaTela)} className={botaoPrimario}>Imprimir recibo</button>
             <button type="button" onClick={() => { setBuscaProduto(''); setRascunho(rascunhoVazio()); setRecibo(null); }} className={botaoSecundario}>Trocar fornecedor</button>
           </div>
 
           <article className="border-2 border-slate-900 bg-white p-5">
-            <h3 className="m-0 text-center text-xl font-black tracking-[0.14em]">RECIBO</h3>
-            <div className="mb-3 mt-2 flex justify-end text-xs text-slate-700">
-              <span>Data: {dataBr(recibo.data)}</span>
+            <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              {logoDoComprador(comprador) ? <img src={`${logoDoComprador(comprador)}?v=2`} alt={altLogoComprador(comprador)} decoding="async" className="h-[118px] w-[118px] justify-self-start bg-white object-contain" /> : null}
+              <h3 className="m-0 text-center text-xl font-black tracking-[0.14em]">RECIBO</h3>
+              <span className="justify-self-end text-xs text-slate-700">Data: {dataBr(recibo.data)}</span>
             </div>
             <CaixaPessoa titulo="Comprador" pessoa={comprador} rotuloDoc="CNPJ" />
             <CaixaPessoa titulo="Fornecedor" pessoa={recibo.fornecedor} rotuloDoc="CNPJ / CPF" />
@@ -627,14 +785,19 @@ export function AbaReciboComprador(p: { setTabAtiva: any; fornecedoresCotacao?: 
                   ))}
                 </tbody>
               </table>
-              <p className="mb-0 mt-3 flex gap-3 text-sm font-bold"><b className="w-32 shrink-0">Total da compra</b><span>R$ {dinheiro(total)}</span></p>
+              <p className="mb-0 mt-3 flex gap-3 text-sm"><b className="w-32 shrink-0">Subtotal</b><span>R$ {dinheiro(subtotal)}</span></p>
+              <p className="mb-0 mt-1 flex gap-3 text-sm"><b className="w-32 shrink-0">Desconto</b><span>R$ {dinheiro(desconto)}</span></p>
+              <p className="mb-0 mt-1 flex gap-3 text-sm font-bold"><b className="w-32 shrink-0">Total da compra</b><span>R$ {dinheiro(total)}</span></p>
               {extenso ? <p className="m-0 mt-1 text-xs italic text-slate-600">{extenso.charAt(0).toUpperCase() + extenso.slice(1)}</p> : null}
               <p className="mb-0 mt-2 flex gap-3 text-sm"><b className="w-32 shrink-0">Pagamento</b><span>{textoPagamento(recibo)}</span></p>
-              <p className="mb-0 mt-1 flex gap-3 text-sm"><b className="w-32 shrink-0">Local</b><span>{recibo.local ? ROTULO_LOCAL[recibo.local] : ''}</span></p>
+              <p className="mb-0 mt-1 flex gap-3 text-sm"><b className="w-32 shrink-0">Local</b><span>{recibo.local ? rotuloLocal(recibo.local, reciboNaTela.comprador) : ''}</span></p>
             </div>
             <p className="mt-4 text-sm">{comprador.cidade || recibo.fornecedor.cidade || 'Fortaleza'}, {dataBr(recibo.data)}.</p>
             <div className="mt-10 flex justify-center text-center text-xs">
-              <div className="w-60 border-t border-slate-900 pt-2">Vendedor</div>
+              <div className="w-60 border-t border-slate-900 pt-2">
+                {nomeVendedor(recibo) ? <strong className="block text-xs font-bold uppercase text-slate-900">{nomeVendedor(recibo)}</strong> : null}
+                <span className="mt-0.5 block text-[11px] text-slate-600">Vendedor</span>
+              </div>
             </div>
           </article>
         </div>
