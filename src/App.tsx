@@ -266,6 +266,7 @@ function App() {
       return [];
     }
   });
+  const [statusUsuariosLogin, setStatusUsuariosLogin] = useState('Buscando usuários atualizados na nuvem...');
   const [usuariosExtraDeletados, setUsuariosExtraDeletados] = useState<string[]>(() => lerUsuariosExtraDeletados());
   const [novoUsuarioNome, setNovoUsuarioNome] = useState('');
   const [novoUsuarioSenha, setNovoUsuarioSenha] = useState('');
@@ -1697,6 +1698,70 @@ function App() {
       window.removeEventListener('pageshow', sincronizarAutomaticamente);
     };
   }, [autenticado, sincronizarAutomaticamente]);
+
+  useEffect(() => {
+    if (usuarioLogado) return;
+
+    const controlador = new AbortController();
+    let ativo = true;
+    const tempoLimite = window.setTimeout(() => controlador.abort(), 20000);
+
+    const atualizarUsuariosLogin = async () => {
+      try {
+        const resposta = await fetch(`/api/nuvem?t=${Date.now()}`, {
+          cache: 'no-store',
+          signal: controlador.signal
+        });
+        if (!resposta.ok) throw new Error(`Falha ao carregar usuários da nuvem (${resposta.status}).`);
+
+        const dados = await resposta.json();
+        const registro = recordDoJsonBin(dados);
+        if (!registro || typeof registro !== 'object') throw new Error('Registro da nuvem inválido.');
+
+        if (Array.isArray(registro.usuariosExtraDeletados)) {
+          const deletados = unirIds(usuariosExtraDeletadosRef.current, registro.usuariosExtraDeletados);
+          usuariosExtraDeletadosRef.current = deletados;
+          setUsuariosExtraDeletados(deletados);
+          localStorage.setItem('rm_usuarios_extra_deletados', JSON.stringify(deletados));
+        }
+        if (Array.isArray(registro.usuariosExtra)) {
+          const extras = unirUsuariosExtraAtivos(
+            usuariosExtraDeletadosRef.current,
+            usuariosExtraRef.current,
+            registro.usuariosExtra
+          );
+          usuariosExtraRef.current = extras;
+          setUsuariosExtra(extras);
+          localStorage.setItem('rm_usuarios_extra', JSON.stringify(extras));
+        }
+        if (registro.permissoesUsuarios && typeof registro.permissoesUsuarios === 'object') {
+          const permissoes = unirPermissoesUsuarios(permissoesUsuariosRef.current, registro.permissoesUsuarios);
+          permissoesUsuariosRef.current = permissoes;
+          setPermissoesUsuarios(permissoes);
+          localStorage.setItem('rm_permissoes_usuarios', JSON.stringify(permissoes));
+        }
+        if (registro.senhasUsuarios && typeof registro.senhasUsuarios === 'object') {
+          setSenhasUsuarios(atuais => {
+            const senhas = { ...atuais, ...registro.senhasUsuarios };
+            localStorage.setItem('rm_senhas_usuarios', JSON.stringify(senhas));
+            return senhas;
+          });
+        }
+        if (ativo) setStatusUsuariosLogin('Lista de usuários atualizada pela nuvem.');
+      } catch {
+        if (ativo) setStatusUsuariosLogin('Não foi possível atualizar os usuários; exibindo os salvos neste aparelho.');
+      } finally {
+        window.clearTimeout(tempoLimite);
+      }
+    };
+
+    void atualizarUsuariosLogin();
+    return () => {
+      ativo = false;
+      window.clearTimeout(tempoLimite);
+      controlador.abort();
+    };
+  }, [usuarioLogado]);
 // Salvar relatório do dia automaticamente
   useEffect(() => {
     if (!autenticado) return;
@@ -1890,6 +1955,9 @@ function App() {
               </select>
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </div>
+            <p className={`-mt-2 mb-4 text-xs ${statusUsuariosLogin.startsWith('Não foi possível') ? 'text-amber-700' : 'text-slate-500'}`} role="status">
+              {statusUsuariosLogin}
+            </p>
 
             <label className="mb-1.5 block text-[13px] font-medium text-slate-800" htmlFor="login-senha">Senha de Acesso</label>
             <div className="mb-5 flex h-11 w-full items-center rounded-lg border border-slate-200 bg-white px-3">
