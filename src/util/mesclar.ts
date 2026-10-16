@@ -26,7 +26,11 @@ export const normalizarSetores = (setoresSalvos: Setor[]) => {
   const salvosPorId = new Map(setoresSalvos.filter(setor => setor.id !== 'pao-da-vida').map(setor => [setor.id, comTarefas(setor)!]));
   const setoresAtualizados = SETORES_PADRAO.map(setorPadrao => {
     const setorSalvo = salvosPorId.get(setorPadrao.id);
-    if (setorSalvo) return setorSalvo;
+    if (setorSalvo) {
+      return setorPadrao.id === 'manutencao'
+        ? { ...setorSalvo, nome: setorPadrao.nome }
+        : setorSalvo;
+    }
     if (setorPadrao.id === 'padaria' && setorAntigo) return { ...setorPadrao, tarefas: setorAntigo.tarefas };
     return setorPadrao;
   });

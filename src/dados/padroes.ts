@@ -359,7 +359,7 @@ export const SETORES_PADRAO: Setor[] = [
   { id: 'sitio', nome: 'Sítio', cor: '#16a34a', tarefas: [] },
   { id: 'caben', nome: 'CABEN', cor: '#2563eb', tarefas: [] },
   { id: 'ave-cristo', nome: 'Ave Cristo', cor: '#7c3aed', tarefas: [] },
-  { id: 'manutencao', nome: 'Manutenção', cor: '#0284c7', tarefas: [] }
+  { id: 'manutencao', nome: 'Aguardando recebimento', cor: '#0284c7', tarefas: [] }
 ];
 
 export const USUARIOS_SISTEMA: Usuario[] = [
