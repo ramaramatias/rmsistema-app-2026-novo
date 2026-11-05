@@ -3742,7 +3742,8 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     const idsSalvos = new Set(
       itensFonte.filter(item => qtdPedirNumero(item) > 0 && calcularMenorPrecoItem(item, idsForn).vencedorFornId).map(item => item.id)
     );
-    const itensLimpos = itensCotacao.map(item => idsSalvos.has(item.id) ? { ...item, qtdPedir: '' } : item);
+    const dataAtualizacao = new Date().toISOString();
+    const itensLimpos = itensCotacao.map(item => idsSalvos.has(item.id) ? { ...item, qtdPedir: '', atualizadoEm: dataAtualizacao } : item);
     const atualizados = [...relatoriosNovos, ...(Array.isArray(relatoriosPedidosRef.current) ? relatoriosPedidosRef.current : [])].slice(0, 50);
     relatoriosPedidosRef.current = atualizados;
     setRelatoriosPedidosCotacao(atualizados);
@@ -3782,8 +3783,9 @@ const verificaEntregaHoje = (diasEntregaStr?: string): boolean => {
     const idsForn = escopo?.somenteFornecedores;
     const enviarConferencia = Boolean(escopo?.enviarConferencia);
     const idsItens = new Set(itensFornecedor.map(item => item.id));
+    const dataAtualizacao = new Date().toISOString();
     const itensAtualizados = itensCotacao.map(item => idsItens.has(item.id)
-      ? { ...item, ultimoPrecoCompra: calcularMenorPrecoItem(item, idsForn).menorPreco || item.ultimoPrecoCompra, qtdPedir: '' }
+      ? { ...item, ultimoPrecoCompra: calcularMenorPrecoItem(item, idsForn).menorPreco || item.ultimoPrecoCompra, qtdPedir: '', atualizadoEm: dataAtualizacao }
       : item);
     const itens = itensFornecedor.map(item => {
       const { menorPreco } = calcularMenorPrecoItem(item, idsForn);
